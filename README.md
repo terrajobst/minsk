@@ -1,5 +1,7 @@
 # Minsk
 
+[![Build Status](https://terrajobst.visualstudio.com/Minsk/_apis/build/status/terrajobst.minsk)](https://terrajobst.visualstudio.com/Minsk/_build/latest?definitionId=13)
+
 > Have you considered Minsk? -- Worf, naming things.
 
 This repo contains **Minsk**, a handwritten compiler in C#. It illustrates basic

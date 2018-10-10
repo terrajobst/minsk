@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis
 {
-    abstract class SyntaxNode
+    public abstract class SyntaxNode
     {
         public abstract SyntaxKind Kind { get; }
 

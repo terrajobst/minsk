@@ -1,4 +1,5 @@
 ﻿using System;
+using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis
 {
@@ -8,7 +9,7 @@ namespace Minsk.CodeAnalysis
 
         public Evaluator(ExpressionSyntax root)
         {
-            this._root = root;
+            _root = root;
         }
 
         public int Evaluate()

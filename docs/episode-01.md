@@ -1,6 +1,6 @@
 # Episode 1
 
-[Video](https://www.youtube.com/watch?v=wgHIkdUQbp0) |
+[Video](https://www.youtube.com/watch?v=wgHIkdUQbp0&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=1) |
 [Pull Request](https://github.com/terrajobst/minsk/pull/1)
 
 ## Completed items

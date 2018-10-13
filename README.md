@@ -1,6 +1,6 @@
 # Minsk
 
-[![Build Status](https://terrajobst.visualstudio.com/Minsk/_apis/build/status/terrajobst.minsk)](https://terrajobst.visualstudio.com/Minsk/_build/latest?definitionId=13)
+[![Build Status](https://terrajobst.visualstudio.com/Minsk/_apis/build/status/terrajobst.minsk?branchName=master)](https://terrajobst.visualstudio.com/Minsk/_build/latest?definitionId=13)
 
 > Have you considered Minsk? -- Worf, naming things.
 

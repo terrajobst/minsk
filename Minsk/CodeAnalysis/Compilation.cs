@@ -21,9 +21,7 @@ namespace Minsk.CodeAnalysis
 
             var diagnostics = SyntaxTree.Diagnostics.Concat(binder.Diagnostics).ToArray();
             if (diagnostics.Any())
-            {
                 return new EvaluationResult(diagnostics, null);
-            }
 
             var evaluator = new Evaluator(boundExpression);
             var value = evaluator.Evaluate();

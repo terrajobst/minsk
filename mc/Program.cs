@@ -13,7 +13,7 @@ namespace Minsk
         private static void Main()
         {
             var showTree = false;
-            var variables = new Dictionary<string, object>();
+            var variables = new Dictionary<VariableSymbol, object>();
 
             while (true)
             {

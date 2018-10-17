@@ -34,11 +34,8 @@ namespace Minsk
                 }
 
                 var syntaxTree = SyntaxTree.Parse(line);
-                var binder = new Binder();
-                var boundExpression = binder.BindExpression(syntaxTree.Root);
-
-                var diagnostics = syntaxTree.Diagnostics.Concat(binder.Diagnostics).ToArray();
-
+                var compilation = new Compilation(syntaxTree);
+                var result = compilation.Evaluate();
 
                 if (showTree)
                 {
@@ -47,17 +44,15 @@ namespace Minsk
                     Console.ResetColor();
                 }
 
-                if (!diagnostics.Any())
+                if (!result.Diagnostics.Any())
                 {
-                    var e = new Evaluator(boundExpression);
-                    var result = e.Evaluate();
-                    Console.WriteLine(result);
+                    Console.WriteLine(result.Value);
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.DarkRed;
 
-                    foreach (var diagnostic in diagnostics)
+                    foreach (var diagnostic in result.Diagnostics)
                         Console.WriteLine(diagnostic);
 
                     Console.ResetColor();

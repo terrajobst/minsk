@@ -50,12 +50,31 @@ namespace Minsk
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-
                     foreach (var diagnostic in result.Diagnostics)
-                        Console.WriteLine(diagnostic);
+                    {
+                        Console.WriteLine();
 
-                    Console.ResetColor();
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.WriteLine(diagnostic);
+                        Console.ResetColor();
+
+                        var prefix = line.Substring(0, diagnostic.Span.Start);
+                        var error = line.Substring(diagnostic.Span.Start, diagnostic.Span.Length);
+                        var suffix = line.Substring(diagnostic.Span.End);
+
+                        Console.Write("    ");
+                        Console.Write(prefix);
+
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write(error);
+                        Console.ResetColor();
+
+                        Console.Write(suffix);
+
+                        Console.WriteLine();
+                    }
+
+                    Console.WriteLine();
                 }
             }
         }

@@ -21,13 +21,13 @@ namespace Minsk.CodeAnalysis.Binding
         {
             switch (syntax.Kind)
             {
-               case SyntaxKind.ParenthesizedExpression:
+                case SyntaxKind.ParenthesizedExpression:
                     return BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax);
                 case SyntaxKind.LiteralExpression:
                     return BindLiteralExpression((LiteralExpressionSyntax)syntax);
-               case SyntaxKind.NameExpression:
+                case SyntaxKind.NameExpression:
                     return BindNameExpression((NameExpressionSyntax)syntax);
-               case SyntaxKind.AssignmentExpression:
+                case SyntaxKind.AssignmentExpression:
                     return BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
                 case SyntaxKind.UnaryExpression:
                     return BindUnaryExpression((UnaryExpressionSyntax)syntax);

@@ -6,13 +6,13 @@ namespace Minsk.CodeAnalysis.Binding
     internal sealed class BoundBinaryOperator
     {
         private BoundBinaryOperator(SyntaxKind syntaxKind, BoundBinaryOperatorKind kind, Type type)
-         : this(syntaxKind, kind, type, type, type)
+            : this(syntaxKind, kind, type, type, type)
         {
             
         }
 
         private BoundBinaryOperator(SyntaxKind syntaxKind, BoundBinaryOperatorKind kind, Type operandType, Type resultType)
-         : this(syntaxKind, kind, operandType, operandType, resultType)
+            : this(syntaxKind, kind, operandType, operandType, resultType)
         {
             
         }

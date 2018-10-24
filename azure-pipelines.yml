@@ -8,7 +8,10 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  tests: './Minsk.Tests/Minsk.Tests.csproj'
 
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+- script: dotnet test $(tests)
+  displayName: 'dotnet test'

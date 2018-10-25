@@ -54,7 +54,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                     e.AssertToken(SyntaxKind.IdentifierToken, "a");
                     e.AssertToken(op1, op1Text);
                     e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.NameExpression);                    
+                    e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "b");
                     e.AssertToken(op2, op2Text);
                     e.AssertNode(SyntaxKind.NameExpression);
@@ -110,7 +110,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                     e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "a");
                     e.AssertToken(binaryKind, binaryText);
-                    e.AssertNode(SyntaxKind.NameExpression);                    
+                    e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "b");
                 }
             }

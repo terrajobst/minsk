@@ -9,7 +9,7 @@ using Minsk.CodeAnalysis.Syntax;
 namespace Minsk
 {
     internal static class Program
-    {        
+    {
         private static void Main()
         {
             var showTree = false;
@@ -40,7 +40,7 @@ namespace Minsk
 
                 if (showTree)
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;                
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
                     PrettyPrint(syntaxTree.Root);
                     Console.ResetColor();
                 }
@@ -95,12 +95,12 @@ namespace Minsk
             }
 
             Console.WriteLine();
-            
+
             indent += isLast ? "   " : "│  ";
 
             var lastChild = node.GetChildren().LastOrDefault();
 
-            foreach (var child in node.GetChildren())            
+            foreach (var child in node.GetChildren())
                 PrettyPrint(child, indent, child == lastChild);
         }
     }

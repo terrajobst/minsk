@@ -36,7 +36,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             stack.Push(node);
 
             while (stack.Count > 0)
-            {                
+            {
                 var n = stack.Pop();
                 yield return n;
 

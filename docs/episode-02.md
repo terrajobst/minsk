@@ -8,7 +8,7 @@
 * Generalized parsing using precedences
 * Support unary operators, such as `+2` and `-3`
 * Support for Boolean literals (`false`, `true`)
-* Support for conditions such as `1 == 3 && 2 != 3 || true` 
+* Support for conditions such as `1 == 3 && 2 != 3 || true`
 * Internal representation for type checking (`Binder`, and `BoundNode`)
 
 ## Interesting aspects

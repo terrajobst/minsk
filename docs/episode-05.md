@@ -17,7 +17,7 @@ offset into the text that was parsed. Positions are awesome because you can
 easily do math on them. Unfortunately, they aren't great for error reporting.
 What you really want is line number and character position.
 
-We added the concept of [`SourceText`][SourceText] which you an think of as
+We added the concept of [`SourceText`][SourceText] which you can think of as
 representing the document the user is editing. It's immutable and it has a
 collection of line information. The `SourceText` is stored on the `SyntaxTree`
 and can be used to get the index of a line given a position:

@@ -15,12 +15,12 @@
 Our entire frontend is referring to the input as positions, i.e. a zero-based
 offset into the text that was parsed. Positions are awesome because you can
 easily do math on them. Unfortunately, they aren't great for error reporting.
-What you really want line number and character position.
+What you really want is line number and character position.
 
 We added the concept of [`SourceText`][SourceText] which you an think of as
 representing the document the user is editing. It's immutable and it has a
 collection of line information. The `SourceText` is stored on the `SyntaxTree`
-and can be used to get a line index given a position:
+and can be used to get the index of a line given a position:
 
 ```C#
 var lineIndex = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
@@ -32,7 +32,7 @@ var character = diagnostic.Span.Start - line.Start + 1;
 ### Computing line indexes
 
 `SourceText` has a collection of [`TextLines`][TextLine] which know the start
-and end positions for each ine. In order to compute a line index, we only
+and end positions for each line. In order to compute a line index, we only
 have to [perform a binary search][GetLineIndex]:
 
 ```C#

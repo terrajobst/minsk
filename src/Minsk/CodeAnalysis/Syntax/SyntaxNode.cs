@@ -34,7 +34,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 else if (typeof(IEnumerable<SyntaxNode>).IsAssignableFrom(property.PropertyType))
                 {
                     var children = (IEnumerable<SyntaxNode>)property.GetValue(this);
-                    foreach (var child in children)                    
+                    foreach (var child in children)
                         yield return child;
                 }
             }

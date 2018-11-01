@@ -8,10 +8,11 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  tests: './Minsk.Tests/Minsk.Tests.csproj'
+  sln: './src/minsk.sln'
+  tests: './src/Minsk.Tests/Minsk.Tests.csproj'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
+- script: dotnet build --configuration $(buildConfiguration) $(sln)
   displayName: 'dotnet build $(buildConfiguration)'
 - script: dotnet test $(tests) --logger "xunit;LogFileName=TestResults.xml"
   displayName: 'dotnet test'

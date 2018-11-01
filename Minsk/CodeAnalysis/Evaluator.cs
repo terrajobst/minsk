@@ -22,18 +22,18 @@ namespace Minsk.CodeAnalysis
 
         private object EvaluateExpression(BoundExpression node)
         {
-            switch (node.Kind)
+            switch (node)
             {
-                case BoundNodeKind.LiteralExpression:
-                    return EvaluateLiteralExpression((BoundLiteralExpression)node);
-                case BoundNodeKind.VariableExpression:
-                    return this.EvaluateVariableExpression((BoundVariableExpression)node);
-                case BoundNodeKind.AssignmentExpression:
-                    return EvaluateAssignmentExpression((BoundAssignmentExpression)node);
-                case BoundNodeKind.UnaryExpression:
-                    return EvaluateUnaryExpression((BoundUnaryExpression)node);
-                case BoundNodeKind.BinaryExpression:
-                    return EvaluateBinaryExpression((BoundBinaryExpression)node);
+                case BoundLiteralExpression n:
+                    return EvaluateLiteralExpression(n);
+                case BoundVariableExpression v:
+                    return EvaluateVariableExpression(v);
+                case BoundAssignmentExpression a:
+                    return EvaluateAssignmentExpression(a);
+                case BoundUnaryExpression u:
+                    return EvaluateUnaryExpression(u);
+                case BoundBinaryExpression b:
+                    return EvaluateBinaryExpression(b);
                 default:
                     throw new Exception($"Unexpected node {node.Kind}");
             }

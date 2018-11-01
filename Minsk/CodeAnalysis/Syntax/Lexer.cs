@@ -75,7 +75,6 @@ namespace Minsk.CodeAnalysis.Syntax
                     {
                         _kind = SyntaxKind.AmpersandAmpersandToken;
                         _position += 2;
-                        break;
                     }
                     break;
                 case '|':
@@ -83,7 +82,6 @@ namespace Minsk.CodeAnalysis.Syntax
                     {
                         _kind = SyntaxKind.PipePipeToken;
                         _position += 2;
-                        break;
                     }
                     break;
                 case '=':
@@ -94,8 +92,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     }
                     else
                     {
-                        _position++;
                         _kind = SyntaxKind.EqualsEqualsToken;
+                        _position++;
                     }
                     break;
                 case '!':
@@ -112,7 +110,7 @@ namespace Minsk.CodeAnalysis.Syntax
                     break;
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
-                    ReadNumberToken();
+                    ReadNumber();
                     break;
                 case ' ':
                 case '\t':
@@ -153,7 +151,7 @@ namespace Minsk.CodeAnalysis.Syntax
             _kind = SyntaxKind.WhitespaceToken;
         }
 
-        private void ReadNumberToken()
+        private void ReadNumber()
         {
             while (char.IsDigit(Current))
                 _position++;
@@ -171,7 +169,7 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             while (char.IsLetter(Current))
                 _position++;
-            
+
             var length = _position - _start;
             var text = _text.ToString(_start, length);
             _kind = SyntaxFacts.GetKeywordKind(text);

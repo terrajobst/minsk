@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Minsk.CodeAnalysis.Text;
 
 namespace Minsk.CodeAnalysis.Syntax

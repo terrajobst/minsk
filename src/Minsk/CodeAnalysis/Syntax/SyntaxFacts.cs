@@ -50,10 +50,14 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             switch (text)
             {
-                case "true":
-                    return SyntaxKind.TrueKeyword;
                 case "false":
                     return SyntaxKind.FalseKeyword;
+                case "let":
+                    return SyntaxKind.LetKeyword;
+                case "true":
+                    return SyntaxKind.TrueKeyword;
+                case "var":
+                    return SyntaxKind.VarKeyword;
                 default:
                     return SyntaxKind.IdentifierToken;
             }
@@ -113,8 +117,12 @@ namespace Minsk.CodeAnalysis.Syntax
                     return "}";
                 case SyntaxKind.FalseKeyword:
                     return "false";
+                case SyntaxKind.LetKeyword:
+                    return "let";
                 case SyntaxKind.TrueKeyword:
                     return "true";
+                case SyntaxKind.VarKeyword:
+                    return "var";
                 default:
                     return null;
             }

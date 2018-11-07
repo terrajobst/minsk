@@ -19,6 +19,8 @@ namespace Minsk.CodeAnalysis.Syntax
         BangEqualsToken,
         OpenParenthesisToken,
         CloseParenthesisToken,
+        OpenBraceToken,
+        CloseBraceToken,
         IdentifierToken,
 
         // Keywords
@@ -27,6 +29,10 @@ namespace Minsk.CodeAnalysis.Syntax
 
         // Nodes
         CompilationUnit,
+
+        // Statements
+        BlockStatement,
+        ExpressionStatement,
 
         // Expressions
         LiteralExpression,

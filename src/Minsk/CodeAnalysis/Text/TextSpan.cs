@@ -1,5 +1,3 @@
-using System;
-
 namespace Minsk.CodeAnalysis.Text
 {
     public struct TextSpan

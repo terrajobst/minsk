@@ -21,3 +21,4 @@ steps:
   inputs:
     testResultsFormat: 'xUnit'
     testResultsFiles: '**/TestResults.xml'
+  condition: always()

@@ -16,6 +16,7 @@ C# and Visual Basic compilers, code named [Roslyn].
 ## Live coding
 
 This code base was written live during streaming. You can watch the recordings
-on [YouTube].
+on [YouTube] or browse the [episode PRs][episodes].
 
 [YouTube]: https://www.youtube.com/playlist?list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y
+[episodes]: https://github.com/terrajobst/minsk/pulls?q=is%3Apr+is%3Aclosed+label%3Aepisode+sort%3Acreated-asc

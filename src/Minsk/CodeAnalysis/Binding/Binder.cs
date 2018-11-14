@@ -191,6 +191,12 @@ namespace Minsk.CodeAnalysis.Binding
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
             var name = syntax.IdentifierToken.Text;
+            if (string.IsNullOrEmpty(name))
+            {
+                // This means the token was inserted by the parser. We already
+                // reported error so we can just return an error expression.
+                return new BoundLiteralExpression(0);
+            }
 
             if (!_scope.TryLookup(name, out var variable))
             {

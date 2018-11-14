@@ -31,6 +31,11 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var a = 0 (a = 10) * a }", 100)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
+            AssertValue(text, expectedValue);
+        }
+
+        private static void AssertValue(string text, object expectedValue)
+        {
             var syntaxTree = SyntaxTree.Parse(text);
             var compilation = new Compilation(syntaxTree);
             var variables = new Dictionary<VariableSymbol, object>();

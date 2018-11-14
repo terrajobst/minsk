@@ -5,6 +5,7 @@ namespace Minsk.CodeAnalysis.Binding
         // Statements
         BlockStatement,
         VariableDeclaration,
+        IfStatement,
         ExpressionStatement,
 
         // Expressions

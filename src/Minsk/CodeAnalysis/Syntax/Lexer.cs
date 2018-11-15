@@ -115,6 +115,30 @@ namespace Minsk.CodeAnalysis.Syntax
                         _position++;
                     }
                     break;
+                case '<':
+                    _position++;
+                    if (Current != '=')
+                    {
+                        _kind = SyntaxKind.LessToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.LessOrEqualsToken;
+                        _position++;
+                    }
+                    break;
+                case '>':
+                    _position++;
+                    if (Current != '=')
+                    {
+                        _kind = SyntaxKind.GreaterToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.GreaterOrEqualsToken;
+                        _position++;
+                    }
+                    break;
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
                     ReadNumber();

@@ -65,6 +65,12 @@ namespace Minsk.CodeAnalysis.Binding
                     return BindBlockStatement((BlockStatementSyntax)syntax);
                 case SyntaxKind.VariableDeclaration:
                     return BindVariableDeclaration((VariableDeclarationSyntax)syntax);
+                case SyntaxKind.IfStatement:
+                    return BindIfStatement((IfStatementSyntax)syntax);
+                case SyntaxKind.WhileStatement:
+                    return BindWhileStatement((WhileStatementSyntax)syntax);
+                case SyntaxKind.ForStatement:
+                    return BindForStatement((ForStatementSyntax)syntax);
                 case SyntaxKind.ExpressionStatement:
                     return BindExpressionStatement((ExpressionStatementSyntax)syntax);
                 default:
@@ -101,10 +107,53 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundVariableDeclaration(variable, initializer);
         }
 
+        private BoundStatement BindIfStatement(IfStatementSyntax syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var thenStatement = BindStatement(syntax.ThenStatement);
+            var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
+            return new BoundIfStatement(condition, thenStatement, elseStatement);
+        }
+
+        private BoundStatement BindWhileStatement(WhileStatementSyntax syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var body = BindStatement(syntax.Body);
+            return new BoundWhileStatement(condition, body);
+        }
+
+        private BoundStatement BindForStatement(ForStatementSyntax syntax)
+        {
+            var lowerBound = BindExpression(syntax.LowerBound, typeof(int));
+            var upperBound = BindExpression(syntax.UpperBound, typeof(int));
+
+            _scope = new BoundScope(_scope);
+
+            var name = syntax.Identifier.Text;
+            var variable = new VariableSymbol(name, true, typeof(int));
+            if (!_scope.TryDeclare(variable))
+                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+            var body = BindStatement(syntax.Body);
+
+            _scope = _scope.Parent;
+
+            return new BoundForStatement(variable, lowerBound, upperBound, body);
+        }
+
         private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
         {
             var expression = BindExpression(syntax.Expression);
             return new BoundExpressionStatement(expression);
+        }
+
+        private BoundExpression BindExpression(ExpressionSyntax syntax, Type targetType)
+        {
+            var result = BindExpression(syntax);
+            if (result.Type != targetType)
+                _diagnostics.ReportCannotConvert(syntax.Span, result.Type, targetType);
+
+            return result;
         }
 
         private BoundExpression BindExpression(ExpressionSyntax syntax)
@@ -142,6 +191,12 @@ namespace Minsk.CodeAnalysis.Binding
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
             var name = syntax.IdentifierToken.Text;
+            if (string.IsNullOrEmpty(name))
+            {
+                // This means the token was inserted by the parser. We already
+                // reported error so we can just return an error expression.
+                return new BoundLiteralExpression(0);
+            }
 
             if (!_scope.TryLookup(name, out var variable))
             {

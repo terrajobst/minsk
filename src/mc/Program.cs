@@ -16,6 +16,7 @@ namespace Minsk
             var variables = new Dictionary<VariableSymbol, object>();
             var textBuilder = new StringBuilder();
             Compilation previous = null;
+            ReadLine.HistoryEnabled = true;
 
             while (true)
             {
@@ -28,7 +29,7 @@ namespace Minsk
 
                 Console.ResetColor();
 
-                var input = Console.ReadLine();
+                var input = ReadLine.Read();
                 var isBlank = string.IsNullOrWhiteSpace(input);
 
                 if (textBuilder.Length == 0)

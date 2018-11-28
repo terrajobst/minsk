@@ -47,7 +47,7 @@ namespace Minsk
                     else if (input == "#showProgram")
                     {
                         showProgram = !showProgram;
-                        Console.WriteLine(showTree ? "Showing bound tree." : "Not showing bound tree.");
+                        Console.WriteLine(showProgram ? "Showing bound tree." : "Not showing bound tree.");
                         continue;
                     }
                     else if (input == "#cls")

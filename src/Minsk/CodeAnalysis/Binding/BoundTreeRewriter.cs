@@ -118,7 +118,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (condition == node.Condition)
                 return node;
 
-            return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
+            return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
         }
 
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)

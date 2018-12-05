@@ -1,6 +1,6 @@
 # Episode 8
 
-[Video](https://www.youtube.com/watch?v=SJE_gUnJl2Y&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=8) |
+[Video](https://www.youtube.com/watch?v=PfpayNvfu20&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=8) |
 [Pull Request](https://github.com/terrajobst/minsk/pull/35)
 
 ## Completed items

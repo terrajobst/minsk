@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Lowering;
+using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Minsk.CodeAnalysis;
+using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Xunit;
 

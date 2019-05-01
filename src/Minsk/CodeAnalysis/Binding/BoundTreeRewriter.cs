@@ -134,6 +134,8 @@ namespace Minsk.CodeAnalysis.Binding
         {
             switch (node.Kind)
             {
+                case BoundNodeKind.ErrorExpression:
+                    return RewriteErrorExpression((BoundErrorExpression)node);
                 case BoundNodeKind.LiteralExpression:
                     return RewriteLiteralExpression((BoundLiteralExpression)node);
                 case BoundNodeKind.VariableExpression:
@@ -148,7 +150,12 @@ namespace Minsk.CodeAnalysis.Binding
                     throw new Exception($"Unexpected node: {node.Kind}");
             }
         }
-        
+
+        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)
+        {
+            return node;
+        }
+
         protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node)
         {
             return node;

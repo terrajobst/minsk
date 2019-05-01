@@ -14,6 +14,7 @@ namespace Minsk.CodeAnalysis.Binding
         ExpressionStatement,
 
         // Expressions
+        ErrorExpression,
         LiteralExpression,
         VariableExpression,
         AssignmentExpression,

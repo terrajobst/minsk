@@ -1,0 +1,11 @@
+[*.{cs,vb}]
+
+dotnet_naming_rule.private_fields_start_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_start_with_underscore.style = starts_with_underscore
+dotnet_naming_rule.private_fields_start_with_underscore.severity = warning
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.starts_with_underscore.capitalization = camel_case
+dotnet_naming_style.starts_with_underscore.required_prefix = _

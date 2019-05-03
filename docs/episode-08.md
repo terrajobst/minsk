@@ -92,7 +92,7 @@ protected override BoundStatement RewriteForStatement(BoundForStatement node)
     //      {
     //          <body>
     //          <var> = <var> + 1
-    //      }   
+    //      }
     // }
 
     var variableDeclaration = new BoundVariableDeclaration(node.Variable, node.LowerBound);
@@ -101,7 +101,7 @@ protected override BoundStatement RewriteForStatement(BoundForStatement node)
         variableExpression,
         BoundBinaryOperator.Bind(SyntaxKind.LessOrEqualsToken, typeof(int), typeof(int)),
         node.UpperBound
-    );            
+    );
     var increment = new BoundExpressionStatement(
         new BoundAssignmentExpression(
             node.Variable,
@@ -163,7 +163,7 @@ protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
         // ---->
         //
         // gotoFalse <condition> end
-        // <then>  
+        // <then>
         // end:
         var endLabel = GenerateLabel();
         var gotoFalse = new BoundConditionalGotoStatement(endLabel, node.Condition, true);

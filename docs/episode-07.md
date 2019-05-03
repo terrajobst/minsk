@@ -171,10 +171,10 @@ simple approach of remembering the current token before calling
         Current.Kind != SyntaxKind.CloseBraceToken)
  {
 +     var startToken = Current;
-+ 
++
      var statement = ParseStatement();
      statements.Add(statement);
-+     
++
 +     if (Current == startToken)
 +         NextToken();
  }

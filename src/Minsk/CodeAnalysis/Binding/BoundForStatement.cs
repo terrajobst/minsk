@@ -11,7 +11,7 @@ namespace Minsk.CodeAnalysis.Binding
             UpperBound = upperBound;
             Body = body;
         }
-        
+
         public override BoundNodeKind Kind => BoundNodeKind.ForStatement;
         public VariableSymbol Variable { get; }
         public BoundExpression LowerBound { get; }

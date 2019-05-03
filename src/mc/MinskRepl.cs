@@ -75,14 +75,14 @@ namespace Minsk
                                            .Take(2)
                                            .Count() == 2;
             if (lastTwoLinesAreBlank)
-                return true;    
+                return true;
 
             var syntaxTree = SyntaxTree.Parse(text);
 
             // Use Statement because we need to exclude the EndOfFileToken.
             if (syntaxTree.Root.Statement.GetLastToken().IsMissing)
                 return false;
-            
+
             return true;
         }
 

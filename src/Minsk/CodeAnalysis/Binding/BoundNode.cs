@@ -48,7 +48,7 @@ namespace Minsk.CodeAnalysis.Binding
                     typeof(IEnumerable<BoundNode>).IsAssignableFrom(property.PropertyType))
                     continue;
 
-                var value = property.GetValue(this);                
+                var value = property.GetValue(this);
                 if (value != null)
                     yield return (property.Name, value);
             }
@@ -72,7 +72,7 @@ namespace Minsk.CodeAnalysis.Binding
 
             if (isToConsole)
                 Console.ForegroundColor = GetColor(node);
-            
+
             var text = GetText(node);
             writer.Write(text);
 
@@ -128,7 +128,7 @@ namespace Minsk.CodeAnalysis.Binding
 
             if (node is BoundUnaryExpression u)
                 return u.Op.Kind.ToString() + "Expression";
-            
+
             return node.Kind.ToString();
         }
 
@@ -136,7 +136,7 @@ namespace Minsk.CodeAnalysis.Binding
         {
             if (node is BoundExpression)
                 return ConsoleColor.Blue;
-            
+
             if (node is BoundStatement)
                 return ConsoleColor.Cyan;
 

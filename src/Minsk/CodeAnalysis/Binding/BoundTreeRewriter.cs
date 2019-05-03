@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 namespace Minsk.CodeAnalysis.Binding
 {
     internal abstract class BoundTreeRewriter
-    {        
+    {
         public virtual BoundStatement RewriteStatement(BoundStatement node)
         {
             switch (node.Kind)
@@ -45,10 +45,10 @@ namespace Minsk.CodeAnalysis.Binding
                     if (builder == null)
                     {
                         builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
-                        
+
                         for (var j = 0; j < i; j++)
                             builder.Add(node.Statements[j]);
-                    }                    
+                    }
                 }
 
                 if (builder != null)
@@ -98,7 +98,7 @@ namespace Minsk.CodeAnalysis.Binding
             var body = RewriteStatement(node.Body);
             if (lowerBound == node.LowerBound && upperBound == node.UpperBound && body == node.Body)
                 return node;
-            
+
             return new BoundForStatement(node.Variable, lowerBound, upperBound, body);
         }
 
@@ -126,7 +126,7 @@ namespace Minsk.CodeAnalysis.Binding
             var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
-            
+
             return new BoundExpressionStatement(expression);
         }
 
@@ -171,7 +171,7 @@ namespace Minsk.CodeAnalysis.Binding
             var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
-            
+
             return new BoundAssignmentExpression(node.Variable, expression);
         }
 
@@ -180,7 +180,7 @@ namespace Minsk.CodeAnalysis.Binding
             var operand = RewriteExpression(node.Operand);
             if (operand == node.Operand)
                 return node;
-            
+
             return new BoundUnaryExpression(node.Op, operand);
         }
 
@@ -190,7 +190,7 @@ namespace Minsk.CodeAnalysis.Binding
             var right = RewriteExpression(node.Right);
             if (left == node.Left && right == node.Right)
                 return node;
-            
+
             return new BoundBinaryExpression(left, node.Op, right);
         }
     }

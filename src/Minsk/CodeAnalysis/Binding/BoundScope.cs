@@ -5,7 +5,7 @@ using Minsk.CodeAnalysis.Symbols;
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundScope
-    {        
+    {
         private Dictionary<string, VariableSymbol> _variables = new Dictionary<string, VariableSymbol>();
 
         public BoundScope(BoundScope parent)
@@ -31,7 +31,7 @@ namespace Minsk.CodeAnalysis.Binding
 
             if (Parent == null)
                 return false;
-            
+
             return Parent.TryLookup(name, out variable);
         }
 

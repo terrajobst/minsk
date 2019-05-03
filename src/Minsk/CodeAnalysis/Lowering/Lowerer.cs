@@ -12,7 +12,7 @@ namespace Minsk.CodeAnalysis.Lowering
         private int _labelCount;
 
         private Lowerer()
-        {            
+        {
         }
 
         private BoundLabel GenerateLabel()
@@ -62,7 +62,7 @@ namespace Minsk.CodeAnalysis.Lowering
                 // ---->
                 //
                 // gotoFalse <condition> end
-                // <then>  
+                // <then>
                 // end:
                 var endLabel = GenerateLabel();
                 var gotoFalse = new BoundConditionalGotoStatement(endLabel, node.Condition, false);
@@ -119,7 +119,7 @@ namespace Minsk.CodeAnalysis.Lowering
             // gotoTrue <condition> continue
             // end:
             //
-                
+
             var continueLabel = GenerateLabel();
             var checkLabel = GenerateLabel();
             var endLabel = GenerateLabel();
@@ -156,7 +156,7 @@ namespace Minsk.CodeAnalysis.Lowering
             //      {
             //          <body>
             //          <var> = <var> + 1
-            //      }   
+            //      }
             // }
 
             var variableDeclaration = new BoundVariableDeclaration(node.Variable, node.LowerBound);

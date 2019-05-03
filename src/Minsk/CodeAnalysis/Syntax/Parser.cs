@@ -103,7 +103,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
                 var statement = ParseStatement();
                 statements.Add(statement);
-                
+
                 // If ParseStatement() did not consume any tokens,
                 // we need to skip the current token and continue
                 // in order to avoid an infinite loop.

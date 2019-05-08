@@ -41,19 +41,29 @@ namespace Minsk.CodeAnalysis.Binding
                 previous = previous.Previous;
             }
 
-            BoundScope parent = null;
+            var parent = CreateRootScope();
 
             while (stack.Count > 0)
             {
                 previous = stack.Pop();
                 var scope = new BoundScope(parent);
                 foreach (var v in previous.Variables)
-                    scope.TryDeclare(v);
+                    scope.TryDeclareVariable(v);
 
                 parent = scope;
             }
 
             return parent;
+        }
+
+        private static BoundScope CreateRootScope()
+        {
+            var result = new BoundScope(null);
+
+            foreach (var f in BuiltinFunctions.GetAll())
+                result.TryDeclareFunction(f);
+
+            return result;
         }
 
         public DiagnosticBag Diagnostics => _diagnostics;
@@ -136,7 +146,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
         {
-            var expression = BindExpression(syntax.Expression);
+            var expression = BindExpression(syntax.Expression, canBeVoid: true);
             return new BoundExpressionStatement(expression);
         }
 
@@ -153,7 +163,19 @@ namespace Minsk.CodeAnalysis.Binding
             return result;
         }
 
-        private BoundExpression BindExpression(ExpressionSyntax syntax)
+        private BoundExpression BindExpression(ExpressionSyntax syntax, bool canBeVoid = false)
+        {
+            var result = BindExpressionInternal(syntax);
+            if (!canBeVoid && result.Type == TypeSymbol.Void)
+            {
+                _diagnostics.ReportExpressionMustHaveValue(syntax.Span);
+                return new BoundErrorExpression();
+            }
+
+            return result;
+        }
+
+        private BoundExpression BindExpressionInternal(ExpressionSyntax syntax)
         {
             switch (syntax.Kind)
             {
@@ -169,6 +191,8 @@ namespace Minsk.CodeAnalysis.Binding
                     return BindUnaryExpression((UnaryExpressionSyntax)syntax);
                 case SyntaxKind.BinaryExpression:
                     return BindBinaryExpression((BinaryExpressionSyntax)syntax);
+                case SyntaxKind.CallExpression:
+                    return BindCallExpression((CallExpressionSyntax)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.Kind}");
             }
@@ -195,7 +219,7 @@ namespace Minsk.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
-            if (!_scope.TryLookup(name, out var variable))
+            if (!_scope.TryLookupVariable(name, out var variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
                 return new BoundErrorExpression();
@@ -209,7 +233,7 @@ namespace Minsk.CodeAnalysis.Binding
             var name = syntax.IdentifierToken.Text;
             var boundExpression = BindExpression(syntax.Expression);
 
-            if (!_scope.TryLookup(name, out var variable))
+            if (!_scope.TryLookupVariable(name, out var variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
                 return boundExpression;
@@ -264,16 +288,84 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
         }
 
+        private BoundExpression BindCallExpression(CallExpressionSyntax syntax)
+        {
+            if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is TypeSymbol type)
+                return BindConversion(type, syntax.Arguments[0]);
+
+            var boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
+
+            foreach (var argument in syntax.Arguments)
+            {
+                var boundArgument = BindExpression(argument);
+                boundArguments.Add(boundArgument);
+            }
+
+            if (!_scope.TryLookupFunction(syntax.Identifier.Text, out var function))
+            {
+                _diagnostics.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                return new BoundErrorExpression();
+            }
+
+            if (syntax.Arguments.Count != function.Parameter.Length)
+            {
+                _diagnostics.ReportWrongArgumentCount(syntax.Span, function.Name, function.Parameter.Length, syntax.Arguments.Count);
+                return new BoundErrorExpression();
+            }
+
+            for (var i = 0; i < syntax.Arguments.Count; i++)
+            {
+                var argument = boundArguments[i];
+                var parameter = function.Parameter[i];
+
+                if (argument.Type != parameter.Type)
+                {
+                    _diagnostics.ReportWrongArgumentType(syntax.Span, parameter.Name, parameter.Type, argument.Type);
+                   return new BoundErrorExpression();
+                }
+            }
+
+            return new BoundCallExpression(function, boundArguments.ToImmutable());
+        }
+
+        private BoundExpression BindConversion(TypeSymbol type, ExpressionSyntax syntax)
+        {
+            var expression = BindExpression(syntax);
+            var conversion = Conversion.Classify(expression.Type, type);
+            if (!conversion.Exists)
+            {
+                _diagnostics.ReportCannotConvert(syntax.Span, expression.Type, type);
+                return new BoundErrorExpression();
+            }
+
+            return new BoundConversionExpression(type, expression);
+        }
+
         private VariableSymbol BindVariable(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
         {
             var name = identifier.Text ?? "?";
             var declare = !identifier.IsMissing;
             var variable = new VariableSymbol(name, isReadOnly, type);
 
-            if (declare && !_scope.TryDeclare(variable))
+            if (declare && !_scope.TryDeclareVariable(variable))
                 _diagnostics.ReportVariableAlreadyDeclared(identifier.Span, name);
 
             return variable;
+        }
+
+        private TypeSymbol LookupType(string name)
+        {
+            switch (name)
+            {
+                case "bool":
+                    return TypeSymbol.Bool;
+                case "int":
+                    return TypeSymbol.Int;
+                case "string":
+                    return TypeSymbol.String;
+                default:
+                    return null;
+            }
         }
     }
 }

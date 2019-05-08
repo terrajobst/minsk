@@ -30,6 +30,7 @@ namespace Minsk.CodeAnalysis.Syntax
         CloseParenthesisToken,
         OpenBraceToken,
         CloseBraceToken,
+        CommaToken,
         IdentifierToken,
 
         // Keywords
@@ -62,5 +63,6 @@ namespace Minsk.CodeAnalysis.Syntax
         BinaryExpression,
         ParenthesizedExpression,
         AssignmentExpression,
+        CallExpression,
     }
 }

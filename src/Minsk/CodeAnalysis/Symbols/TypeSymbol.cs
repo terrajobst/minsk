@@ -6,6 +6,7 @@ namespace Minsk.CodeAnalysis.Symbols
         public static readonly TypeSymbol Bool = new TypeSymbol("bool");
         public static readonly TypeSymbol Int = new TypeSymbol("int");
         public static readonly TypeSymbol String = new TypeSymbol("string");
+        public static readonly TypeSymbol Void = new TypeSymbol("void");
 
         private TypeSymbol(string name)
             : base(name)

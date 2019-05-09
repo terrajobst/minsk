@@ -108,7 +108,7 @@ namespace Minsk.CodeAnalysis.Lowering
         protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
         {
             // while <condition>
-            //      <bode>
+            //      <body>
             //
             // ----->
             //
@@ -145,7 +145,7 @@ namespace Minsk.CodeAnalysis.Lowering
         protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
         {
             // do
-            //      <bode>
+            //      <body>
             // while <condition>
             //
             // ----->

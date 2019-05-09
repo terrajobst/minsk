@@ -171,6 +171,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     return "var";
                 case SyntaxKind.WhileKeyword:
                     return "while";
+                case SyntaxKind.DoKeyword:
+                    return "do";
                 default:
                     return null;
             }

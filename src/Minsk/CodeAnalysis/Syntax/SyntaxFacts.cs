@@ -76,6 +76,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     return SyntaxKind.VarKeyword;
                 case "while":
                     return SyntaxKind.WhileKeyword;
+                case "do":
+                    return SyntaxKind.DoKeyword;
                 default:
                     return SyntaxKind.IdentifierToken;
             }

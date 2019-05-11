@@ -92,7 +92,7 @@ namespace Minsk.Tests.CodeAnalysis
             ";
 
             var diagnostics = @"
-                Variable 'x' is already declared.
+                'x' is already declared.
             ";
 
             AssertDiagnostics(text, diagnostics);

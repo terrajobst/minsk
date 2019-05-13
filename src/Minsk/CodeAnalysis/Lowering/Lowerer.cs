@@ -148,24 +148,17 @@ namespace Minsk.CodeAnalysis.Lowering
             //
             // continue:
             // <body>
-            // goto check
-            // check:
             // gotoTrue <condition> continue
             //
 
             var continueLabel = GenerateLabel();
-            var checkLabel = GenerateLabel();
 
             var continueLabelStatement = new BoundLabelStatement(continueLabel);
-            var gotoCheck = new BoundGotoStatement(checkLabel);
-            var checkLabelStatement = new BoundLabelStatement(checkLabel);
             var gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.Condition);
 
             var result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 continueLabelStatement,
                 node.Body,
-                gotoCheck,
-                checkLabelStatement,
                 gotoTrue
             ));
 

@@ -117,26 +117,22 @@ namespace Minsk.CodeAnalysis.Lowering
             // <body>
             // check:
             // gotoTrue <condition> continue
-            // end:
             //
 
             var continueLabel = GenerateLabel();
             var checkLabel = GenerateLabel();
-            var endLabel = GenerateLabel();
 
             var gotoCheck = new BoundGotoStatement(checkLabel);
             var continueLabelStatement = new BoundLabelStatement(continueLabel);
             var checkLabelStatement = new BoundLabelStatement(checkLabel);
             var gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.Condition);
-            var endLabelStatement = new BoundLabelStatement(endLabel);
 
             var result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 gotoCheck,
                 continueLabelStatement,
                 node.Body,
                 checkLabelStatement,
-                gotoTrue,
-                endLabelStatement
+                gotoTrue
             ));
 
             return RewriteStatement(result);
@@ -155,26 +151,22 @@ namespace Minsk.CodeAnalysis.Lowering
             // goto check
             // check:
             // gotoTrue <condition> continue
-            // end:
             //
 
             var continueLabel = GenerateLabel();
             var checkLabel = GenerateLabel();
-            var endLabel = GenerateLabel();
 
             var continueLabelStatement = new BoundLabelStatement(continueLabel);
             var gotoCheck = new BoundGotoStatement(checkLabel);
             var checkLabelStatement = new BoundLabelStatement(checkLabel);
             var gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.Condition);
-            var endLabelStatement = new BoundLabelStatement(endLabel);
 
             var result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 continueLabelStatement,
                 node.Body,
                 gotoCheck,
                 checkLabelStatement,
-                gotoTrue,
-                endLabelStatement
+                gotoTrue
             ));
 
             return RewriteStatement(result);

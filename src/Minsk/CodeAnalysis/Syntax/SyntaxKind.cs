@@ -30,6 +30,7 @@ namespace Minsk.CodeAnalysis.Syntax
         CloseParenthesisToken,
         OpenBraceToken,
         CloseBraceToken,
+        ColonToken,
         CommaToken,
         IdentifierToken,
 
@@ -37,6 +38,7 @@ namespace Minsk.CodeAnalysis.Syntax
         ElseKeyword,
         FalseKeyword,
         ForKeyword,
+        FunctionKeyword,
         IfKeyword,
         LetKeyword,
         ToKeyword,
@@ -47,6 +49,10 @@ namespace Minsk.CodeAnalysis.Syntax
 
         // Nodes
         CompilationUnit,
+        FunctionDeclaration,
+        GlobalStatement,
+        Parameter,
+        TypeClause,
         ElseClause,
 
         // Statements

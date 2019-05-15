@@ -75,9 +75,9 @@ namespace Minsk.CodeAnalysis
             Report(span, message);
         }
 
-        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        public void ReportSymbolAlreadyDeclared(TextSpan span, string name)
         {
-            var message = $"Variable '{name}' is already declared.";
+            var message = $"'{name}' is already declared.";
             Report(span, message);
         }
 

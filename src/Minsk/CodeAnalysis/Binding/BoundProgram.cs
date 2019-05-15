@@ -5,15 +5,15 @@ namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundProgram
     {
-        public BoundProgram(BoundGlobalScope globalScope, DiagnosticBag diagnostics, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies)
+        public BoundProgram(ImmutableArray<Diagnostic> diagnostics, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, BoundBlockStatement statement)
         {
-            GlobalScope = globalScope;
             Diagnostics = diagnostics;
-            FunctionBodies = functionBodies;
+            Functions = functions;
+            Statement = statement;
         }
 
-        public BoundGlobalScope GlobalScope { get; }
-        public DiagnosticBag Diagnostics { get; }
-        public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> FunctionBodies { get; }
+        public ImmutableArray<Diagnostic> Diagnostics { get; }
+        public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
+        public BoundBlockStatement Statement { get; }
     }
 }

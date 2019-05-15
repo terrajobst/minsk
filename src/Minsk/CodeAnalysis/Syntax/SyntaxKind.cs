@@ -38,6 +38,7 @@ namespace Minsk.CodeAnalysis.Syntax
         ElseKeyword,
         FalseKeyword,
         ForKeyword,
+        FunctionKeyword,
         IfKeyword,
         LetKeyword,
         ToKeyword,
@@ -48,8 +49,11 @@ namespace Minsk.CodeAnalysis.Syntax
 
         // Nodes
         CompilationUnit,
-        ElseClause,
+        FunctionDeclaration,
+        GlobalStatement,
+        Parameter,
         TypeClause,
+        ElseClause,
 
         // Statements
         BlockStatement,

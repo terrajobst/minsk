@@ -46,6 +46,8 @@ namespace Minsk.CodeAnalysis.Syntax
         VarKeyword,
         WhileKeyword,
         DoKeyword,
+        TryKeyword,
+        CatchKeyword,
 
         // Nodes
         CompilationUnit,
@@ -63,6 +65,7 @@ namespace Minsk.CodeAnalysis.Syntax
         DoWhileStatement,
         ForStatement,
         ExpressionStatement,
+        TryCatchStatement,
 
         // Expressions
         LiteralExpression,

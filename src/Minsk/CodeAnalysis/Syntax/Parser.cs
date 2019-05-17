@@ -165,6 +165,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     return ParseDoWhileStatement();
                 case SyntaxKind.ForKeyword:
                     return ParseForStatement();
+                case SyntaxKind.TryKeyword:
+                    return ParseTryCatchStatement();
                 default:
                     return ParseExpressionStatement();
             }
@@ -260,6 +262,15 @@ namespace Minsk.CodeAnalysis.Syntax
             var whileKeyword = MatchToken(SyntaxKind.WhileKeyword);
             var condition = ParseExpression();
             return new DoWhileStatementSyntax(doKeyword, body, whileKeyword, condition);
+        }
+
+        private StatementSyntax ParseTryCatchStatement()
+        {
+            var tryKeyword = MatchToken(SyntaxKind.TryKeyword);
+            var tryBody = ParseStatement();
+            var catchKeyword = MatchToken(SyntaxKind.CatchKeyword);
+            var catchBody = ParseStatement();
+            return new TryCatchStatementSyntax(tryKeyword, tryBody, catchKeyword, catchBody);
         }
 
         private StatementSyntax ParseForStatement()

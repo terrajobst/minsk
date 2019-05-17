@@ -116,6 +116,44 @@ namespace Minsk.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_InvokeFunctionArguments_NoInfiniteLoop()
+        {
+            var text = @"
+                print(""Hi""[[=]][)]
+            ";
+
+            var diagnostics = @"
+                Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
+                Unexpected token <EqualsToken>, expected <IdentifierToken>.
+                Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_FunctionParameters_NoInfiniteLoop()
+        {
+            var text = @"
+                function hi(name: string[[[=]]][)]
+                {
+                    print(""Hi "" + name + ""!"" )
+                }[]
+
+            ";
+
+            var diagnostics = @"
+                Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
+                Unexpected token <EqualsToken>, expected <OpenBraceToken>.
+                Unexpected token <EqualsToken>, expected <IdentifierToken>.
+                Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_IfStatement_Reports_CannotConvert()
         {
             var text = @"

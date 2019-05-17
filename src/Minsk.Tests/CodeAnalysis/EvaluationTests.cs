@@ -78,6 +78,14 @@ namespace Minsk.Tests.CodeAnalysis
             AssertValue(text, expectedValue);
         }
 
+        [Theory]
+        [InlineData("int(\"9999999999999999999999\")", typeof(OverflowException))]
+        [InlineData("int(\"abc\")", typeof(FormatException))]
+        public void Evaluator_Throws_Exception(string text, Type expectedInnerException)
+        {
+            AssertThrows(text, expectedInnerException);
+        }
+
         [Fact]
         public void Evaluator_VariableDeclaration_Reports_Redeclaration()
         {
@@ -326,6 +334,18 @@ namespace Minsk.Tests.CodeAnalysis
 
             Assert.Empty(result.Diagnostics);
             Assert.Equal(expectedValue, result.Value);
+        }
+
+        private static void AssertThrows(string text, Type expectedInnerException)
+        {
+            var syntaxTree = SyntaxTree.Parse(text);
+            var compilation = new Compilation(syntaxTree);
+            var variables = new Dictionary<VariableSymbol, object>();
+            var result = compilation.Evaluate(variables);
+
+            Assert.Empty(result.Diagnostics);
+            var exception = Assert.IsType<EvaluatorException>(result.Value);
+            Assert.IsType(expectedInnerException, exception.InnerException);
         }
 
         private void AssertDiagnostics(string text, string diagnosticText)

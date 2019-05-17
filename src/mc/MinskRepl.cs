@@ -109,7 +109,7 @@ namespace Minsk
             {
                 if (result.Value != null)
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = result.Value is EvaluatorException ? ConsoleColor.Red : ConsoleColor.White;
                     Console.WriteLine(result.Value);
                     Console.ResetColor();
                 }

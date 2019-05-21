@@ -50,7 +50,6 @@ namespace Minsk.CodeAnalysis.Syntax
         // Nodes
         CompilationUnit,
         FunctionDeclaration,
-        GlobalStatement,
         Parameter,
         TypeClause,
         ElseClause,

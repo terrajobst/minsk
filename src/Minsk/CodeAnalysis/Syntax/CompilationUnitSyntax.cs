@@ -4,14 +4,14 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed class CompilationUnitSyntax : SyntaxNode
     {
-        public CompilationUnitSyntax(ImmutableArray<MemberSyntax> members, SyntaxToken endOfFileToken)
+        public CompilationUnitSyntax(ImmutableArray<StatementSyntax> statements, SyntaxToken endOfFileToken)
         {
-            Members = members;
+            Statements = statements;
             EndOfFileToken = endOfFileToken;
         }
 
         public override SyntaxKind Kind => SyntaxKind.CompilationUnit;
-        public ImmutableArray<MemberSyntax> Members { get; }
+        public ImmutableArray<StatementSyntax> Statements { get; }
         public SyntaxToken EndOfFileToken { get; }
     }
 }

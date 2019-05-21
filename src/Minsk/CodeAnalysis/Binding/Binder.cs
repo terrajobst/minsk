@@ -33,15 +33,15 @@ namespace Minsk.CodeAnalysis.Binding
             var parentScope = CreateParentScope(previous);
             var binder = new Binder(parentScope, function: null);
 
-            foreach (var function in syntax.Members.OfType<FunctionDeclarationSyntax>())
+            foreach (var function in syntax.Statements.OfType<FunctionDeclarationSyntax>())
                 binder.BindFunctionDeclaration(function);
 
             var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
-            foreach (var globalStatement in syntax.Members.OfType<GlobalStatementSyntax>())
+            foreach (var statement in syntax.Statements)
             {
-                var statement = binder.BindStatement(globalStatement.Statement);
-                statements.Add(statement);
+                var boundStatement = binder.BindStatement(statement);
+                statements.Add(boundStatement);
             }
 
             var functions = binder._scope.GetDeclaredFunctions();
@@ -158,6 +158,9 @@ namespace Minsk.CodeAnalysis.Binding
         {
             switch (syntax.Kind)
             {
+                case SyntaxKind.FunctionDeclaration:
+                    // Function declaration is a no-op.
+                    return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
                 case SyntaxKind.BlockStatement:
                     return BindBlockStatement((BlockStatementSyntax)syntax);
                 case SyntaxKind.VariableDeclaration:

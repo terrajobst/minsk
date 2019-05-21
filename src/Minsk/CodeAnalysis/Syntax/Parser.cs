@@ -65,23 +65,23 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public CompilationUnitSyntax ParseCompilationUnit()
         {
-            var members = ParseMembers();
+            var statements = ParseStatements();
             var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new CompilationUnitSyntax(members, endOfFileToken);
+            return new CompilationUnitSyntax(statements, endOfFileToken);
         }
 
-        private ImmutableArray<MemberSyntax> ParseMembers()
+        private ImmutableArray<StatementSyntax> ParseStatements()
         {
-            var members = ImmutableArray.CreateBuilder<MemberSyntax>();
+            var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
 
             while (Current.Kind != SyntaxKind.EndOfFileToken)
             {
                 var startToken = Current;
 
-                var member = ParseMember();
-                members.Add(member);
+                var statement = ParseStatement();
+                statements.Add(statement);
 
-                // If ParseMember() did not consume any tokens,
+                // If ParseStatement() did not consume any tokens,
                 // we need to skip the current token and continue
                 // in order to avoid an infinite loop.
                 //
@@ -92,18 +92,10 @@ namespace Minsk.CodeAnalysis.Syntax
                     NextToken();
             }
 
-            return members.ToImmutable();
+            return statements.ToImmutable();
         }
 
-        private MemberSyntax ParseMember()
-        {
-            if (Current.Kind == SyntaxKind.FunctionKeyword)
-                return ParseFunctionDeclaration();
-
-            return ParseGlobalStatement();
-        }
-
-        private MemberSyntax ParseFunctionDeclaration()
+        private FunctionDeclarationSyntax ParseFunctionDeclaration()
         {
             var functionKeyword = MatchToken(SyntaxKind.FunctionKeyword);
             var identifier = MatchToken(SyntaxKind.IdentifierToken);
@@ -142,16 +134,12 @@ namespace Minsk.CodeAnalysis.Syntax
             return new ParameterSyntax(identifier, type);
         }
 
-        private MemberSyntax ParseGlobalStatement()
-        {
-            var statement = ParseStatement();
-            return new GlobalStatementSyntax(statement);
-        }
-
         private StatementSyntax ParseStatement()
         {
             switch (Current.Kind)
             {
+                case SyntaxKind.FunctionKeyword:
+                    return ParseFunctionDeclaration();
                 case SyntaxKind.OpenBraceToken:
                     return ParseBlockStatement();
                 case SyntaxKind.LetKeyword:

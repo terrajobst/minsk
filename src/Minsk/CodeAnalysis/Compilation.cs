@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using Minsk.CodeAnalysis.Binding;
-using Minsk.CodeAnalysis.Lowering;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 
@@ -14,16 +12,18 @@ namespace Minsk.CodeAnalysis
     public sealed class Compilation
     {
         private BoundGlobalScope _globalScope;
+        private readonly CompilationOptions _options;
 
-        public Compilation(SyntaxTree syntaxTree)
-            : this(null, syntaxTree)
+        public Compilation(SyntaxTree syntaxTree, CompilationOptions options)
+            : this(null, syntaxTree, options)
         {
         }
 
-        private Compilation(Compilation previous, SyntaxTree syntaxTree)
+        private Compilation(Compilation previous, SyntaxTree syntaxTree, CompilationOptions options)
         {
             Previous = previous;
             SyntaxTree = syntaxTree;
+            _options = options;
         }
 
         public Compilation Previous { get; }
@@ -35,7 +35,7 @@ namespace Minsk.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree.Root);
+                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree.Root, _options);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
@@ -45,7 +45,7 @@ namespace Minsk.CodeAnalysis
 
         public Compilation ContinueWith(SyntaxTree syntaxTree)
         {
-            return new Compilation(this, syntaxTree);
+            return new Compilation(this, syntaxTree, _options);
         }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)

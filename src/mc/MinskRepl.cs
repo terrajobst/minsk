@@ -94,7 +94,7 @@ namespace Minsk
             var syntaxTree = SyntaxTree.Parse(text);
 
             var compilation = _previous == null
-                                ? new Compilation(syntaxTree)
+                                ? new Compilation(syntaxTree, new CompilationOptions(SourceCodeKind.Script))
                                 : _previous.ContinueWith(syntaxTree);
 
             if (_showTree)

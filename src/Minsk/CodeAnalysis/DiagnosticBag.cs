@@ -134,5 +134,11 @@ namespace Minsk.CodeAnalysis
             var message = "Functions with return values are unsupported.";
             Report(span, message);
         }
+
+        public void XXX_ReportLocalFunctionsAreOnlySupportedInScriptMode(TextSpan span)
+        {
+            var message = "Local functions are only supported in scripting scenarios (not during compilation).";
+            Report(span, message);
+        }
     }
 }

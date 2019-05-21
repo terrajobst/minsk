@@ -13,18 +13,22 @@ namespace Minsk.CodeAnalysis.Binding
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly List<(FunctionSymbol function, BoundBlockStatement body)> _functionBodies = new List<(FunctionSymbol function, BoundBlockStatement body)>();
+        private readonly CompilationOptions _options;
 
         private BoundScope _scope;
+        private FunctionSymbol _currentFunction;
 
-        public Binder(BoundScope parent)
+        public Binder(BoundScope parent, CompilationOptions options)
         {
             _scope = new BoundScope(parent);
+            _currentFunction = null;
+            _options = options;
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax, CompilationOptions options)
         {
             var parentScope = previous == null ? CreateRootScope() : previous.Scope;
-            var binder = new Binder(parentScope);
+            var binder = new Binder(parentScope, options);
 
             var statements = binder.BindStatements(syntax.Statements);
 
@@ -87,16 +91,22 @@ namespace Minsk.CodeAnalysis.Binding
 
         private BoundStatement BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
         {
+            if (_currentFunction != null && _options.SourceCodeKind != SourceCodeKind.Script)
+                _diagnostics.XXX_ReportLocalFunctionsAreOnlySupportedInScriptMode(syntax.Identifier.Span);
+
             var result = _scope.TryLookupFunction(syntax.Identifier.Text, out var function);
             Debug.Assert(result);
 
+            var originalFunction = function;
             _scope = new BoundScope(_scope);
+            _currentFunction = function;
 
             foreach (var p in function.Parameters)
                 _scope.TryDeclareVariable(p);
 
             var body = BindBlockStatement(function.Declaration.Body);
 
+            _currentFunction = originalFunction;
             _scope = _scope.Parent;
 
             _functionBodies.Add((function, body));

@@ -320,7 +320,7 @@ namespace Minsk.Tests.CodeAnalysis
         private static void AssertValue(string text, object expectedValue)
         {
             var syntaxTree = SyntaxTree.Parse(text);
-            var compilation = new Compilation(syntaxTree);
+            var compilation = new Compilation(syntaxTree, new CompilationOptions(SourceCodeKind.Script));
             var variables = new Dictionary<VariableSymbol, object>();
             var result = compilation.Evaluate(variables);
 
@@ -332,7 +332,7 @@ namespace Minsk.Tests.CodeAnalysis
         {
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
-            var compilation = new Compilation(syntaxTree);
+            var compilation = new Compilation(syntaxTree, new CompilationOptions(SourceCodeKind.Script));
             var result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
 
             var expectedDiagnostics = AnnotatedText.UnindentLines(diagnosticText);

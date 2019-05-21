@@ -125,8 +125,23 @@ namespace Minsk.CodeAnalysis
             }
             else
             {
-                var locals = _locals.Peek();
-                return locals[v.Variable];
+                foreach (var local in _locals)
+                {
+                    if (local.TryGetValue(v.Variable, out var value))
+                        return value;
+                }
+
+                // Variable was used after its declaration (syntactically) but before it was initialized. For example:
+                //     function foo() {
+                //         bar()
+                //         let v = 1
+                //         function bar() {
+                //             print(string(v))
+                //         }
+                //     }
+                //     foo()
+                // It would require flow analysis to prevent this from compiling.
+                throw new Exception("Variable not found.");
             }
         }
 

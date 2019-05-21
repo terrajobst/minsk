@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 
@@ -9,7 +8,6 @@ namespace Minsk.CodeAnalysis
     internal sealed class Evaluator
     {
         private readonly LoweredProgram _program;
-        private readonly Dictionary<VariableSymbol, object> _globals;
         private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new Stack<Dictionary<VariableSymbol, object>>();
         private Random _random;
 
@@ -18,8 +16,7 @@ namespace Minsk.CodeAnalysis
         public Evaluator(LoweredProgram program, Dictionary<VariableSymbol, object> variables)
         {
             _program = program;
-            _globals = variables;
-            _locals.Push(new Dictionary<VariableSymbol, object>());
+            _locals.Push(variables);
         }
 
         public object Evaluate()
@@ -119,30 +116,23 @@ namespace Minsk.CodeAnalysis
 
         private object EvaluateVariableExpression(BoundVariableExpression v)
         {
-            if (v.Variable.Kind == SymbolKind.GlobalVariable)
+            foreach (var local in _locals)
             {
-                return _globals[v.Variable];
+                if (local.TryGetValue(v.Variable, out var value))
+                    return value;
             }
-            else
-            {
-                foreach (var local in _locals)
-                {
-                    if (local.TryGetValue(v.Variable, out var value))
-                        return value;
-                }
 
-                // Variable was used after its declaration (syntactically) but before it was initialized. For example:
-                //     function foo() {
-                //         bar()
-                //         let v = 1
-                //         function bar() {
-                //             print(string(v))
-                //         }
-                //     }
-                //     foo()
-                // It would require flow analysis to prevent this from compiling.
-                throw new Exception("Variable not found.");
-            }
+            // Variable was used after its declaration (syntactically) but before it was initialized. For example:
+            //     function foo() {
+            //         bar()
+            //         let v = 1
+            //         function bar() {
+            //             print(string(v))
+            //         }
+            //     }
+            //     foo()
+            // It would require flow analysis to prevent this from compiling.
+            throw new Exception("Variable not found.");
         }
 
         private object EvaluateAssignmentExpression(BoundAssignmentExpression a)
@@ -281,15 +271,8 @@ namespace Minsk.CodeAnalysis
 
         private void Assign(VariableSymbol variable, object value)
         {
-            if (variable.Kind == SymbolKind.GlobalVariable)
-            {
-                _globals[variable] = value;
-            }
-            else
-            {
-                var locals = _locals.Peek();
-                locals[variable] = value;
-            }
+            var locals = _locals.Peek();
+            locals[variable] = value;
         }
     }
 }

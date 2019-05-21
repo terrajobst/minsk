@@ -122,9 +122,7 @@ namespace Minsk.CodeAnalysis.Syntax
             var parseNextParameter = true;
             while (parseNextParameter &&
                    Current.Kind != SyntaxKind.CloseParenthesisToken &&
-                   Current.Kind != SyntaxKind.EndOfFileToken
-                   
-                   )
+                   Current.Kind != SyntaxKind.EndOfFileToken)
             {
                 var parameter = ParseParameter();
                 nodesAndSeparators.Add(parameter);

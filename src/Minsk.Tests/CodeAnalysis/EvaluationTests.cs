@@ -139,7 +139,6 @@ namespace Minsk.Tests.CodeAnalysis
                 {
                     print(""Hi "" + name + ""!"" )
                 }[]
-
             ";
 
             var diagnostics = @"

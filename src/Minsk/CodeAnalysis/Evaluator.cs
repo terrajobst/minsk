@@ -8,14 +8,14 @@ namespace Minsk.CodeAnalysis
 {
     internal sealed class Evaluator
     {
-        private readonly BoundProgram _program;
+        private readonly LoweredProgram _program;
         private readonly Dictionary<VariableSymbol, object> _globals;
         private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new Stack<Dictionary<VariableSymbol, object>>();
         private Random _random;
 
         private object _lastValue;
 
-        public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
+        public Evaluator(LoweredProgram program, Dictionary<VariableSymbol, object> variables)
         {
             _program = program;
             _globals = variables;

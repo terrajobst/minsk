@@ -5,8 +5,9 @@ namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundGlobalScope
     {
-        public BoundGlobalScope(BoundGlobalScope previous, ImmutableArray<Diagnostic> diagnostics, ImmutableArray<FunctionSymbol> functions, ImmutableArray<VariableSymbol> variables, ImmutableArray<BoundStatement> statements)
+        public BoundGlobalScope(ImmutableArray<(FunctionSymbol function, BoundBlockStatement body)> functionBodies, BoundGlobalScope previous, ImmutableArray<Diagnostic> diagnostics, ImmutableArray<FunctionSymbol> functions, ImmutableArray<VariableSymbol> variables, ImmutableArray<BoundStatement> statements)
         {
+            FunctionBodies = functionBodies;
             Previous = previous;
             Diagnostics = diagnostics;
             Functions = functions;
@@ -14,6 +15,7 @@ namespace Minsk.CodeAnalysis.Binding
             Statements = statements;
         }
 
+        public ImmutableArray<(FunctionSymbol function, BoundBlockStatement body)> FunctionBodies { get; }
         public BoundGlobalScope Previous { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
         public ImmutableArray<FunctionSymbol> Functions { get; }

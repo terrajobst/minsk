@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+using System.Diagnostics;
 using Minsk.CodeAnalysis.Lowering;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
@@ -12,6 +12,7 @@ namespace Minsk.CodeAnalysis.Binding
     internal sealed class Binder
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private readonly List<(FunctionSymbol function, BoundBlockStatement body)> _functionBodies = new List<(FunctionSymbol function, BoundBlockStatement body)>();
         private readonly FunctionSymbol _function;
 
         private BoundScope _scope;
@@ -33,16 +34,7 @@ namespace Minsk.CodeAnalysis.Binding
             var parentScope = CreateParentScope(previous);
             var binder = new Binder(parentScope, function: null);
 
-            foreach (var function in syntax.Statements.OfType<FunctionDeclarationSyntax>())
-                binder.BindFunctionDeclaration(function);
-
-            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
-
-            foreach (var statement in syntax.Statements)
-            {
-                var boundStatement = binder.BindStatement(statement);
-                statements.Add(boundStatement);
-            }
+            var statements = binder.BindStatements(syntax.Statements);
 
             var functions = binder._scope.GetDeclaredFunctions();
             var variables = binder._scope.GetDeclaredVariables();
@@ -51,39 +43,23 @@ namespace Minsk.CodeAnalysis.Binding
             if (previous != null)
                 diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
 
-            return new BoundGlobalScope(previous, diagnostics, functions, variables, statements.ToImmutable());
+            var functionBodies = previous == null ? binder._functionBodies.ToImmutableArray() : previous.FunctionBodies.AddRange(binder._functionBodies);
+            return new BoundGlobalScope(functionBodies, previous, diagnostics, functions, variables, statements);
         }
 
-        public static BoundProgram BindProgram(BoundGlobalScope globalScope)
+        public static LoweredProgram LowerProgram(BoundGlobalScope globalScope)
         {
-            var parentScope = CreateParentScope(globalScope);
+            var loweredFunctionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
 
-            var functionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
-            var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
+            foreach (var (function, body) in globalScope.FunctionBodies)
+                loweredFunctionBodies.Add(function, Lowerer.Lower(body));
 
-            var scope = globalScope;
+            var loweredStatement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
 
-            while (scope != null)
-            {
-                foreach (var function in scope.Functions)
-                {
-                    var binder = new Binder(parentScope, function);
-                    var body = binder.BindStatement(function.Declaration.Body);
-                    var loweredBody = Lowerer.Lower(body);
-                    functionBodies.Add(function, loweredBody);
-
-                    diagnostics.AddRange(binder.Diagnostics);
-                }
-
-                scope = scope.Previous;
-            }
-
-            var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
-
-            return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), statement);
+            return new LoweredProgram(globalScope.Diagnostics, loweredFunctionBodies.ToImmutable(), loweredStatement);
         }
 
-        private void BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
+        private FunctionSymbol DeclareFunction(FunctionDeclarationSyntax syntax)
         {
             var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
 
@@ -112,6 +88,25 @@ namespace Minsk.CodeAnalysis.Binding
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
             if (!_scope.TryDeclareFunction(function))
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
+
+            return function;
+        }
+
+        private BoundStatement BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
+        {
+            var result = _scope.TryLookupFunction(syntax.Identifier.Text, out var function);
+            Debug.Assert(result);
+
+            var binder = new Binder(_scope, function);
+
+            var body = binder.BindBlockStatement(function.Declaration.Body);
+            _functionBodies.Add((function, body));
+
+            _diagnostics.AddRange(binder.Diagnostics);
+            _functionBodies.AddRange(binder._functionBodies);
+
+            // Function declaration is a no-op.
+            return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
         }
 
         private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -159,8 +154,7 @@ namespace Minsk.CodeAnalysis.Binding
             switch (syntax.Kind)
             {
                 case SyntaxKind.FunctionDeclaration:
-                    // Function declaration is a no-op.
-                    return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
+                    return BindFunctionDeclaration((FunctionDeclarationSyntax)syntax);
                 case SyntaxKind.BlockStatement:
                     return BindBlockStatement((BlockStatementSyntax)syntax);
                 case SyntaxKind.VariableDeclaration:
@@ -180,20 +174,33 @@ namespace Minsk.CodeAnalysis.Binding
             }
         }
 
-        private BoundStatement BindBlockStatement(BlockStatementSyntax syntax)
+        private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
         {
-            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
             _scope = new BoundScope(_scope);
 
-            foreach (var statementSyntax in syntax.Statements)
+            var statements = BindStatements(syntax.Statements);
+
+            _scope = _scope.Parent;
+
+            return new BoundBlockStatement(statements);
+        }
+
+        private ImmutableArray<BoundStatement> BindStatements(ImmutableArray<StatementSyntax> syntax)
+        {
+            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+
+            foreach (var functionDeclarationSyntax in syntax.OfType<FunctionDeclarationSyntax>())
+            {
+                DeclareFunction(functionDeclarationSyntax);
+            }
+
+            foreach (var statementSyntax in syntax)
             {
                 var statement = BindStatement(statementSyntax);
                 statements.Add(statement);
             }
 
-            _scope = _scope.Parent;
-
-            return new BoundBlockStatement(statements.ToImmutable());
+            return statements.ToImmutable();
         }
 
         private BoundStatement BindVariableDeclaration(VariableDeclarationSyntax syntax)

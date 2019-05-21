@@ -54,7 +54,7 @@ namespace Minsk.CodeAnalysis
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            var program = Binder.BindProgram(GlobalScope);
+            var program = Binder.LowerProgram(GlobalScope);
             if (program.Diagnostics.Any())
                 return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
 
@@ -65,7 +65,7 @@ namespace Minsk.CodeAnalysis
 
         public void EmitTree(TextWriter writer)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = Binder.LowerProgram(GlobalScope);
             program.Statement.WriteTo(writer);
         }
     }

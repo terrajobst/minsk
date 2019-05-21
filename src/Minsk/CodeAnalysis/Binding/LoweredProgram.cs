@@ -3,9 +3,9 @@ using Minsk.CodeAnalysis.Symbols;
 
 namespace Minsk.CodeAnalysis.Binding
 {
-    internal sealed class BoundProgram
+    internal sealed class LoweredProgram
     {
-        public BoundProgram(ImmutableArray<Diagnostic> diagnostics, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, BoundBlockStatement statement)
+        public LoweredProgram(ImmutableArray<Diagnostic> diagnostics, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, BoundBlockStatement statement)
         {
             Diagnostics = diagnostics;
             Functions = functions;

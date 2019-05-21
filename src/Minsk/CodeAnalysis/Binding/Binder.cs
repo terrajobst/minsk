@@ -13,14 +13,12 @@ namespace Minsk.CodeAnalysis.Binding
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly List<(FunctionSymbol function, BoundBlockStatement body)> _functionBodies = new List<(FunctionSymbol function, BoundBlockStatement body)>();
-        private readonly FunctionSymbol _function;
 
         private BoundScope _scope;
 
         public Binder(BoundScope parent, FunctionSymbol function)
         {
             _scope = new BoundScope(parent);
-            _function = function;
 
             if (function != null)
             {
@@ -31,20 +29,21 @@ namespace Minsk.CodeAnalysis.Binding
 
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
         {
-            var parentScope = CreateParentScope(previous);
+            var parentScope = previous == null ? CreateRootScope() : previous.Scope;
             var binder = new Binder(parentScope, function: null);
 
             var statements = binder.BindStatements(syntax.Statements);
 
-            var functions = binder._scope.GetDeclaredFunctions();
-            var variables = binder._scope.GetDeclaredVariables();
             var diagnostics = binder.Diagnostics.ToImmutableArray();
+            var functionBodies = binder._functionBodies.ToImmutableArray();
 
             if (previous != null)
+            {
                 diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
+                functionBodies = functionBodies.InsertRange(0, previous.FunctionBodies);
+            }
 
-            var functionBodies = previous == null ? binder._functionBodies.ToImmutableArray() : previous.FunctionBodies.AddRange(binder._functionBodies);
-            return new BoundGlobalScope(functionBodies, previous, diagnostics, functions, variables, statements);
+            return new BoundGlobalScope(binder._scope, functionBodies, diagnostics, statements);
         }
 
         public static LoweredProgram LowerProgram(BoundGlobalScope globalScope)
@@ -107,34 +106,6 @@ namespace Minsk.CodeAnalysis.Binding
 
             // Function declaration is a no-op.
             return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
-        }
-
-        private static BoundScope CreateParentScope(BoundGlobalScope previous)
-        {
-            var stack = new Stack<BoundGlobalScope>();
-            while (previous != null)
-            {
-                stack.Push(previous);
-                previous = previous.Previous;
-            }
-
-            var parent = CreateRootScope();
-
-            while (stack.Count > 0)
-            {
-                previous = stack.Pop();
-                var scope = new BoundScope(parent);
-
-                foreach (var f in previous.Functions)
-                    scope.TryDeclareFunction(f);
-
-                foreach (var v in previous.Variables)
-                    scope.TryDeclareVariable(v);
-
-                parent = scope;
-            }
-
-            return parent;
         }
 
         private static BoundScope CreateRootScope()

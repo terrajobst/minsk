@@ -16,21 +16,15 @@ namespace Minsk.CodeAnalysis.Binding
 
         private BoundScope _scope;
 
-        public Binder(BoundScope parent, FunctionSymbol function)
+        public Binder(BoundScope parent)
         {
             _scope = new BoundScope(parent);
-
-            if (function != null)
-            {
-                foreach (var p in function.Parameters)
-                    _scope.TryDeclareVariable(p);
-            }
         }
 
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
         {
             var parentScope = previous == null ? CreateRootScope() : previous.Scope;
-            var binder = new Binder(parentScope, function: null);
+            var binder = new Binder(parentScope);
 
             var statements = binder.BindStatements(syntax.Statements);
 
@@ -96,13 +90,16 @@ namespace Minsk.CodeAnalysis.Binding
             var result = _scope.TryLookupFunction(syntax.Identifier.Text, out var function);
             Debug.Assert(result);
 
-            var binder = new Binder(_scope, function);
+            _scope = new BoundScope(_scope);
 
-            var body = binder.BindBlockStatement(function.Declaration.Body);
+            foreach (var p in function.Parameters)
+                _scope.TryDeclareVariable(p);
+
+            var body = BindBlockStatement(function.Declaration.Body);
+
+            _scope = _scope.Parent;
+
             _functionBodies.Add((function, body));
-
-            _diagnostics.AddRange(binder.Diagnostics);
-            _functionBodies.AddRange(binder._functionBodies);
 
             // Function declaration is a no-op.
             return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);

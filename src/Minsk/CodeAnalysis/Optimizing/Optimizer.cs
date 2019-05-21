@@ -42,6 +42,24 @@ namespace Minsk.CodeAnalysis.Optimizing
             return new BoundIfStatement(condition, thenStatement, elseStatement);
         }
 
+        protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
+        {
+            var condition = RewriteExpression(node.Condition);
+
+            if (condition.Kind == BoundNodeKind.LiteralExpression)
+            {
+                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
+                if (!evaluatedCondition)
+                    return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
+            }
+
+            var body = RewriteStatement(node.Body);
+            if (condition == node.Condition && body == node.Body)
+                return node;
+
+            return new BoundWhileStatement(condition, body);
+        }
+
         protected override BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)
         {
             var operand = RewriteExpression(node.Operand);

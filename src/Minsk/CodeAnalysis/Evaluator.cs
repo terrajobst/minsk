@@ -89,7 +89,7 @@ namespace Minsk.CodeAnalysis
             _lastValue = EvaluateExpression(node.Expression);
         }
 
-        private object EvaluateExpression(BoundExpression node)
+        public object EvaluateExpression(BoundExpression node)
         {
             switch (node.Kind)
             {

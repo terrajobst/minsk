@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Minsk.CodeAnalysis.Lowering;
+using Minsk.CodeAnalysis.Optimizing;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
@@ -69,7 +70,8 @@ namespace Minsk.CodeAnalysis.Binding
                 {
                     var binder = new Binder(parentScope, function);
                     var body = binder.BindStatement(function.Declaration.Body);
-                    var loweredBody = Lowerer.Lower(body);
+                    var optimizedBody = Optimizer.Optimize(body);
+                    var loweredBody = Lowerer.Lower(optimizedBody);
                     functionBodies.Add(function, loweredBody);
 
                     diagnostics.AddRange(binder.Diagnostics);
@@ -78,9 +80,9 @@ namespace Minsk.CodeAnalysis.Binding
                 scope = scope.Previous;
             }
 
-            var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
-
-            return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), statement);
+            var optimized = Optimizer.Optimize(new BoundBlockStatement(globalScope.Statements));
+            var lowered = Lowerer.Lower(optimized);
+            return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), lowered);
         }
 
         private void BindFunctionDeclaration(FunctionDeclarationSyntax syntax)

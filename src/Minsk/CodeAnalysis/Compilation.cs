@@ -6,6 +6,7 @@ using System.Threading;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
+using Minsk.Utilities;
 
 namespace Minsk.CodeAnalysis
 {
@@ -66,7 +67,23 @@ namespace Minsk.CodeAnalysis
         public void EmitTree(TextWriter writer)
         {
             var program = Binder.LowerProgram(GlobalScope);
-            program.Statement.WriteTo(writer);
+
+            if (program.Statement.Statements.Any())
+            {
+                program.Statement.WriteTo(writer);
+            }
+
+            foreach (var (function, body) in program.Functions)
+            {
+                if (GlobalScope.Previous != null &&
+                    GlobalScope.Previous.FunctionBodies.Any(functionBody => functionBody.function == function))
+                {
+                    continue;
+                }
+
+                function.WriteTo(writer);
+                body.WriteTo(writer);
+            }
         }
     }
 }

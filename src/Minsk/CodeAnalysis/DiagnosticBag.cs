@@ -129,6 +129,12 @@ namespace Minsk.CodeAnalysis
             Report(span, message);
         }
 
+        public void ReportInvalidBreakOrContinue(TextSpan span, string text)
+        {
+            var message = $"The keyword '{text}' can only be used inside of loops.";
+            Report(span, message);
+        }
+
         public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
         {
             var message = "Functions with return values are unsupported.";

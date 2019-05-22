@@ -35,6 +35,8 @@ namespace Minsk.CodeAnalysis.Syntax
         IdentifierToken,
 
         // Keywords
+        BreakKeyword,
+        ContinueKeyword,
         ElseKeyword,
         FalseKeyword,
         ForKeyword,
@@ -61,6 +63,8 @@ namespace Minsk.CodeAnalysis.Syntax
         WhileStatement,
         DoWhileStatement,
         ForStatement,
+        BreakStatement,
+        ContinueStatement,
         ExpressionStatement,
 
         // Expressions

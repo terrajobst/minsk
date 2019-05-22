@@ -58,6 +58,10 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             switch (text)
             {
+                case "break":
+                    return SyntaxKind.BreakKeyword;
+                case "continue":
+                    return SyntaxKind.ContinueKeyword;
                 case "else":
                     return SyntaxKind.ElseKeyword;
                 case "false":
@@ -157,6 +161,10 @@ namespace Minsk.CodeAnalysis.Syntax
                     return ":";
                 case SyntaxKind.CommaToken:
                     return ",";
+                case SyntaxKind.BreakKeyword:
+                    return "break";
+                case SyntaxKind.ContinueKeyword:
+                    return "continue";
                 case SyntaxKind.ElseKeyword:
                     return "else";
                 case SyntaxKind.FalseKeyword:

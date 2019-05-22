@@ -1,3 +1,3 @@
 @echo off
 
-dotnet run --project .\src\mc\mc.csproj
+dotnet run --project .\src\mi\mi.csproj

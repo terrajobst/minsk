@@ -13,22 +13,29 @@ namespace Minsk.CodeAnalysis.Binding
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly List<(FunctionSymbol function, BoundBlockStatement body)> _functionBodies = new List<(FunctionSymbol function, BoundBlockStatement body)>();
+        private readonly FunctionSymbol _function;
         private readonly CompilationOptions _options;
 
         private BoundScope _scope;
-        private FunctionSymbol _currentFunction;
 
-        public Binder(BoundScope parent, CompilationOptions options)
+        public Binder(BoundScope parent, FunctionSymbol function, CompilationOptions options)
         {
-            _scope = new BoundScope(parent);
-            _currentFunction = null;
+            _function = function;
             _options = options;
+
+            _scope = new BoundScope(parent);
+
+            if (function != null)
+            {
+                foreach (var p in function.Parameters)
+                    _scope.TryDeclareVariable(p);
+            }
         }
 
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax, CompilationOptions options)
         {
             var parentScope = previous == null ? CreateRootScope() : previous.Scope;
-            var binder = new Binder(parentScope, options);
+            var binder = new Binder(parentScope, function: null, options);
 
             var statements = binder.BindStatements(syntax.Statements);
 
@@ -91,25 +98,19 @@ namespace Minsk.CodeAnalysis.Binding
 
         private BoundStatement BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
         {
-            if (_currentFunction != null && _options.SourceCodeKind != SourceCodeKind.Script)
+            if (_function != null && _options.SourceCodeKind != SourceCodeKind.Script)
                 _diagnostics.XXX_ReportLocalFunctionsAreOnlySupportedInScriptMode(syntax.Identifier.Span);
 
             var result = _scope.TryLookupFunction(syntax.Identifier.Text, out var function);
             Debug.Assert(result);
 
-            var originalFunction = function;
-            _scope = new BoundScope(_scope);
-            _currentFunction = function;
+            var binder = new Binder(_scope, function, _options);
 
-            foreach (var p in function.Parameters)
-                _scope.TryDeclareVariable(p);
-
-            var body = BindBlockStatement(function.Declaration.Body);
-
-            _currentFunction = originalFunction;
-            _scope = _scope.Parent;
-
+            var body = binder.BindBlockStatement(function.Declaration.Body);
             _functionBodies.Add((function, body));
+
+            _diagnostics.AddRange(binder.Diagnostics);
+            _functionBodies.AddRange(binder._functionBodies);
 
             // Function declaration is a no-op.
             return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);

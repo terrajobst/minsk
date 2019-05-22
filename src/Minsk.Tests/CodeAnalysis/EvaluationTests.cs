@@ -63,6 +63,8 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("!true", false)]
         [InlineData("!false", true)]
         [InlineData("var a = 10", 10)]
+        [InlineData("\"test\"", "test")]
+        [InlineData("\"te\"\"st\"", "te\"st")]
         [InlineData("{ var a = 10 (a * a) }", 100)]
         [InlineData("{ var a = 0 (a = 10) * a }", 100)]
         [InlineData("{ var a = 0 if a == 0 a = 10 a }", 10)]

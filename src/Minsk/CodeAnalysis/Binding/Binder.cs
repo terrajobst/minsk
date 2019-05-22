@@ -169,9 +169,7 @@ namespace Minsk.CodeAnalysis.Binding
             var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
             foreach (var functionDeclarationSyntax in syntax.OfType<FunctionDeclarationSyntax>())
-            {
                 DeclareFunction(functionDeclarationSyntax);
-            }
 
             foreach (var statementSyntax in syntax)
             {

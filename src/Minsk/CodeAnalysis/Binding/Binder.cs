@@ -239,15 +239,15 @@ namespace Minsk.CodeAnalysis.Binding
         private BoundStatement BindWhileStatement(WhileStatementSyntax syntax)
         {
             var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
-            var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
-            return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
+            var body = BindLoopBody(syntax.Body, out var bodyLabel, out var breakLabel, out var continueLabel);
+            return new BoundWhileStatement(condition, body, bodyLabel, breakLabel, continueLabel);
         }
 
         private BoundStatement BindDoWhileStatement(DoWhileStatementSyntax syntax)
         {
-            var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
+            var body = BindLoopBody(syntax.Body, out var bodyLabel, out var breakLabel, out var continueLabel);
             var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
-            return new BoundDoWhileStatement(body, condition, breakLabel, continueLabel);
+            return new BoundDoWhileStatement(body, condition, bodyLabel, breakLabel, continueLabel);
         }
 
         private BoundStatement BindForStatement(ForStatementSyntax syntax)
@@ -258,16 +258,17 @@ namespace Minsk.CodeAnalysis.Binding
             _scope = new BoundScope(_scope);
 
             var variable = BindVariable(syntax.Identifier, isReadOnly: true, TypeSymbol.Int);
-            var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
+            var body = BindLoopBody(syntax.Body, out var bodyLabel, out var breakLabel, out var continueLabel);
 
             _scope = _scope.Parent;
 
-            return new BoundForStatement(variable, lowerBound, upperBound, body, breakLabel, continueLabel);
+            return new BoundForStatement(variable, lowerBound, upperBound, body, bodyLabel, breakLabel, continueLabel);
         }
 
-        private BoundStatement BindLoopBody(StatementSyntax body, out BoundLabel breakLabel, out BoundLabel continueLabel)
+        private BoundStatement BindLoopBody(StatementSyntax body, out BoundLabel bodyLabel, out BoundLabel breakLabel, out BoundLabel continueLabel)
         {
             _labelCounter++;
+            bodyLabel = new BoundLabel($"body{_labelCounter}");
             breakLabel = new BoundLabel($"break{_labelCounter}");
             continueLabel = new BoundLabel($"continue{_labelCounter}");
 

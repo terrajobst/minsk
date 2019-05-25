@@ -1,7 +1,9 @@
 # Episode 11
 
 [Video](https://www.youtube.com/watch?v=98AI4XJA7Xk&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=11) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/50)
+[Pull Request](https://github.com/terrajobst/minsk/pull/50) |
+[Previous](episode-10.md) |
+[Next](episode-12.md)
 
 ## Completed items
 

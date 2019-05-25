@@ -1,7 +1,9 @@
 # Episode 4
 
-[Video](https://www.youtube.com/watch?v=xF-8rWeqV1A) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/9)
+[Video](https://www.youtube.com/watch?v=xF-8rWeqV1A&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=4) |
+[Pull Request](https://github.com/terrajobst/minsk/pull/9) |
+[Previous](episode-03.md) |
+[Next](episode-05.md)
 
 ## Completed items
 

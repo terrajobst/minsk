@@ -1,7 +1,9 @@
 # Episode 13
 
 [Video](https://www.youtube.com/watch?v=NvVc8erZpeI&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=13) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/61)
+[Pull Request](https://github.com/terrajobst/minsk/pull/61) |
+[Previous](episode-12.md) |
+[Next](episode-14.md)
 
 ## Completed items
 

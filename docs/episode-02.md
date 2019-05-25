@@ -1,7 +1,9 @@
 # Episode 2
 
 [Video](https://www.youtube.com/watch?v=3XM9vUGduhk&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&t=1043s&index=3) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/3)
+[Pull Request](https://github.com/terrajobst/minsk/pull/3) |
+[Previous](episode-01.md) |
+[Next](episode-03.md)
 
 ## Completed items
 

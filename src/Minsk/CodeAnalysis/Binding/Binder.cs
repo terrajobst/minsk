@@ -474,6 +474,7 @@ namespace Minsk.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
+            bool hasErrors = false;
             for (var i = 0; i < syntax.Arguments.Count; i++)
             {
                 var argument = boundArguments[i];
@@ -482,9 +483,11 @@ namespace Minsk.CodeAnalysis.Binding
                 if (argument.Type != parameter.Type)
                 {
                     _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Span, parameter.Name, parameter.Type, argument.Type);
-                   return new BoundErrorExpression();
+                    hasErrors = true;
                 }
             }
+            if (hasErrors)
+                return new BoundErrorExpression();
 
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }

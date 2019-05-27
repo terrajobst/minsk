@@ -57,7 +57,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             if (condition == node.Condition && body == node.Body)
                 return node;
 
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
@@ -75,7 +75,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             if (body == node.Body && condition == node.Condition)
                 return node;
 
-            return new BoundDoWhileStatement(body, condition);
+            return new BoundDoWhileStatement(body, condition, node.BreakLabel, node.ContinueLabel);
         }
 
         protected override BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)

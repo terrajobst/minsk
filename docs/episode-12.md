@@ -1,7 +1,9 @@
 # Episode 12
 
 [Video](https://www.youtube.com/watch?v=psTZi6xpTlM&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=12) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/55)
+[Pull Request](https://github.com/terrajobst/minsk/pull/55) |
+[Previous](episode-11.md) |
+[Next](episode-13.md)
 
 ## Completed items
 

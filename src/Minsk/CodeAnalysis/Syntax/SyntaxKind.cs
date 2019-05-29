@@ -43,6 +43,7 @@ namespace Minsk.CodeAnalysis.Syntax
         FunctionKeyword,
         IfKeyword,
         LetKeyword,
+        ReturnKeyword,
         ToKeyword,
         TrueKeyword,
         VarKeyword,
@@ -66,6 +67,7 @@ namespace Minsk.CodeAnalysis.Syntax
         ForStatement,
         BreakStatement,
         ContinueStatement,
+        ReturnStatement,
         ExpressionStatement,
 
         // Expressions

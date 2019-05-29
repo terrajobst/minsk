@@ -48,6 +48,9 @@ namespace Minsk.CodeAnalysis.Binding
                 case BoundNodeKind.ConditionalGotoStatement:
                     WriteConditionalGotoStatement((BoundConditionalGotoStatement)node, writer);
                     break;
+                case BoundNodeKind.ReturnStatement:
+                    WriteReturnStatement((BoundReturnStatement)node, writer);
+                    break;
                 case BoundNodeKind.ExpressionStatement:
                     WriteExpressionStatement((BoundExpressionStatement)node, writer);
                     break;

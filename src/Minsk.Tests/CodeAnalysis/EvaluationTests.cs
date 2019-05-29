@@ -73,6 +73,7 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("string(1)", "1")]
         [InlineData("bool(\"true\")", true)]
         [InlineData("int(\"1\")", 1)]
+        [InlineData("rnd(0)", 0)]
         [InlineData("{ var a = 10 (a * a) }", 100)]
         [InlineData("{ var a = 0 (a = 10) * a }", 100)]
         [InlineData("{ var a = 0 if a == 0 a = 10 a }", 10)]

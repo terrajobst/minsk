@@ -1,0 +1,51 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+# Configured on Azure
+# pool:
+#  vmImage: 'Hosted Windows 2019 with VS2019'
+
+variables:
+  buildConfiguration: 'Release'
+  sln: './src/minsk.sln'
+
+# We only want to kick off indexing runs for Master
+trigger: ['master']
+
+# We don't want to build PRs
+pr: none
+
+steps:
+- script: dotnet build --configuration $(buildConfiguration) $(sln)
+  displayName: 'dotnet build $(buildConfiguration)'
+- task: PowerShell@2
+  inputs:
+    filePath: 'genindex.ps1'
+- task: FtpUpload@2
+  inputs:
+    credentialsOption: 'serviceEndpoint'
+    serverEndpoint: 'FTP Minsk Index'
+    rootDirectory: 'bin\index\index'
+    filePatterns: '**'
+    remoteDirectory: '/site/wwwroot/index'
+    clean: false
+    cleanContents: true
+    preservePaths: true
+    trustSSL: true
+- task: AzureAppServiceManage@0
+  inputs:
+    azureSubscription: 'Visual Studio Enterprise(5ea88856-cbf8-44e5-8d86-35a35073a080)'
+    Action: 'Restart Azure App Service'
+    WebAppName: 'minsk-source'
+    SpecifySlotOrASE: true
+    ResourceGroupName: 'Minsk-SourceBrowser-ResourceGroup'
+    Slot: 'staging'
+- task: AzureAppServiceManage@0
+  inputs:
+    azureSubscription: 'Visual Studio Enterprise(5ea88856-cbf8-44e5-8d86-35a35073a080)'
+    Action: 'Swap Slots'
+    WebAppName: 'minsk-source'
+    ResourceGroupName: 'Minsk-SourceBrowser-ResourceGroup'
+    SourceSlot: 'staging'

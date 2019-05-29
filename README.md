@@ -20,3 +20,9 @@ on [YouTube] or browse the [episode PRs][episodes].
 
 [YouTube]: https://www.youtube.com/playlist?list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y
 [episodes]: https://github.com/terrajobst/minsk/pulls?q=is%3Apr+is%3Aclosed+label%3Aepisode+sort%3Acreated-asc
+
+## Browsing the code
+
+If you want to browse the code, check out the symbolic [source browser].
+
+[source browser]: http://source.minsk-compiler.net

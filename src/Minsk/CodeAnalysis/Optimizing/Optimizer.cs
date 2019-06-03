@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 
@@ -13,10 +15,172 @@ namespace Minsk.CodeAnalysis.Optimizing
             _evaluator = new Evaluator(null, null);
         }
 
-        public static BoundStatement Optimize(BoundStatement statement)
+        public static BoundBlockStatement Optimize(BoundBlockStatement statements)
         {
             var optimizer = new Optimizer();
-            return optimizer.RewriteStatement(statement);
+            var simplified = optimizer.RewriteBlockStatement(statements);
+            var result = RemoveUnreachableCode(simplified);
+            return RemoveNoOps(result);
+        }
+
+        private static BoundBlockStatement RemoveUnreachableCode(BoundBlockStatement block)
+        {
+            ImmutableArray<BoundStatement>.Builder builder = null;
+            var skipingAfterReturn = false;
+            var definedLabels = new Dictionary<BoundLabel, int>();
+            var targetedLabels = new Dictionary<BoundLabel, List<int>>();
+            for (int i = 0; i < block.Statements.Length; i++)
+            {
+                var statement = block.Statements[i];
+                switch (statement.Kind)
+                {
+                    case BoundNodeKind.ReturnStatement:
+                        if (builder != null)
+                            builder.Add(statement);
+                        skipingAfterReturn = true;
+                        break;
+                    case BoundNodeKind.LabelStatement:
+                        definedLabels.Add(((BoundLabelStatement)statement).Label, builder?.Count ?? i);
+                        if (builder != null)
+                            builder.Add(statement);
+                        skipingAfterReturn = false;
+                        break;
+                    case BoundNodeKind.ConditionalGotoStatement:
+                        addTargetToLabel(((BoundConditionalGotoStatement)statement).Label, -1);
+                        goto default;
+                    case BoundNodeKind.GotoStatement:
+                        addTargetToLabel(((BoundGotoStatement)statement).Label, builder?.Count ?? i);
+                        goto default;
+                    default:
+                        if (skipingAfterReturn)
+                            initBuilder(i);
+                        else if (builder != null)
+                            builder.Add(statement);
+                        break;
+                }
+            }
+
+            bool checkPendingRemove = true;
+            while (checkPendingRemove)
+            {
+                checkPendingRemove = false;
+                foreach (var item in definedLabels.ToList())
+                {
+                    var label = item.Key;
+                    var pos = item.Value;
+                    if (!targetedLabels.ContainsKey(label))
+                    {
+                        initBuilder(block.Statements.Length);
+                        builder[pos] = BoundNoOperationStatement.Instance;
+                        definedLabels.Remove(label);
+                    }
+                }
+
+                foreach (var item in targetedLabels.ToList())
+                {
+                    var label = item.Key;
+                    var gotos = item.Value;
+                    var lblPos = definedLabels[label];
+                    foreach (var gotoPos in gotos.ToList())
+                    {
+                        if (gotoPos == -1 || lblPos < gotoPos)
+                            continue;
+
+                        var intermediateLabels =
+                            from pos in definedLabels.Values
+                            where pos > gotoPos
+                            where pos < lblPos
+                            select pos;
+
+                        if (!intermediateLabels.Any())
+                        {
+                            initBuilder(block.Statements.Length);
+                            for (int j = gotoPos; j <= lblPos; j++)
+                            {
+                                var statement = builder[j];
+                                switch (statement.Kind)
+                                {
+                                    case BoundNodeKind.GotoStatement:
+                                        removeTargetToLabel(((BoundGotoStatement)statement).Label, j);
+                                        break;
+                                    case BoundNodeKind.ConditionalGotoStatement:
+                                        removeTargetToLabel(((BoundConditionalGotoStatement)statement).Label, j);
+                                        break;
+                                }
+                                builder[j] = BoundNoOperationStatement.Instance;
+                            }
+
+                            removeTargetToLabel(label, gotoPos);
+                            checkPendingRemove = true;
+                        }
+                    }
+                }
+            }
+
+
+            if (builder == null)
+                return block;
+            else
+                return new BoundBlockStatement(builder.ToImmutable());
+
+            void initBuilder(int upperLimit)
+            {
+                if (builder == null)
+                {
+                    builder = ImmutableArray.CreateBuilder<BoundStatement>();
+                    for (int j = 0; j < upperLimit; j++)
+                        builder.Add(block.Statements[j]);
+                }
+            }
+
+            void addTargetToLabel(BoundLabel label, int pos)
+            {
+                if (!skipingAfterReturn)
+                {
+                    if (!targetedLabels.TryGetValue(label, out var gotos))
+                    {
+                        gotos = new List<int>();
+                        targetedLabels.Add(label, gotos);
+                    }
+                    gotos.Add(pos);
+                }
+            }
+
+            void removeTargetToLabel(BoundLabel label, int gotoPos)
+            {
+                var gotos = targetedLabels[label];
+                gotos.Remove(gotoPos);
+                if (gotos.Count == 0)
+                    targetedLabels.Remove(label);
+            }
+        }
+
+        private static BoundBlockStatement RemoveNoOps(BoundBlockStatement block)
+        {
+            ImmutableArray<BoundStatement>.Builder builder = null;
+            for (int i = 0; i < block.Statements.Length; i++)
+            {
+                var statement = block.Statements[i];
+                if (statement.Kind == BoundNodeKind.NoOperationStatement)
+                {
+                    if (builder == null)
+                    {
+                        builder = ImmutableArray.CreateBuilder<BoundStatement>(block.Statements.Length);
+
+                        for (var j = 0; j < i; j++)
+                            builder.Add(block.Statements[j]);
+                    }
+                }
+                else
+                {
+                    if (builder != null)
+                        builder.Add(statement);
+                }
+            }
+            if (builder == null)
+                return block;
+            else
+                return new BoundBlockStatement(builder.ToImmutable());
         }
 
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
@@ -31,7 +195,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 else if (node.ElseStatement != null)
                     return RewriteStatement(node.ElseStatement);
                 else
-                    return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
+                    return BoundNoOperationStatement.Instance;
             }
 
             var thenStatement = RewriteStatement(node.ThenStatement);
@@ -50,7 +214,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             {
                 var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
                 if (!evaluatedCondition)
-                    return new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty);
+                    return BoundNoOperationStatement.Instance;
             }
 
             var body = RewriteStatement(node.Body);
@@ -76,6 +240,25 @@ namespace Minsk.CodeAnalysis.Optimizing
                 return node;
 
             return new BoundDoWhileStatement(body, condition, node.BreakLabel, node.ContinueLabel);
+        }
+
+        protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            var condition = RewriteExpression(node.Condition);
+
+            if (condition.Kind == BoundNodeKind.LiteralExpression)
+            {
+                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
+                if (evaluatedCondition == node.JumpIfTrue)
+                    return new BoundGotoStatement(node.Label);
+                else
+                    return BoundNoOperationStatement.Instance;
+            }
+
+            if (condition == node.Condition)
+                return node;
+
+            return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
         }
 
         protected override BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)

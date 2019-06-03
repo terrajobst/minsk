@@ -36,7 +36,7 @@ namespace Minsk.CodeAnalysis.Binding
             }
         }
 
-        protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
+        protected virtual BoundBlockStatement RewriteBlockStatement(BoundBlockStatement node)
         {
             ImmutableArray<BoundStatement>.Builder builder = null;
 

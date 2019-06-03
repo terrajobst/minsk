@@ -72,14 +72,15 @@ namespace Minsk.CodeAnalysis.Binding
                 {
                     var binder = new Binder(parentScope, function);
                     var body = binder.BindStatement(function.Declaration.Body);
-                    if (optimize)
-                        body = Optimizer.Optimize(body);
-                    var loweredBody = Lowerer.Lower(body);
+                    var bodyStatements = Lowerer.Lower(body);
 
-                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(bodyStatements))
                         binder._diagnostics.ReportAllPathsMustReturn(function.Declaration.Identifier.Span);
 
-                    functionBodies.Add(function, loweredBody);
+                    if (optimize)
+                        bodyStatements = Optimizer.Optimize(bodyStatements);
+
+                    functionBodies.Add(function, bodyStatements);
 
                     diagnostics.AddRange(binder.Diagnostics);
                 }
@@ -87,11 +88,11 @@ namespace Minsk.CodeAnalysis.Binding
                 scope = scope.Previous;
             }
 
-            BoundStatement statements = new BoundBlockStatement(globalScope.Statements);
+            var statements = new BoundBlockStatement(globalScope.Statements);
+            statements = Lowerer.Lower(statements);
             if (optimize)
                 statements = Optimizer.Optimize(statements);
-            var lowered = Lowerer.Lower(statements);
-            return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), lowered);
+            return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), statements);
         }
 
         private void BindFunctionDeclaration(FunctionDeclarationSyntax syntax)

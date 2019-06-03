@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reflection;
 using Minsk.CodeAnalysis;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
@@ -84,6 +86,32 @@ namespace Minsk.Tests.CodeAnalysis
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetStatementsToCompileData))]
+        public void Evaluator_Computes_OptimizationsCoherently(string text)
+        {
+            var syntaxTree = SyntaxTree.Parse(text);
+            var compilation = new Compilation(syntaxTree);
+            var expectedResult = compilation.Evaluate(new Dictionary<VariableSymbol, object>(), optimize: false);
+            var optimizedResult = compilation.Evaluate(new Dictionary<VariableSymbol, object>(), optimize: true);
+
+            Assert.Equal(expectedResult.Diagnostics, optimizedResult.Diagnostics);
+            Assert.Equal(expectedResult.Value, optimizedResult.Value);
+        }
+
+        public static IEnumerable<object[]> GetStatementsToCompileData()
+        {
+            var evaluationMethod = typeof(EvaluationTests).GetMethod(nameof(Evaluator_Computes_CorrectValues));
+            foreach (var att in evaluationMethod.CustomAttributes)
+            {
+                if (att.AttributeType != typeof(InlineDataAttribute))
+                    continue;
+
+                var inlineData = (ReadOnlyCollection<CustomAttributeTypedArgument>) att.ConstructorArguments[0].Value;
+                yield return new object[] { inlineData[0].Value };
+            }
         }
 
         [Fact]

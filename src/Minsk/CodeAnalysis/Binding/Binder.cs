@@ -57,7 +57,7 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundGlobalScope(previous, diagnostics, functions, variables, statements.ToImmutable());
         }
 
-        public static BoundProgram BindProgram(BoundGlobalScope globalScope)
+        public static BoundProgram BindProgram(BoundGlobalScope globalScope, bool optimize)
         {
             var parentScope = CreateParentScope(globalScope);
 
@@ -72,8 +72,9 @@ namespace Minsk.CodeAnalysis.Binding
                 {
                     var binder = new Binder(parentScope, function);
                     var body = binder.BindStatement(function.Declaration.Body);
-                    var optimizedBody = Optimizer.Optimize(body);
-                    var loweredBody = Lowerer.Lower(optimizedBody);
+                    if (optimize)
+                        body = Optimizer.Optimize(body);
+                    var loweredBody = Lowerer.Lower(body);
 
                     if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
                         binder._diagnostics.ReportAllPathsMustReturn(function.Declaration.Identifier.Span);
@@ -86,8 +87,10 @@ namespace Minsk.CodeAnalysis.Binding
                 scope = scope.Previous;
             }
 
-            var optimized = Optimizer.Optimize(new BoundBlockStatement(globalScope.Statements));
-            var lowered = Lowerer.Lower(optimized);
+            BoundStatement statements = new BoundBlockStatement(globalScope.Statements);
+            if (optimize)
+                statements = Optimizer.Optimize(statements);
+            var lowered = Lowerer.Lower(statements);
             return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), lowered);
         }
 

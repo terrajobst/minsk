@@ -13,6 +13,7 @@ namespace Minsk
         private Compilation _previous;
         private bool _showTree;
         private bool _showProgram;
+        private bool _optimize;
         private readonly Dictionary<VariableSymbol, object> _variables = new Dictionary<VariableSymbol, object>();
 
         protected override void RenderLine(string line)
@@ -61,6 +62,10 @@ namespace Minsk
                     _previous = null;
                     _variables.Clear();
                     break;
+                case "#optimize":
+                    _optimize = !_optimize;
+                    Console.WriteLine(_optimize ? "Optimizer is turned on." : "Optimizer is turned off.");
+                    break;
                 default:
                     base.EvaluateMetaCommand(input);
                     break;
@@ -101,9 +106,9 @@ namespace Minsk
                 syntaxTree.Root.WriteTo(Console.Out);
 
             if (_showProgram)
-                compilation.EmitTree(Console.Out);
+                compilation.EmitTree(Console.Out, _optimize);
 
-            var result = compilation.Evaluate(_variables);
+            var result = compilation.Evaluate(_variables, _optimize);
 
             if (!result.Diagnostics.Any())
             {

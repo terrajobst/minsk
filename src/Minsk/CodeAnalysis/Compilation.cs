@@ -48,13 +48,13 @@ namespace Minsk.CodeAnalysis
             return new Compilation(this, syntaxTree);
         }
 
-        public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
+        public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables, bool optimize = false)
         {
             var diagnostics = SyntaxTree.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            var program = Binder.BindProgram(GlobalScope);
+            var program = Binder.BindProgram(GlobalScope, optimize);
 
             var appPath = Environment.GetCommandLineArgs()[0];
             var appDirectory = Path.GetDirectoryName(appPath);
@@ -74,9 +74,9 @@ namespace Minsk.CodeAnalysis
             return new EvaluationResult(ImmutableArray<Diagnostic>.Empty, value);
         }
 
-        public void EmitTree(TextWriter writer)
+        public void EmitTree(TextWriter writer, bool optimize = false)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = Binder.BindProgram(GlobalScope, optimize);
 
             if (program.Statement.Statements.Any())
             {

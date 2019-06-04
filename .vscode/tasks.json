@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/Minsk.sln"
+                "${workspaceFolder}/src/minsk.sln"
             ],
             "problemMatcher": "$msCompile"
         }

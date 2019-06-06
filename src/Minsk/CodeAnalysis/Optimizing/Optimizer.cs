@@ -83,7 +83,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                     var lblPos = definedLabels[label];
                     foreach (var gotoPos in gotos.ToList())
                     {
-                        if (gotoPos == -1 || lblPos < gotoPos)
+                        if (gotoPos == -1)
                             continue;
 
                         var intermediateLabels =
@@ -92,24 +92,27 @@ namespace Minsk.CodeAnalysis.Optimizing
                             where pos < lblPos
                             select pos;
 
-                        if (!intermediateLabels.Any())
+                        if (lblPos > gotoPos && !intermediateLabels.Any())
                         {
                             initBuilder(block.Statements.Length);
                             for (int j = gotoPos; j < lblPos; j++)
-                            {
-                                var statement = builder[j];
-                                switch (statement.Kind)
-                                {
-                                    case BoundNodeKind.GotoStatement:
-                                        removeTargetToLabel(((BoundGotoStatement)statement).Label, j);
-                                        break;
-                                    case BoundNodeKind.ConditionalGotoStatement:
-                                        removeTargetToLabel(((BoundConditionalGotoStatement)statement).Label, j);
-                                        break;
-                                }
-                                builder[j] = BoundNoOperationStatement.Instance;
-                            }
+                                removeStatement(j);
                             checkPendingRemove = true;
+                        }
+                        else
+                        {
+                            for (int j = gotoPos + 1; j < (builder?.Count ?? block.Statements.Length); j++)
+                            {
+                                var statement = builder?[j] ?? block.Statements[j];
+                                if (statement.Kind == BoundNodeKind.LabelStatement)
+                                    break;
+                                if (statement.Kind != BoundNodeKind.NoOperationStatement)
+                                {
+                                    initBuilder(block.Statements.Length);
+                                    removeStatement(j);
+                                    checkPendingRemove = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -144,12 +147,27 @@ namespace Minsk.CodeAnalysis.Optimizing
                 }
             }
 
-            void removeTargetToLabel(BoundLabel label, int gotoPos)
+            void removeStatement(int line)
             {
-                var gotos = targetedLabels[label];
-                gotos.Remove(gotoPos);
-                if (gotos.Count == 0)
-                    targetedLabels.Remove(label);
+                void removeTargetToLabel(BoundLabel label)
+                {
+                    var gotos = targetedLabels[label];
+                    gotos.Remove(line);
+                    if (gotos.Count == 0)
+                        targetedLabels.Remove(label);
+                }
+
+                var statement = builder[line];
+                switch (statement.Kind)
+                {
+                    case BoundNodeKind.GotoStatement:
+                        removeTargetToLabel(((BoundGotoStatement)statement).Label);
+                        break;
+                    case BoundNodeKind.ConditionalGotoStatement:
+                        removeTargetToLabel(((BoundConditionalGotoStatement)statement).Label);
+                        break;
+                }
+                builder[line] = BoundNoOperationStatement.Instance;
             }
         }
 

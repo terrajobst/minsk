@@ -239,6 +239,21 @@ namespace Minsk.CodeAnalysis.Optimizing
                     // Swallow evaluation exceptions, and let it fail at runtime
                 }
             }
+            else if (node.Op.Kind == BoundUnaryOperatorKind.Identity)
+                return operand;
+            else if (operand.Kind == BoundNodeKind.UnaryExpression)
+            {
+                switch  (node.Op.Kind)
+                {
+                    case BoundUnaryOperatorKind.LogicalNegation:
+                    case BoundUnaryOperatorKind.Negation:
+                    case BoundUnaryOperatorKind.OnesComplement:
+                        var unaryOperand = (BoundUnaryExpression) operand;
+                        if (unaryOperand.Op.Kind == node.Op.Kind)
+                            return unaryOperand.Operand;
+                        break;
+                }
+            }
             if (operand == node.Operand)
                 return node;
 

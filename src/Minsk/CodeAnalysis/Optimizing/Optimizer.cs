@@ -28,7 +28,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             ImmutableArray<BoundStatement>.Builder builder = null;
             var skipingAfterReturn = false;
             var definedLabels = new Dictionary<BoundLabel, int>();
-            var targetedLabels = new Dictionary<BoundLabel, List<int>>();
+            var targetedLabels = new Dictionary<BoundLabel, List<(int line, bool conditional)>>();
             for (int i = 0; i < block.Statements.Length; i++)
             {
                 var statement = block.Statements[i];
@@ -46,10 +46,10 @@ namespace Minsk.CodeAnalysis.Optimizing
                         skipingAfterReturn = false;
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
-                        addTargetToLabel(((BoundConditionalGotoStatement)statement).Label, -1);
+                        addTargetToLabel(((BoundConditionalGotoStatement)statement).Label, builder?.Count ?? i, true);
                         goto default;
                     case BoundNodeKind.GotoStatement:
-                        addTargetToLabel(((BoundGotoStatement)statement).Label, builder?.Count ?? i);
+                        addTargetToLabel(((BoundGotoStatement)statement).Label, builder?.Count ?? i, false);
                         goto default;
                     default:
                         if (skipingAfterReturn)
@@ -79,29 +79,32 @@ namespace Minsk.CodeAnalysis.Optimizing
                 foreach (var item in targetedLabels.ToList())
                 {
                     var label = item.Key;
-                    var gotos = item.Value;
+                    var jumps = item.Value;
                     var lblPos = definedLabels[label];
-                    foreach (var gotoPos in gotos.ToList())
+                    foreach (var jump in jumps.ToList())
                     {
-                        if (gotoPos == -1)
+                        if (jump.conditional)
                             continue;
 
-                        var intermediateLabels =
-                            from pos in definedLabels.Values
-                            where pos > gotoPos
-                            where pos < lblPos
-                            select pos;
+                        var intermediateLabelsWithOuterJumps =
+                            from other in definedLabels
+                            let otherLbl = (label: other.Key, line: other.Value)
+                            where otherLbl.line > jump.line
+                            where otherLbl.line < lblPos
+                            let otherJumps = targetedLabels.TryGetValue(otherLbl.label, out var jmps) ? jmps : Enumerable.Empty<(int line, bool conditional)>()
+                            where otherJumps.Any(otherJump => otherJump.line < jump.line || otherJump.line > lblPos)
+                            select otherLbl.label;
 
-                        if (lblPos > gotoPos && !intermediateLabels.Any())
+                        if (lblPos > jump.line && !intermediateLabelsWithOuterJumps.Any())
                         {
                             initBuilder(block.Statements.Length);
-                            for (int j = gotoPos; j < lblPos; j++)
+                            for (int j = jump.line; j < lblPos; j++)
                                 removeStatement(j);
                             checkPendingRemove = true;
                         }
                         else
                         {
-                            for (int j = gotoPos + 1; j < (builder?.Count ?? block.Statements.Length); j++)
+                            for (int j = jump.line + 1; j < (builder?.Count ?? block.Statements.Length); j++)
                             {
                                 var statement = builder?[j] ?? block.Statements[j];
                                 if (statement.Kind == BoundNodeKind.LabelStatement)
@@ -134,16 +137,16 @@ namespace Minsk.CodeAnalysis.Optimizing
                 }
             }
 
-            void addTargetToLabel(BoundLabel label, int pos)
+            void addTargetToLabel(BoundLabel label, int line, bool conditional)
             {
                 if (!skipingAfterReturn)
                 {
-                    if (!targetedLabels.TryGetValue(label, out var gotos))
+                    if (!targetedLabels.TryGetValue(label, out var jumps))
                     {
-                        gotos = new List<int>();
-                        targetedLabels.Add(label, gotos);
+                        jumps = new List<(int line, bool conditional)>();
+                        targetedLabels.Add(label, jumps);
                     }
-                    gotos.Add(pos);
+                    jumps.Add((line, conditional));
                 }
             }
 
@@ -151,9 +154,9 @@ namespace Minsk.CodeAnalysis.Optimizing
             {
                 void removeTargetToLabel(BoundLabel label)
                 {
-                    var gotos = targetedLabels[label];
-                    gotos.Remove(line);
-                    if (gotos.Count == 0)
+                    var jumps = targetedLabels[label];
+                    jumps.RemoveAll(jump => jump.line == line);
+                    if (jumps.Count == 0)
                         targetedLabels.Remove(label);
                 }
 

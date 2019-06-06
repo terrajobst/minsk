@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -200,65 +199,6 @@ namespace Minsk.CodeAnalysis.Optimizing
                 return block;
             else
                 return new BoundBlockStatement(builder.ToImmutable());
-        }
-
-        protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
-        {
-            var condition = RewriteExpression(node.Condition);
-
-            if (condition.Kind == BoundNodeKind.LiteralExpression)
-            {
-                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
-                if (evaluatedCondition)
-                    return RewriteStatement(node.ThenStatement);
-                else if (node.ElseStatement != null)
-                    return RewriteStatement(node.ElseStatement);
-                else
-                    return BoundNoOperationStatement.Instance;
-            }
-
-            var thenStatement = RewriteStatement(node.ThenStatement);
-            var elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
-            if (condition == node.Condition && thenStatement == node.ThenStatement && elseStatement == node.ElseStatement)
-                return node;
-
-            return new BoundIfStatement(condition, thenStatement, elseStatement);
-        }
-
-        protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
-        {
-            var condition = RewriteExpression(node.Condition);
-
-            if (condition.Kind == BoundNodeKind.LiteralExpression)
-            {
-                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
-                if (!evaluatedCondition)
-                    return BoundNoOperationStatement.Instance;
-            }
-
-            var body = RewriteStatement(node.Body);
-            if (condition == node.Condition && body == node.Body)
-                return node;
-
-            return new BoundWhileStatement(condition, body, node.BreakLabel, node.ContinueLabel);
-        }
-
-        protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
-        {
-            var body = RewriteStatement(node.Body);
-            var condition = RewriteExpression(node.Condition);
-
-            if (condition.Kind == BoundNodeKind.LiteralExpression)
-            {
-                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
-                if (!evaluatedCondition)
-                    return body;
-            }
-
-            if (body == node.Body && condition == node.Condition)
-                return node;
-
-            return new BoundDoWhileStatement(body, condition, node.BreakLabel, node.ContinueLabel);
         }
 
         protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)

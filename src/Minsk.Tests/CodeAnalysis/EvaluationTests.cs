@@ -84,6 +84,7 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } i }", 5)]
         [InlineData("{ var i = 0 do { i = i + 1 if i == 5 continue } while i < 5 i }", 5)]
         [InlineData("{ var i = 0 while i < 5 { if false break i = i + 1 } i }", 5)]
+        [InlineData("{ var x = 1 while false { if x > 10 break else continue x = x + 1 } x }", 1)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);

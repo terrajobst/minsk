@@ -95,7 +95,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                         if (!intermediateLabels.Any())
                         {
                             initBuilder(block.Statements.Length);
-                            for (int j = gotoPos; j <= lblPos; j++)
+                            for (int j = gotoPos; j < lblPos; j++)
                             {
                                 var statement = builder[j];
                                 switch (statement.Kind)

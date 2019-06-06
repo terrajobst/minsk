@@ -83,43 +83,61 @@ namespace Minsk.CodeAnalysis.Optimizing
                     foreach (var jump in jumps.ToList())
                     {
                         if (jump.conditional)
-                            continue;
-
-                        var intermediateLabelsWithOuterJumps =
-                            from other in definedLabels
-                            let otherLbl = (label: other.Key, line: other.Value)
-                            where otherLbl.line > jump.line
-                            where otherLbl.line < lblPos
-                            let otherJumps = targetedLabels.TryGetValue(otherLbl.label, out var jmps) ? jmps : Enumerable.Empty<(int line, bool conditional)>()
-                            where otherJumps.Any(otherJump => otherJump.line < jump.line || otherJump.line > lblPos)
-                            select otherLbl.label;
-
-                        if (lblPos > jump.line && !intermediateLabelsWithOuterJumps.Any())
                         {
-                            initBuilder(block.Statements.Length);
-                            for (int j = jump.line; j < lblPos; j++)
-                                removeStatement(j);
-                            checkPendingRemove = true;
+                            var next = nextStatement(jump.line);
+                            if (next.statement.Kind == BoundNodeKind.GotoStatement)
+                            {
+                                var following = nextStatement(next.line);
+                                if (following.statement.Kind == BoundNodeKind.LabelStatement && lblPos == following.line)
+                                {
+                                    var cndJumpStatement = (BoundConditionalGotoStatement) getStatement(jump.line);
+                                    var jumpStatement = (BoundGotoStatement) next.statement;
+                                    initBuilder(block.Statements.Length);
+                                    removeStatement(jump.line);
+                                    removeStatement(next.line);
+                                    builder[next.line] = new BoundConditionalGotoStatement(jumpStatement.Label, cndJumpStatement.Condition, !cndJumpStatement.JumpIfTrue);
+                                    addTargetToLabel(jumpStatement.Label, next.line, true);
+                                    checkPendingRemove = true;
+                                }
+                            }
                         }
                         else
                         {
-                            for (int j = jump.line + 1; j < (builder?.Count ?? block.Statements.Length); j++)
+                            var intermediateLabelsWithOuterJumps =
+                                from other in definedLabels
+                                let otherLbl = (label: other.Key, line: other.Value)
+                                where otherLbl.line > jump.line
+                                where otherLbl.line < lblPos
+                                let otherJumps = targetedLabels.TryGetValue(otherLbl.label, out var jmps) ? jmps : Enumerable.Empty<(int line, bool conditional)>()
+                                where otherJumps.Any(otherJump => otherJump.line < jump.line || otherJump.line > lblPos)
+                                select otherLbl.label;
+
+                            if (lblPos > jump.line && !intermediateLabelsWithOuterJumps.Any())
                             {
-                                var statement = builder?[j] ?? block.Statements[j];
-                                if (statement.Kind == BoundNodeKind.LabelStatement)
-                                    break;
-                                if (statement.Kind != BoundNodeKind.NoOperationStatement)
-                                {
-                                    initBuilder(block.Statements.Length);
+                                initBuilder(block.Statements.Length);
+                                for (int j = jump.line; j < lblPos; j++)
                                     removeStatement(j);
-                                    checkPendingRemove = true;
+                                checkPendingRemove = true;
+                            }
+                            else
+                            {
+                                for (int j = jump.line + 1; j < (builder?.Count ?? block.Statements.Length); j++)
+                                {
+                                    var statement = getStatement(j);
+                                    if (statement.Kind == BoundNodeKind.LabelStatement)
+                                        break;
+                                    if (statement.Kind != BoundNodeKind.NoOperationStatement)
+                                    {
+                                        initBuilder(block.Statements.Length);
+                                        removeStatement(j);
+                                        checkPendingRemove = true;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-
 
             if (builder == null)
                 return block;
@@ -170,6 +188,19 @@ namespace Minsk.CodeAnalysis.Optimizing
                         break;
                 }
                 builder[line] = BoundNoOperationStatement.Instance;
+            }
+
+            BoundStatement getStatement(int line) => builder?[line] ?? block.Statements[line];
+
+            (BoundStatement statement, int line) nextStatement(int line)
+            {
+                for (int j = line + 1; j < (builder?.Count ?? block.Statements.Length); j++)
+                {
+                    var statement = getStatement(j);
+                    if (statement.Kind != BoundNodeKind.NoOperationStatement)
+                        return (statement, j);
+                }
+                return (BoundNoOperationStatement.Instance, -1);
             }
         }
 

@@ -109,8 +109,6 @@ namespace Minsk.CodeAnalysis.Optimizing
                                 }
                                 builder[j] = BoundNoOperationStatement.Instance;
                             }
-
-                            removeTargetToLabel(label, gotoPos);
                             checkPendingRemove = true;
                         }
                     }

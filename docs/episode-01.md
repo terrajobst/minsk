@@ -7,9 +7,9 @@
 ## Completed items
 
 * Basic REPL (read-eval-print loop) for an expression evaluator
-* Comprised of a lexer, a parser, and an evaluator
-* Handles `+`, `-`, `*`, `/`, and parenthesized expressions
-* Prints syntax trees
+* Added lexer, a parser, and an evaluator
+* Handle `+`, `-`, `*`, `/`, and parenthesized expressions
+* Print syntax trees
 
 ## Interesting aspects
 

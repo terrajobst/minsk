@@ -25,7 +25,7 @@ namespace Minsk.CodeAnalysis.Optimizing
         private static BoundBlockStatement RemoveUnreachableCode(BoundBlockStatement block)
         {
             ImmutableArray<BoundStatement>.Builder builder = null;
-            var skipingAfterReturn = false;
+            var skipUpToNextLabel = false;
             var definedLabels = new Dictionary<BoundLabel, int>();
             var targetedLabels = new Dictionary<BoundLabel, List<(int line, bool conditional)>>();
             for (int i = 0; i < block.Statements.Length; i++)
@@ -34,28 +34,34 @@ namespace Minsk.CodeAnalysis.Optimizing
                 switch (statement.Kind)
                 {
                     case BoundNodeKind.ReturnStatement:
-                        if (builder != null)
-                            builder.Add(statement);
-                        skipingAfterReturn = true;
+                        addStatement();
+                        skipUpToNextLabel = true;
                         break;
                     case BoundNodeKind.LabelStatement:
                         definedLabels.Add(((BoundLabelStatement)statement).Label, builder?.Count ?? i);
-                        if (builder != null)
-                            builder.Add(statement);
-                        skipingAfterReturn = false;
+                        skipUpToNextLabel = false;
+                        addStatement();
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
                         addTargetToLabel(((BoundConditionalGotoStatement)statement).Label, builder?.Count ?? i, true);
-                        goto default;
+                        addStatement();
+                        break;
                     case BoundNodeKind.GotoStatement:
                         addTargetToLabel(((BoundGotoStatement)statement).Label, builder?.Count ?? i, false);
-                        goto default;
-                    default:
-                        if (skipingAfterReturn)
-                            initBuilder(i);
-                        else if (builder != null)
-                            builder.Add(statement);
+                        addStatement();
+                        skipUpToNextLabel = true;
                         break;
+                    default:
+                        addStatement();
+                        break;
+                }
+
+                void addStatement()
+                {
+                    if (skipUpToNextLabel)
+                        initBuilder(i);
+                    else if (builder != null)
+                        builder.Add(statement);
                 }
             }
 
@@ -156,7 +162,7 @@ namespace Minsk.CodeAnalysis.Optimizing
 
             void addTargetToLabel(BoundLabel label, int line, bool conditional)
             {
-                if (!skipingAfterReturn)
+                if (!skipUpToNextLabel)
                 {
                     if (!targetedLabels.TryGetValue(label, out var jumps))
                     {

@@ -342,6 +342,32 @@ namespace Minsk.CodeAnalysis.Optimizing
             return new BoundBinaryExpression(left, node.Op, right);
         }
 
+        protected override BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+        {
+            var expression = RewriteExpression(node.Expression);
+            if (expression.Kind == BoundNodeKind.LiteralExpression)
+            {
+                var evaluableNode = node;
+                if (expression != node.Expression)
+                    evaluableNode = new BoundConversionExpression(node.Type, expression);
+
+                try
+                {
+                    var result = _evaluator.EvaluateExpression(evaluableNode);
+                    return new BoundLiteralExpression(result);
+                }
+                catch
+                {
+                    // Swallow evaluation exceptions, and let it fail at runtime
+                }
+            }
+
+            if (expression == node.Expression)
+                return node;
+
+            return new BoundConversionExpression(node.Type, expression);
+        }
+
         private BoundExpression TryRewriteBoolPartiallyLiteralBinaryExpression(BoundBinaryOperator op, BoundExpression literal, BoundExpression other)
         {
             var evaluatedLiteral = (bool)_evaluator.EvaluateExpression(literal);

@@ -129,7 +129,10 @@ namespace Minsk.CodeAnalysis.Binding
             writer.Indent++;
 
             foreach (var s in node.Statements)
+            {
                 s.WriteTo(writer);
+                writer.WriteLine();
+            }
 
             writer.Indent--;
             writer.WritePunctuation(SyntaxKind.CloseBraceToken);
@@ -145,7 +148,6 @@ namespace Minsk.CodeAnalysis.Binding
             writer.WritePunctuation(SyntaxKind.EqualsToken);
             writer.WriteSpace();
             node.Initializer.WriteTo(writer);
-            writer.WriteLine();
         }
 
         private static void WriteIfStatement(BoundIfStatement node, IndentedTextWriter writer)
@@ -181,7 +183,6 @@ namespace Minsk.CodeAnalysis.Binding
             writer.WriteKeyword(SyntaxKind.WhileKeyword);
             writer.WriteSpace();
             node.Condition.WriteTo(writer);
-            writer.WriteLine();
         }
 
         private static void WriteForStatement(BoundForStatement node, IndentedTextWriter writer)
@@ -209,7 +210,6 @@ namespace Minsk.CodeAnalysis.Binding
 
             writer.WritePunctuation(node.Label.Name);
             writer.WritePunctuation(SyntaxKind.ColonToken);
-            writer.WriteLine();
 
             if (unindent)
                 writer.Indent++;
@@ -219,7 +219,6 @@ namespace Minsk.CodeAnalysis.Binding
         {
             writer.WriteKeyword("goto ");
             writer.WriteIdentifier(node.Label.Name);
-            writer.WriteLine();
         }
 
         private static void WriteConditionalGotoStatement(BoundConditionalGotoStatement node, IndentedTextWriter writer)
@@ -228,7 +227,6 @@ namespace Minsk.CodeAnalysis.Binding
             writer.WriteIdentifier(node.Label.Name);
             writer.WriteKeyword(node.JumpIfTrue ? " if " : " unless ");
             node.Condition.WriteTo(writer);
-            writer.WriteLine();
         }
 
         private static void WriteReturnStatement(BoundReturnStatement node, IndentedTextWriter writer)
@@ -239,13 +237,11 @@ namespace Minsk.CodeAnalysis.Binding
                 writer.WriteSpace();
                 node.Expression.WriteTo(writer);
             }
-            writer.WriteLine();
         }
 
         private static void WriteExpressionStatement(BoundExpressionStatement node, IndentedTextWriter writer)
         {
             node.Expression.WriteTo(writer);
-            writer.WriteLine();
         }
 
         private static void WriteNoOperationStatement(IndentedTextWriter writer)

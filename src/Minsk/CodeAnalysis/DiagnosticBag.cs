@@ -9,7 +9,15 @@ namespace Minsk.CodeAnalysis
 {
     internal sealed class DiagnosticBag : IEnumerable<Diagnostic>
     {
-        private readonly List<Diagnostic> _diagnostics = new List<Diagnostic>();
+        private readonly List<Diagnostic> _diagnostics;
+
+        public DiagnosticBag(SourceText text)
+        {
+            Text = text;
+            _diagnostics = new List<Diagnostic>();
+        }
+
+        public SourceText Text {get;}
 
         public IEnumerator<Diagnostic> GetEnumerator() => _diagnostics.GetEnumerator();
 
@@ -22,7 +30,7 @@ namespace Minsk.CodeAnalysis
 
         private void Report(TextSpan span, string message)
         {
-            var diagnostic = new Diagnostic(span, message);
+            var diagnostic = new Diagnostic(Text, span, message);
             _diagnostics.Add(diagnostic);
         }
 

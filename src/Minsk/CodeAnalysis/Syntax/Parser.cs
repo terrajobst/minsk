@@ -7,7 +7,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     internal sealed class Parser
     {
-        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private readonly DiagnosticBag _diagnostics;
         private readonly SourceText _text;
         private readonly ImmutableArray<SyntaxToken> _tokens;
         private int _position;
@@ -29,6 +29,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
+            _diagnostics = new DiagnosticBag(text);
             _text = text;
             _tokens = tokens.ToImmutableArray();
             _diagnostics.AddRange(lexer.Diagnostics);

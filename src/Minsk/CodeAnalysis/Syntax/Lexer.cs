@@ -7,7 +7,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     internal sealed class Lexer
     {
-        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private readonly DiagnosticBag _diagnostics;
         private readonly SourceText _text;
 
         private int _position;
@@ -18,6 +18,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public Lexer(SourceText text)
         {
+            _diagnostics = new DiagnosticBag(text);
             _text = text;
         }
 

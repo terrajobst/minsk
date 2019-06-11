@@ -11,15 +11,16 @@ namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
-        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private readonly DiagnosticBag _diagnostics;
         private readonly FunctionSymbol _function;
 
         private Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)>();
         private int _labelCounter;
         private BoundScope _scope;
 
-        public Binder(BoundScope parent, FunctionSymbol function)
+        private Binder(SourceText text, BoundScope parent, FunctionSymbol function)
         {
+            _diagnostics = new DiagnosticBag(text);
             _scope = new BoundScope(parent);
             _function = function;
 
@@ -30,10 +31,10 @@ namespace Minsk.CodeAnalysis.Binding
             }
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
+        public static BoundGlobalScope BindGlobalScope(SourceText text, BoundGlobalScope previous, CompilationUnitSyntax syntax)
         {
             var parentScope = CreateParentScope(previous);
-            var binder = new Binder(parentScope, function: null);
+            var binder = new Binder(text, parentScope, function: null);
 
             foreach (var function in syntax.Members.OfType<FunctionDeclarationSyntax>())
                 binder.BindFunctionDeclaration(function);
@@ -53,7 +54,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (previous != null)
                 diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
 
-            return new BoundGlobalScope(previous, diagnostics, functions, variables, statements.ToImmutable());
+            return new BoundGlobalScope(text, previous, diagnostics, functions, variables, statements.ToImmutable());
         }
 
         public static BoundProgram BindProgram(BoundGlobalScope globalScope)
@@ -69,7 +70,7 @@ namespace Minsk.CodeAnalysis.Binding
             {
                 foreach (var function in scope.Functions)
                 {
-                    var binder = new Binder(parentScope, function);
+                    var binder = new Binder(scope.Text, parentScope, function);
                     var body = binder.BindStatement(function.Declaration.Body);
                     var loweredBody = Lowerer.Lower(body);
 

@@ -119,8 +119,8 @@ namespace Minsk
             {
                 foreach (var diagnostic in result.Diagnostics.OrderBy(diag => diag.Span, new TextSpanComparer()))
                 {
-                    var lineIndex = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
-                    var line = syntaxTree.Text.Lines[lineIndex];
+                    var lineIndex = diagnostic.Text.GetLineIndex(diagnostic.Span.Start);
+                    var line = diagnostic.Text.Lines[lineIndex];
                     var lineNumber = lineIndex + 1;
                     var character = diagnostic.Span.Start - line.Start + 1;
 
@@ -134,9 +134,9 @@ namespace Minsk
                     var prefixSpan = TextSpan.FromBounds(line.Start, diagnostic.Span.Start);
                     var suffixSpan = TextSpan.FromBounds(diagnostic.Span.End, line.End);
 
-                    var prefix = syntaxTree.Text.ToString(prefixSpan);
-                    var error = syntaxTree.Text.ToString(diagnostic.Span);
-                    var suffix = syntaxTree.Text.ToString(suffixSpan);
+                    var prefix = diagnostic.Text.ToString(prefixSpan);
+                    var error = diagnostic.Text.ToString(diagnostic.Span);
+                    var suffix = diagnostic.Text.ToString(suffixSpan);
 
                     Console.Write("    ");
                     Console.Write(prefix);

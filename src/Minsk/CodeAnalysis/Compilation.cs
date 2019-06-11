@@ -35,7 +35,7 @@ namespace Minsk.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree.Root);
+                    var globalScope = Binder.BindGlobalScope(SyntaxTree.Text, Previous?.GlobalScope, SyntaxTree.Root);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 

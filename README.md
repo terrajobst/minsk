@@ -27,3 +27,18 @@ on [YouTube] or browse the [episode PRs][episodes].
 If you want to browse the code, check out the symbolic [source browser].
 
 [source browser]: http://source.minsk-compiler.net
+
+## Donations
+
+Some people kindly asked me whether I accept donations. I have the luxury of
+working for a great employer and I make a good salary. That means I have got the
+time and means to produce these videos and share my passion for open source and
+.NET.
+
+But not everyone has that luxury. If you find these videos helpful and you want
+to give back, consider donating to organizations that help the less fortunate to
+get into the tech industry, such as [Black Girls Code].
+
+Thank you ❤
+
+[Black Girls Code]: http://www.blackgirlscode.com/donations.html

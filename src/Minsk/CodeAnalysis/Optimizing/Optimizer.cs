@@ -343,6 +343,16 @@ namespace Minsk.CodeAnalysis.Optimizing
                         return rewritten;
                 }
             }
+            else if (left.Kind == BoundNodeKind.VariableExpression && right.Kind == BoundNodeKind.VariableExpression)
+            {
+                var leftVarNode = (BoundVariableExpression)left;
+                var rightVarNode = (BoundVariableExpression)right;
+                if (leftVarNode.Variable.Kind == rightVarNode.Variable.Kind && leftVarNode.Variable.Name == rightVarNode.Variable.Name)
+                {
+                    if (TryRewriteSameVarBinaryExpression(leftVarNode, node.Op) is BoundExpression rewritten)
+                        return rewritten;
+                }
+            }
 
             if (left == node.Left && right == node.Right)
                 return node;
@@ -443,6 +453,29 @@ namespace Minsk.CodeAnalysis.Optimizing
                 default:
                     return null;
             }
+        }
+
+        private BoundExpression TryRewriteSameVarBinaryExpression(BoundVariableExpression varNode, BoundBinaryOperator op)
+        {
+            switch (op.Kind)
+            {
+                case BoundBinaryOperatorKind.BitwiseAnd:
+                case BoundBinaryOperatorKind.BitwiseOr:
+                case BoundBinaryOperatorKind.LogicalAnd:
+                case BoundBinaryOperatorKind.LogicalOr:
+                    return varNode;
+                case BoundBinaryOperatorKind.BitwiseXor:
+                    return new BoundLiteralExpression(varNode.Type == TypeSymbol.Int ? (object)0 : (object)false);
+                case BoundBinaryOperatorKind.Equals:
+                case BoundBinaryOperatorKind.GreaterOrEquals:
+                case BoundBinaryOperatorKind.LessOrEquals:
+                    return new BoundLiteralExpression(true);
+                case BoundBinaryOperatorKind.Greater:
+                case BoundBinaryOperatorKind.Less:
+                case BoundBinaryOperatorKind.NotEquals:
+                    return new BoundLiteralExpression(false);
+            }
+            return null;
         }
 
         private BoundExpression NegateExpression(BoundExpression node)

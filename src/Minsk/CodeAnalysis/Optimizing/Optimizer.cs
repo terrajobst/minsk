@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
+using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis.Optimizing
 {
@@ -291,6 +292,13 @@ namespace Minsk.CodeAnalysis.Optimizing
                         break;
                 }
             }
+            else if (node.Op.Kind == BoundUnaryOperatorKind.LogicalNegation && operand.Kind == BoundNodeKind.BinaryExpression)
+            {
+                var binaryOperand = (BoundBinaryExpression) operand;
+                var negatedSyntax = TryLogicalNegateOperator(binaryOperand.Op.Kind);
+                if (negatedSyntax != null)
+                    return new BoundBinaryExpression(binaryOperand.Left, BoundBinaryOperator.Bind(negatedSyntax.Value, binaryOperand.Op.LeftType, binaryOperand.Op.RightType), binaryOperand.Right);
+            }
             if (operand == node.Operand)
                 return node;
 
@@ -392,9 +400,9 @@ namespace Minsk.CodeAnalysis.Optimizing
             }
         }
 
-        private static BoundExpression LogicalNegateExpression(BoundExpression node)
+        private BoundExpression LogicalNegateExpression(BoundExpression node)
         {
-            return new BoundUnaryExpression(BoundUnaryOperator.Bind(Syntax.SyntaxKind.BangToken, node.Type), node);
+            return RewriteUnaryExpression(new BoundUnaryExpression(BoundUnaryOperator.Bind(SyntaxKind.BangToken, node.Type), node));
         }
 
         private BoundExpression TryRewriteIntPartiallyLiteralBinaryExpression(BoundBinaryOperator op, BoundExpression literal, BoundExpression other, bool literalIsLeft)
@@ -437,9 +445,30 @@ namespace Minsk.CodeAnalysis.Optimizing
             }
         }
 
-        private static BoundExpression NegateExpression(BoundExpression node)
+        private BoundExpression NegateExpression(BoundExpression node)
         {
-            return new BoundUnaryExpression(BoundUnaryOperator.Bind(Syntax.SyntaxKind.MinusToken, node.Type), node);
+            return RewriteUnaryExpression(new BoundUnaryExpression(BoundUnaryOperator.Bind(SyntaxKind.MinusToken, node.Type), node));
+        }
+
+        private static SyntaxKind? TryLogicalNegateOperator(BoundBinaryOperatorKind opKind)
+        {
+            switch (opKind)
+            {
+                case BoundBinaryOperatorKind.Equals:
+                    return SyntaxKind.BangEqualsToken;
+                case BoundBinaryOperatorKind.Greater:
+                    return SyntaxKind.LessOrEqualsToken;
+                case BoundBinaryOperatorKind.GreaterOrEquals:
+                    return SyntaxKind.LessToken;
+                case BoundBinaryOperatorKind.Less:
+                    return SyntaxKind.GreaterOrEqualsToken;
+                case BoundBinaryOperatorKind.LessOrEquals:
+                    return SyntaxKind.GreaterToken;
+                case BoundBinaryOperatorKind.NotEquals:
+                    return SyntaxKind.EqualsEqualsToken;
+            }
+
+            return null;
         }
     }
 }

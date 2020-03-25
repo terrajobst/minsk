@@ -20,7 +20,7 @@
                 "--project",
                 "${workspaceFolder}/src/mc/mc.csproj",
                 "--",
-                "${file}"
+                "${fileDirname}"
             ],
             "presentation": {
                 "echo": true,

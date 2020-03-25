@@ -2,7 +2,8 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed class WhileStatementSyntax : StatementSyntax
     {
-        public WhileStatementSyntax(SyntaxToken whileKeyword, ExpressionSyntax condition, StatementSyntax body)
+        public WhileStatementSyntax(SyntaxTree syntaxTree, SyntaxToken whileKeyword, ExpressionSyntax condition, StatementSyntax body)
+            : base(syntaxTree)
         {
             WhileKeyword = whileKeyword;
             Condition = condition;

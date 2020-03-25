@@ -10,6 +10,19 @@
                 "${workspaceFolder}/src/minsk.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "mc",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/mc/mc.csproj",
+                "--",
+                "${file}"
+            ],
+            "problemMatcher": "$msCompile"
         }
     ]
 }

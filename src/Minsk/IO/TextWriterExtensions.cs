@@ -101,12 +101,12 @@ namespace Minsk.IO
                 var lineIndex = text.GetLineIndex(span.Start);
                 var line = text.Lines[lineIndex];
 
-                Console.WriteLine();
+                writer.WriteLine();
 
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write($"{fileName}({startLine},{startCharacter},{endLine},{endCharacter}): ");
-                Console.WriteLine(diagnostic);
-                Console.ResetColor();
+                writer.SetForeground(ConsoleColor.DarkRed);
+                writer.Write($"{fileName}({startLine},{startCharacter},{endLine},{endCharacter}): ");
+                writer.WriteLine(diagnostic);
+                writer.ResetColor();
 
                 var prefixSpan = TextSpan.FromBounds(line.Start, span.Start);
                 var suffixSpan = TextSpan.FromBounds(span.End, line.End);
@@ -115,19 +115,19 @@ namespace Minsk.IO
                 var error = text.ToString(span);
                 var suffix = text.ToString(suffixSpan);
 
-                Console.Write("    ");
-                Console.Write(prefix);
+                writer.Write("    ");
+                writer.Write(prefix);
 
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write(error);
-                Console.ResetColor();
+                writer.SetForeground(ConsoleColor.DarkRed);
+                writer.Write(error);
+                writer.ResetColor();
 
-                Console.Write(suffix);
+                writer.Write(suffix);
 
-                Console.WriteLine();
+                writer.WriteLine();
             }
 
-            Console.WriteLine();
+            writer.WriteLine();
         }
     }
 }

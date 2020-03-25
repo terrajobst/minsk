@@ -11,12 +11,15 @@ namespace Minsk.IO
 {
     public static class TextWriterExtensions
     {
-        private static bool IsConsoleOut(this TextWriter writer)
+        private static bool IsConsole(this TextWriter writer)
         {
             if (writer == Console.Out)
-                return true;
+                return !Console.IsOutputRedirected;
 
-            if (writer is IndentedTextWriter iw && iw.InnerWriter.IsConsoleOut())
+            if (writer == Console.Error)
+                return !Console.IsErrorRedirected && !Console.IsOutputRedirected; // Color codes are always output to Console.Out
+
+            if (writer is IndentedTextWriter iw && iw.InnerWriter.IsConsole())
                 return true;
 
             return false;
@@ -24,13 +27,13 @@ namespace Minsk.IO
 
         private static void SetForeground(this TextWriter writer, ConsoleColor color)
         {
-            if (writer.IsConsoleOut())
+            if (writer.IsConsole())
                 Console.ForegroundColor = color;
         }
 
         private static void ResetColor(this TextWriter writer)
         {
-            if (writer.IsConsoleOut())
+            if (writer.IsConsole())
                 Console.ResetColor();
         }
 

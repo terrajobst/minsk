@@ -355,7 +355,7 @@ namespace Minsk.Tests.CodeAnalysis
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void Evaluator_AssignmentExpression_Reports_NotAVariable()
         {
@@ -401,7 +401,7 @@ namespace Minsk.Tests.CodeAnalysis
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void Evaluator_CallExpression_Reports_Undefined()
         {
@@ -413,7 +413,7 @@ namespace Minsk.Tests.CodeAnalysis
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void Evaluator_CallExpression_Reports_NotAFunction()
         {
@@ -476,7 +476,7 @@ namespace Minsk.Tests.CodeAnalysis
             ";
 
             var diagnostics = @"
-                An expression of type 'int' expected.
+                An expression of type 'int' is expected.
             ";
 
             AssertDiagnostics(text, diagnostics);

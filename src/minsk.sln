@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mi", "mi\mi.csproj", "{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "msi", "msi\msi.csproj", "{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minsk", "Minsk\Minsk.csproj", "{6FE6F7CC-1626-4731-9B68-7236B5A4C94C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minsk.Tests", "Minsk.Tests\Minsk.Tests.csproj", "{36E2CC3E-B08D-4B6D-8901-651C800CABAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mc", "mc\mc.csproj", "{016A06A3-0FED-42BE-99CA-74FDE1D0D03D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "msc", "msc\msc.csproj", "{016A06A3-0FED-42BE-99CA-74FDE1D0D03D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

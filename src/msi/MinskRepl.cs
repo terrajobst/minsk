@@ -108,6 +108,24 @@ namespace Minsk
             }
         }
 
+        [MetaCommand("dump", "Shows bound tree of a given function")]
+        private void EvaluateDump(string functionName)
+        {
+            if (_previous == null)
+                return;
+
+            var symbol = _previous.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
+            if (symbol == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"error: function '{functionName}' does not exist");
+                Console.ResetColor();
+                return;
+            }
+
+            _previous.EmitTree(symbol, Console.Out);
+        }
+
         protected override bool IsCompleteSubmission(string text)
         {
             if (string.IsNullOrEmpty(text))

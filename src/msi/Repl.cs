@@ -8,7 +8,7 @@ namespace Minsk
 {
     internal abstract class Repl
     {
-        private List<string> _submissionHistory = new List<string>();
+        private readonly List<string> _submissionHistory = new List<string>();
         private int _submissionHistoryIndex;
 
         private bool _done;

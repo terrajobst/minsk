@@ -50,6 +50,13 @@ namespace Minsk.CodeAnalysis.Symbols
             }
 
             writer.WritePunctuation(SyntaxKind.CloseParenthesisToken);
+
+            if (symbol.Type != TypeSymbol.Void)
+            {
+                writer.WritePunctuation(SyntaxKind.ColonToken);
+                writer.WriteSpace();
+                symbol.Type.WriteTo(writer);
+            }
         }
 
         private static void WriteGlobalVariableTo(GlobalVariableSymbol symbol, TextWriter writer)

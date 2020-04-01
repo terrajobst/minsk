@@ -12,6 +12,8 @@ namespace Minsk
     internal sealed class MinskRepl : Repl
     {
         private static bool _loadingSubmission;
+        private static readonly Compilation emptyCompilation = new Compilation();
+
         private Compilation _previous;
         private bool _showTree;
         private bool _showProgram;
@@ -97,7 +99,7 @@ namespace Minsk
         [MetaCommand("ls", "Lists all symbols")]
         private void EvaluateLs()
         {
-            var compilation = _previous ?? new Compilation();
+            var compilation = _previous ?? emptyCompilation;
             var symbols = compilation.GetSymbols().OrderBy(s => s.Kind).ThenBy(s => s.Name);
             foreach (var symbol in symbols)
             {
@@ -109,7 +111,7 @@ namespace Minsk
         [MetaCommand("dump", "Shows bound tree of a given function")]
         private void EvaluateDump(string functionName)
         {
-            var compilation = _previous ?? new Compilation();
+            var compilation = _previous ?? emptyCompilation;
             var symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
             if (symbol == null)
             {

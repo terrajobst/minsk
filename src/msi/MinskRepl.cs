@@ -15,6 +15,7 @@ namespace Minsk
         private Compilation _previous;
         private bool _showTree;
         private bool _showProgram;
+        private bool _optimize;
         private readonly Dictionary<VariableSymbol, object> _variables = new Dictionary<VariableSymbol, object>();
 
         public MinskRepl()
@@ -75,6 +76,13 @@ namespace Minsk
         {
             _showProgram = !_showProgram;
             Console.WriteLine(_showProgram ? "Showing bound tree." : "Not showing bound tree.");
+        }
+
+        [MetaCommand("optimize", "Optimizes the lowered representation")]
+        private void EvaluateOptimize()
+        {
+            _optimize = !_optimize;
+            Console.WriteLine(_optimize ? "Optimizing lowered representation." : "Not optimizing lowered representation.");
         }
 
         [MetaCommand("load", "Loads a script file")]
@@ -160,9 +168,9 @@ namespace Minsk
                 syntaxTree.Root.WriteTo(Console.Out);
 
             if (_showProgram)
-                compilation.EmitTree(Console.Out);
+                compilation.EmitTree(Console.Out, _optimize);
 
-            var result = compilation.Evaluate(_variables);
+            var result = compilation.Evaluate(_variables, _optimize);
 
             if (!result.Diagnostics.Any())
             {

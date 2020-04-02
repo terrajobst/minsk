@@ -7,9 +7,9 @@
 
 ## Completed items
 
-* Add support for bitwise operators
-* Add ability to output the bound tree
-* Add ability to lower bound tree
+* Added support for bitwise operators
+* Added ability to output the bound tree
+* Added ability to lower bound tree
 * Lower `for`-statements into `while`-statements
 * Print syntax and bound tree before evaluation
 * Lower `if`, `while`, and `for` into gotos

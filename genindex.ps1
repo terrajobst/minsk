@@ -1,8 +1,8 @@
 $indexDir = "bin\index"
 $toolsDir = "bin\indexTools"
 $zipFile = "$toolsDir\indexTools.zip"
-$url = "https://github.com/KirillOsenkov/SourceBrowser/releases/download/v1.0.21/HtmlGenerator.zip"
-$toolExe = "$toolsDir\HtmlGenerator\HtmlGenerator.exe"
+$url = "https://www.nuget.org/api/v2/package/SourceBrowser/1.0.25"
+$toolExe = "$toolsDir\tools\HtmlGenerator.exe"
 $sln = "src\minsk.sln"
 
 mkdir $toolsDir | out-null

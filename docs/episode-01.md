@@ -1,15 +1,15 @@
 # Episode 1
 
-[Video](https://www.youtube.com/watch?v=wgHIkdUQbp0&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=1) |
+[Video](https://www.youtube.com/watch?v=wgHIkdUQbp0&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=1&t=19) |
 [Pull Request](https://github.com/terrajobst/minsk/pull/1) |
 [Next](episode-02.md)
 
 ## Completed items
 
 * Basic REPL (read-eval-print loop) for an expression evaluator
-* Comprised of a lexer, a parser, and an evaluator
-* Handles `+`, `-`, `*`, `/`, and parenthesized expressions
-* Prints syntax trees
+* Added lexer, a parser, and an evaluator
+* Handle `+`, `-`, `*`, `/`, and parenthesized expressions
+* Print syntax trees
 
 ## Interesting aspects
 

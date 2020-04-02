@@ -15,19 +15,21 @@ namespace Minsk.CodeAnalysis
     {
         private BoundGlobalScope _globalScope;
 
-        public Compilation(SyntaxTree syntaxTree)
-            : this(null, syntaxTree)
+        public Compilation(params SyntaxTree[] syntaxTrees)
+            : this(null, syntaxTrees)
         {
         }
 
-        private Compilation(Compilation previous, SyntaxTree syntaxTree)
+        private Compilation(Compilation previous, params SyntaxTree[] syntaxTrees)
         {
             Previous = previous;
-            SyntaxTree = syntaxTree;
+            SyntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
         public Compilation Previous { get; }
-        public SyntaxTree SyntaxTree { get; }
+        public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
+        public ImmutableArray<FunctionSymbol> Functions => GlobalScope.Functions;
+        public ImmutableArray<VariableSymbol> Variables => GlobalScope.Variables;
 
         internal BoundGlobalScope GlobalScope
         {
@@ -35,11 +37,30 @@ namespace Minsk.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree.Root);
+                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
                 return _globalScope;
+            }
+        }
+
+        public IEnumerable<Symbol> GetSymbols()
+        {
+            var submission = this;
+            var seenSymbolNames = new HashSet<string>();
+
+            while (submission != null)
+            {
+                foreach (var function in submission.Functions)
+                    if (seenSymbolNames.Add(function.Name))
+                        yield return function;
+
+                foreach (var variable in submission.Variables)
+                    if (seenSymbolNames.Add(variable.Name))
+                        yield return variable;
+
+                submission = submission.Previous;
             }
         }
 
@@ -50,7 +71,9 @@ namespace Minsk.CodeAnalysis
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables, bool optimize = false)
         {
-            var diagnostics = SyntaxTree.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
+            var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
+
+            var diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
@@ -90,9 +113,21 @@ namespace Minsk.CodeAnalysis
                         continue;
 
                     functionBody.Key.WriteTo(writer);
+                    writer.WriteLine();
                     functionBody.Value.WriteTo(writer);
                 }
             }
+        }
+
+        public void EmitTree(FunctionSymbol symbol, TextWriter writer)
+        {
+            var program = Binder.BindProgram(GlobalScope);
+            if (!program.Functions.TryGetValue(symbol, out var body))
+                return;
+
+            symbol.WriteTo(writer);
+            writer.WriteLine();
+            body.WriteTo(writer);
         }
     }
 }

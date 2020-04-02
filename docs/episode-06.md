@@ -7,11 +7,11 @@
 
 ## Completed items
 
-* Add colorization to REPL
-* Add compilation unit
-* Add chaining to compilations
-* Add statements
-* Add variable declaration statements
+* Added colorization to REPL
+* Added compilation unit
+* Added chaining to compilations
+* Added statements
+* Added variable declaration statements
 
 ## Interesting aspects
 

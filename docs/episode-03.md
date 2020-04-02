@@ -7,8 +7,8 @@
 
 ## Completed items
 
-* Extract compiler into a separate library
-* Expose span on diagnostics that indicate where the error occurred
+* Extracted compiler into a separate library
+* Exposed span on diagnostics that indicate where the error occurred
 * Support for assignments and variables
 
 ## Interesting aspects

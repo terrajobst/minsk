@@ -7,7 +7,7 @@
 
 ## Completed items
 
-Add support for `return` statements and control flow analysis.
+We added support for `return` statements and control flow analysis.
 
 ## Interesting aspects
 

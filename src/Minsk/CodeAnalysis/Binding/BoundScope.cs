@@ -34,32 +34,12 @@ namespace Minsk.CodeAnalysis.Binding
             return true;
         }
 
-        public bool TryLookupVariable(string name, out VariableSymbol variable)
-            => TryLookupSymbol(name, out variable);
-
-        public bool TryLookupFunction(string name, out FunctionSymbol function)
-            => TryLookupSymbol(name, out function);
-
-        private bool TryLookupSymbol<TSymbol>(string name, out TSymbol symbol)
-            where TSymbol : Symbol
+        public Symbol TryLookupSymbol(string name)
         {
-            symbol = null;
+            if (_symbols != null && _symbols.TryGetValue(name, out var symbol))
+                return symbol;
 
-            if (_symbols != null && _symbols.TryGetValue(name, out var declaredSymbol))
-            {
-                if (declaredSymbol is TSymbol matchingSymbol)
-                {
-                    symbol = matchingSymbol;
-                    return true;
-                }
-
-                return false;
-            }
-
-            if (Parent == null)
-                return false;
-
-            return Parent.TryLookupSymbol(name, out symbol);
+            return Parent?.TryLookupSymbol(name);
         }
 
         public ImmutableArray<VariableSymbol> GetDeclaredVariables()

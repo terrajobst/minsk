@@ -119,9 +119,9 @@ namespace Minsk.CodeAnalysis
             }
         }
 
-        public void EmitTree(FunctionSymbol symbol, TextWriter writer)
+        public void EmitTree(FunctionSymbol symbol, TextWriter writer, bool optimize = false)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = Binder.BindProgram(GlobalScope, optimize);
             if (!program.Functions.TryGetValue(symbol, out var body))
                 return;
 

@@ -131,7 +131,7 @@ namespace Minsk
                 return;
             }
 
-            _previous.EmitTree(symbol, Console.Out);
+            _previous.EmitTree(symbol, Console.Out, _optimize);
         }
 
         protected override bool IsCompleteSubmission(string text)

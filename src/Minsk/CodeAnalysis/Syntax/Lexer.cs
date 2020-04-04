@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Immutable;
 using System.Text;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Text;
@@ -15,6 +15,9 @@ namespace Minsk.CodeAnalysis.Syntax
         private int _start;
         private SyntaxKind _kind;
         private object _value;
+
+        private int _triviaStart;
+        private SyntaxKind _triviaKind;
 
         public Lexer(SyntaxTree syntaxTree)
         {
@@ -40,6 +43,8 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public SyntaxToken Lex()
         {
+            var leadingTrivia = LexTrivia(stopAtEndOfLine: false);
+
             _start = _position;
             _kind = SyntaxKind.BadToken;
             _value = null;
@@ -176,20 +181,10 @@ namespace Minsk.CodeAnalysis.Syntax
                 case '5': case '6': case '7': case '8': case '9':
                     ReadNumber();
                     break;
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\r':
-                    ReadWhiteSpace();
-                    break;
                 default:
                     if (char.IsLetter(Current))
                     {
                         ReadIdentifierOrKeyword();
-                    }
-                    else if (char.IsWhiteSpace(Current))
-                    {
-                        ReadWhiteSpace();
                     }
                     else
                     {
@@ -206,7 +201,9 @@ namespace Minsk.CodeAnalysis.Syntax
             if (text == null)
                 text = _text.ToString(_start, length);
 
-            return new SyntaxToken(_syntaxTree, _kind, _start, text, _value);
+            var trailingTrivia = LexTrivia(stopAtEndOfLine: true);
+
+            return new SyntaxToken(_syntaxTree, _kind, _start, text, _value, leadingTrivia, trailingTrivia);
         }
 
         private void ReadString()
@@ -252,14 +249,6 @@ namespace Minsk.CodeAnalysis.Syntax
             _value = sb.ToString();
         }
 
-        private void ReadWhiteSpace()
-        {
-            while (char.IsWhiteSpace(Current))
-                _position++;
-
-            _kind = SyntaxKind.WhitespaceToken;
-        }
-
         private void ReadNumber()
         {
             while (char.IsDigit(Current))
@@ -286,6 +275,69 @@ namespace Minsk.CodeAnalysis.Syntax
             var length = _position - _start;
             var text = _text.ToString(_start, length);
             _kind = SyntaxFacts.GetKeywordKind(text);
+        }
+
+        private ImmutableArray<SyntaxTrivia> LexTrivia(bool stopAtEndOfLine)
+        {
+            var triviaBuilder = ImmutableArray.CreateBuilder<SyntaxTrivia>();
+
+            while (true)
+            {
+                var trivia = LexSingleTrivia();
+                if (trivia == null)
+                    break;
+
+                triviaBuilder.Add(trivia);
+
+                if (stopAtEndOfLine && trivia.Kind == SyntaxKind.EndOfLineTrivia)
+                    break;
+            }
+
+            return triviaBuilder.ToImmutable();
+        }
+
+        private SyntaxTrivia LexSingleTrivia()
+        {
+            _triviaStart = _position;
+            _triviaKind = SyntaxKind.BadToken;
+
+            switch (Current)
+            {
+                case '\n':
+                case '\r':
+                    if (Current == '\r' && Lookahead == '\n')
+                        _position += 2;
+                    else if (Current == '\r' || Current == '\n')
+                        _position++;
+
+                    _triviaKind = SyntaxKind.EndOfLineTrivia;
+                    break;
+                case ' ':
+                case '\t':
+                    ReadWhiteSpace();
+                    break;
+                default:
+                    if (char.IsWhiteSpace(Current))
+                    {
+                        ReadWhiteSpace();
+                        break;
+                    }
+                    // no trivia found, continue lexing tokens
+                    return null;
+            }
+
+            var length = _position - _triviaStart;
+            var text = _text.ToString(_triviaStart, length);
+
+            return new SyntaxTrivia(_triviaKind, text);
+        }
+
+        private void ReadWhiteSpace()
+        {
+            while (char.IsWhiteSpace(Current) && Current != '\n' && Current != '\r')
+                _position++;
+
+            _triviaKind = SyntaxKind.WhitespaceTrivia;
         }
     }
 }

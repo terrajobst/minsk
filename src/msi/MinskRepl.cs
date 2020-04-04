@@ -27,6 +27,9 @@ namespace Minsk
             var tokens = SyntaxTree.ParseTokens(line);
             foreach (var token in tokens)
             {
+                foreach (var trivia in token.LeadingTrivia)
+                    Console.Write(trivia.Text);
+
                 var isKeyword = token.Kind.ToString().EndsWith("Keyword");
                 var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
                 var isNumber = token.Kind == SyntaxKind.NumberToken;
@@ -46,6 +49,9 @@ namespace Minsk
                 Console.Write(token.Text);
 
                 Console.ResetColor();
+
+                foreach (var trivia in token.TrailingTrivia)
+                    Console.Write(trivia.Text);
             }
         }
 

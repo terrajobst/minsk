@@ -32,7 +32,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                                  .Where(k => k.ToString().EndsWith("Keyword") ||
                                              k.ToString().EndsWith("Token"));
 
-            var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
+            var testedTokenKinds = GetTokens().Select(t => t.kind);
 
             var untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
             untestedTokenKinds.Remove(SyntaxKind.BadToken);
@@ -77,18 +77,19 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             var text = t1Text + separatorText + t2Text;
             var tokens = SyntaxTree.ParseTokens(text).ToArray();
 
-            Assert.Equal(3, tokens.Length);
+            Assert.Equal(2, tokens.Length);
             Assert.Equal(t1Kind, tokens[0].Kind);
             Assert.Equal(t1Text, tokens[0].Text);
-            Assert.Equal(separatorKind, tokens[1].Kind);
-            Assert.Equal(separatorText, tokens[1].Text);
-            Assert.Equal(t2Kind, tokens[2].Kind);
-            Assert.Equal(t2Text, tokens[2].Text);
+            var trivia = Assert.Single(tokens[0].TrailingTrivia);
+            Assert.Equal(separatorKind, trivia.Kind);
+            Assert.Equal(separatorText, trivia.Text);
+            Assert.Equal(t2Kind, tokens[1].Kind);
+            Assert.Equal(t2Text, tokens[1].Text);
         }
 
         public static IEnumerable<object[]> GetTokensData()
         {
-            foreach (var t in GetTokens().Concat(GetSeparators()))
+            foreach (var t in GetTokens())
                 yield return new object[] { t.kind, t.text };
         }
 
@@ -129,11 +130,11 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
         {
             return new[]
             {
-                (SyntaxKind.WhitespaceToken, " "),
-                (SyntaxKind.WhitespaceToken, "  "),
-                (SyntaxKind.WhitespaceToken, "\r"),
-                (SyntaxKind.WhitespaceToken, "\n"),
-                (SyntaxKind.WhitespaceToken, "\r\n")
+                (SyntaxKind.WhitespaceTrivia, " "),
+                (SyntaxKind.WhitespaceTrivia, "  "),
+                (SyntaxKind.EndOfLineTrivia, "\r"),
+                (SyntaxKind.EndOfLineTrivia, "\n"),
+                (SyntaxKind.EndOfLineTrivia, "\r\n")
             };
         }
 

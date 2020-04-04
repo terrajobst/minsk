@@ -23,8 +23,7 @@ namespace Minsk.CodeAnalysis.Syntax
             {
                 token = lexer.Lex();
 
-                if (token.Kind != SyntaxKind.WhitespaceToken &&
-                    token.Kind != SyntaxKind.BadToken)
+                if (token.Kind != SyntaxKind.BadToken)
                 {
                     tokens.Add(token);
                 }
@@ -62,7 +61,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 return NextToken();
 
             _diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
-            return new SyntaxToken(_syntaxTree, kind, Current.Position, null, null);
+            return new SyntaxToken(_syntaxTree, kind, Current.Position, null, null, ImmutableArray<SyntaxTrivia>.Empty, ImmutableArray<SyntaxTrivia>.Empty);
         }
 
         public CompilationUnitSyntax ParseCompilationUnit()

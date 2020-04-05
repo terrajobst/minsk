@@ -316,6 +316,9 @@ namespace Minsk.CodeAnalysis.Syntax
                 case '\t':
                     ReadWhiteSpace();
                     break;
+                case '/' when Lookahead == '/':
+                    ReadSingleLineComment();
+                    break;
                 default:
                     if (char.IsWhiteSpace(Current))
                     {
@@ -338,6 +341,14 @@ namespace Minsk.CodeAnalysis.Syntax
                 _position++;
 
             _triviaKind = SyntaxKind.WhitespaceTrivia;
+        }
+
+        private void ReadSingleLineComment()
+        {
+            while (Current != '\0' && Current != '\n' && Current != '\r')
+                _position++;
+
+            _triviaKind = SyntaxKind.SingleLineCommentTrivia;
         }
     }
 }

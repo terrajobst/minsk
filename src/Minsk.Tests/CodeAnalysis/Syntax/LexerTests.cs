@@ -197,6 +197,9 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipePipeToken)
                 return true;
 
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SlashToken)
+                return true;
+
             return false;
         }
 

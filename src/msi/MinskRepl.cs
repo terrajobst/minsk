@@ -24,34 +24,39 @@ namespace Minsk
 
         protected override void RenderLine(string line)
         {
-            var tokens = SyntaxTree.ParseTokens(line);
+            var tokens = SyntaxTree.ParseTokens(line, includeEndOfFile: true);
             foreach (var token in tokens)
             {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
                 foreach (var trivia in token.LeadingTrivia)
                     Console.Write(trivia.Text);
 
-                var isKeyword = token.Kind.ToString().EndsWith("Keyword");
-                var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
-                var isNumber = token.Kind == SyntaxKind.NumberToken;
-                var isString = token.Kind == SyntaxKind.StringToken;
+                if (token.Kind != SyntaxKind.EndOfFileToken)
+                {
+                    var isKeyword = token.Kind.ToString().EndsWith("Keyword");
+                    var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
+                    var isNumber = token.Kind == SyntaxKind.NumberToken;
+                    var isString = token.Kind == SyntaxKind.StringToken;
 
-                if (isKeyword)
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                else if (isIdentifier)
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                else if (isNumber)
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                else if (isString)
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                else
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    if (isKeyword)
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                    else if (isIdentifier)
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    else if (isNumber)
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                    else if (isString)
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                    else
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
 
-                Console.Write(token.Text);
+                    Console.Write(token.Text);
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    foreach (var trivia in token.TrailingTrivia)
+                        Console.Write(trivia.Text);
+                }
 
                 Console.ResetColor();
-
-                foreach (var trivia in token.TrailingTrivia)
-                    Console.Write(trivia.Text);
             }
         }
 

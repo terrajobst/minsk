@@ -50,24 +50,24 @@ namespace Minsk.CodeAnalysis.Syntax
             return new SyntaxTree(text, Parse);
         }
 
-        public static ImmutableArray<SyntaxToken> ParseTokens(string text)
+        public static ImmutableArray<SyntaxToken> ParseTokens(string text, bool includeEndOfFile = false)
         {
             var sourceText = SourceText.From(text);
-            return ParseTokens(sourceText);
+            return ParseTokens(sourceText, includeEndOfFile);
         }
 
-        public static ImmutableArray<SyntaxToken> ParseTokens(string text, out ImmutableArray<Diagnostic> diagnostics)
+        public static ImmutableArray<SyntaxToken> ParseTokens(string text, out ImmutableArray<Diagnostic> diagnostics, bool includeEndOfFile = false)
         {
             var sourceText = SourceText.From(text);
-            return ParseTokens(sourceText, out diagnostics);
+            return ParseTokens(sourceText, out diagnostics, includeEndOfFile);
         }
 
-        public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text)
+        public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text, bool includeEndOfFile = false)
         {
-            return ParseTokens(text, out _);
+            return ParseTokens(text, out _, includeEndOfFile);
         }
 
-        public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text, out ImmutableArray<Diagnostic> diagnostics)
+        public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text, out ImmutableArray<Diagnostic> diagnostics, bool includeEndOfFile = false)
         {
             var tokens = new List<SyntaxToken>();
 
@@ -81,6 +81,9 @@ namespace Minsk.CodeAnalysis.Syntax
                     var token = l.Lex();
                     if (token.Kind == SyntaxKind.EndOfFileToken)
                     {
+                        if (includeEndOfFile)
+                            tokens.Add(token);
+
                         root = new CompilationUnitSyntax(st, ImmutableArray<MemberSyntax>.Empty, token);
                         break;
                     }

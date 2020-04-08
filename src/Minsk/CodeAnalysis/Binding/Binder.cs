@@ -54,14 +54,71 @@ namespace Minsk.CodeAnalysis.Binding
                 statements.Add(statement);
             }
 
+            // Check global statements
+
+            var firstGlobalStatementPerSyntaxTree = syntaxTrees.Select(st => st.Root.Members.OfType<GlobalStatementSyntax>().FirstOrDefault())
+                                                                .Where(g => g != null)
+                                                                .ToArray();
+
+            if (firstGlobalStatementPerSyntaxTree.Length > 1)
+            {
+                foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
+                    binder.Diagnostics.ReportOnlyOneFileCanHaveGlobalStatements(globalStatement.Location);
+            }
+
+            // Check for main/script with global statements
+
             var functions = binder._scope.GetDeclaredFunctions();
-            var variables = binder._scope.GetDeclaredVariables();
+
+            FunctionSymbol mainFunction;
+            FunctionSymbol scriptFunction;
+
+            if (isScript)
+            {
+                mainFunction = null;
+                if (globalStatements.Any())
+                {
+                    scriptFunction = new FunctionSymbol("$eval", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Any, null);
+                }
+                else
+                {
+                    scriptFunction = null;
+                }
+            }
+            else
+            {
+                mainFunction = functions.FirstOrDefault(f => f.Name == "main");
+                scriptFunction = null;
+
+                if (mainFunction != null)
+                {
+                    if (mainFunction.Type != TypeSymbol.Void || mainFunction.Parameters.Any())
+                        binder.Diagnostics.ReportMainMustHaveCorrectSignature(mainFunction.Declaration.Identifier.Location);
+                }
+
+                if (globalStatements.Any())
+                {
+                    if (mainFunction != null)
+                    {
+                        binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration.Identifier.Location);
+
+                        foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
+                            binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(globalStatement.Location);
+                    }
+                    else
+                    {
+                        mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void, null);
+                    }
+                }
+            }
+
             var diagnostics = binder.Diagnostics.ToImmutableArray();
+            var variables = binder._scope.GetDeclaredVariables();
 
             if (previous != null)
                 diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
 
-            return new BoundGlobalScope(previous, diagnostics, functions, variables, statements.ToImmutable());
+            return new BoundGlobalScope(previous, diagnostics, mainFunction, scriptFunction, functions, variables, statements.ToImmutable());
         }
 
         public static BoundProgram BindProgram(bool isScript, BoundProgram previous, BoundGlobalScope globalScope)
@@ -85,9 +142,35 @@ namespace Minsk.CodeAnalysis.Binding
                 diagnostics.AddRange(binder.Diagnostics);
             }
 
-            var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+            if (globalScope.MainFunction != null && globalScope.Statements.Any())
+            {
+                var body = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                functionBodies.Add(globalScope.MainFunction, body);
+            }
+            else if (globalScope.ScriptFunction != null)
+            {
+                var statements = globalScope.Statements;
+                if (statements.Length == 1 &&
+                    statements[0] is BoundExpressionStatement es &&
+                    es.Expression.Type != TypeSymbol.Void)
+                {
+                    statements = statements.SetItem(0, new BoundReturnStatement(es.Expression));
+                }
+                else if (statements.Any() && statements.Last().Kind != BoundNodeKind.ReturnStatement)
+                {
+                    var nullValue = new BoundLiteralExpression("");
+                    statements = statements.Add(new BoundReturnStatement(nullValue));
+                }
 
-            return new BoundProgram(previous, diagnostics.ToImmutable(), functionBodies.ToImmutable(), statement);
+                var body = Lowerer.Lower(new BoundBlockStatement(statements));
+                functionBodies.Add(globalScope.ScriptFunction, body);
+            }
+
+            return new BoundProgram(previous,
+                                    diagnostics.ToImmutable(),
+                                    globalScope.MainFunction,
+                                    globalScope.ScriptFunction,
+                                    functionBodies.ToImmutable());
         }
 
         private void BindFunctionDeclaration(FunctionDeclarationSyntax syntax)
@@ -339,7 +422,17 @@ namespace Minsk.CodeAnalysis.Binding
 
             if (_function == null)
             {
-                _diagnostics.ReportInvalidReturn(syntax.ReturnKeyword.Location);
+                if (_isScript)
+                {
+                    // Ignore because we allow both return with and without values.
+                    if (expression == null)
+                        expression = new BoundLiteralExpression("");
+                }
+                else if (expression != null)
+                {
+                    // Main does not support return values.
+                    _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Location, _function.Name);
+                }
             }
             else
             {

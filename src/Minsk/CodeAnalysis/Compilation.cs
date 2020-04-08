@@ -63,10 +63,7 @@ namespace Minsk.CodeAnalysis
                     .Where(fi => fi.FieldType == typeof(FunctionSymbol))
                     .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
                     .ToList();
-                foreach (var builtin in builtinFunctions)
-                    if (seenSymbolNames.Add(builtin.Name))
-                        yield return builtin;
-
+                
                 foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
                         yield return function;
@@ -74,6 +71,10 @@ namespace Minsk.CodeAnalysis
                 foreach (var variable in submission.Variables)
                     if (seenSymbolNames.Add(variable.Name))
                         yield return variable;
+
+                foreach (var builtin in builtinFunctions)
+                    if (seenSymbolNames.Add(builtin.Name))
+                        yield return builtin;
 
                 submission = submission.Previous;
             }

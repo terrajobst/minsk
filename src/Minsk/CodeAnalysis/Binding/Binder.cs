@@ -62,37 +62,30 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundGlobalScope(previous, diagnostics, functions, variables, statements.ToImmutable());
         }
 
-        public static BoundProgram BindProgram(BoundGlobalScope globalScope)
+        public static BoundProgram BindProgram(BoundProgram previous, BoundGlobalScope globalScope)
         {
             var parentScope = CreateParentScope(globalScope);
 
             var functionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
 
-            var scope = globalScope;
-
-            while (scope != null)
+            foreach (var function in globalScope.Functions)
             {
-                foreach (var function in scope.Functions)
-                {
-                    var binder = new Binder(parentScope, function);
-                    var body = binder.BindStatement(function.Declaration.Body);
-                    var loweredBody = Lowerer.Lower(body);
+                var binder = new Binder(parentScope, function);
+                var body = binder.BindStatement(function.Declaration.Body);
+                var loweredBody = Lowerer.Lower(body);
 
-                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
-                        binder._diagnostics.ReportAllPathsMustReturn(function.Declaration.Identifier.Location);
+                if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                    binder._diagnostics.ReportAllPathsMustReturn(function.Declaration.Identifier.Location);
 
-                    functionBodies.Add(function, loweredBody);
+                functionBodies.Add(function, loweredBody);
 
-                    diagnostics.AddRange(binder.Diagnostics);
-                }
-
-                scope = scope.Previous;
+                diagnostics.AddRange(binder.Diagnostics);
             }
 
             var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
 
-            return new BoundProgram(diagnostics.ToImmutable(), functionBodies.ToImmutable(), statement);
+            return new BoundProgram(previous, diagnostics.ToImmutable(), functionBodies.ToImmutable(), statement);
         }
 
         private void BindFunctionDeclaration(FunctionDeclarationSyntax syntax)

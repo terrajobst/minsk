@@ -9,6 +9,8 @@ using Minsk.CodeAnalysis.Lowering;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 
+using ReflectionBindingFlags = System.Reflection.BindingFlags;
+
 namespace Minsk.CodeAnalysis
 {
     public sealed class Compilation
@@ -52,6 +54,19 @@ namespace Minsk.CodeAnalysis
 
             while (submission != null)
             {
+                const ReflectionBindingFlags bindingFlags = 
+                    ReflectionBindingFlags.Static |
+                    ReflectionBindingFlags.Public |
+                    ReflectionBindingFlags.NonPublic;
+                var builtinFunctions = typeof(BuiltinFunctions)
+                    .GetFields(bindingFlags)
+                    .Where(fi => fi.FieldType == typeof(FunctionSymbol))
+                    .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
+                    .ToList();
+                foreach (var builtin in builtinFunctions)
+                    if (seenSymbolNames.Add(builtin.Name))
+                        yield return builtin;
+
                 foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
                         yield return function;
@@ -122,11 +137,10 @@ namespace Minsk.CodeAnalysis
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
         {
             var program = Binder.BindProgram(GlobalScope);
-            if (!program.Functions.TryGetValue(symbol, out var body))
-                return;
-
             symbol.WriteTo(writer);
             writer.WriteLine();
+            if (!program.Functions.TryGetValue(symbol, out var body))
+                return;
             body.WriteTo(writer);
         }
     }

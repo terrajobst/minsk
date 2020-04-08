@@ -377,7 +377,7 @@ namespace Minsk
         private void HandlePageDown(ObservableCollection<string> document, SubmissionView view)
         {
             _submissionHistoryIndex++;
-            if (_submissionHistoryIndex > _submissionHistory.Count -1)
+            if (_submissionHistoryIndex > _submissionHistory.Count - 1)
                 _submissionHistoryIndex = 0;
             UpdateDocumentFromHistory(document, view);
         }
@@ -427,7 +427,7 @@ namespace Minsk
             while (position < input.Length)
             {
                 var c = input[position];
-                var l = position + 1>= input.Length ? '\0' : input[position + 1];
+                var l = position + 1 >= input.Length ? '\0' : input[position + 1];
 
                 if (char.IsWhiteSpace(c))
                 {
@@ -499,7 +499,7 @@ namespace Minsk
 
         protected abstract void EvaluateSubmission(string text);
 
-        [AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
+        [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
         protected sealed class MetaCommandAttribute : Attribute
         {
             public MetaCommandAttribute(string name, string description)
@@ -533,10 +533,31 @@ namespace Minsk
 
             foreach (var metaCommand in _metaCommands.OrderBy(mc => mc.Name))
             {
-                var paddedName = metaCommand.Name.PadRight(maxNameLength);
+                var metaParams = metaCommand.Method.GetParameters();
+                if (metaParams.Length == 0)
+                {
+                    var paddedName = metaCommand.Name.PadRight(maxNameLength);
 
-                Console.Out.WritePunctuation("#");
-                Console.Out.WriteIdentifier(paddedName);
+                    Console.Out.WritePunctuation("#");
+                    Console.Out.WriteIdentifier(paddedName);
+                }
+                else
+                {
+                    Console.Out.WritePunctuation("#");
+                    Console.Out.WriteIdentifier(metaCommand.Name);
+                    foreach (var pi in metaParams)
+                    {
+                        Console.Out.WriteSpace();
+                        Console.Out.WritePunctuation("<");
+                        Console.Out.WriteIdentifier(pi.Name);
+                        Console.Out.WritePunctuation(">");
+                    }
+                    Console.Out.WriteLine();
+                    Console.Out.WriteSpace();
+                    for (int _ = 0; _ < maxNameLength; _++)
+                        Console.Out.WriteSpace();
+
+                }
                 Console.Out.WriteSpace();
                 Console.Out.WriteSpace();
                 Console.Out.WriteSpace();

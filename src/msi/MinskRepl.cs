@@ -213,7 +213,9 @@ namespace Minsk
 
         private static void ClearSubmissions()
         {
-            Directory.Delete(GetSubmissionsDirectory(), recursive: true);
+            var dir = GetSubmissionsDirectory();
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, recursive: true);
         }
 
         private void SaveSubmission(string text)

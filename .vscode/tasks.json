@@ -18,7 +18,7 @@
             "args": [
                 "run",
                 "--project",
-                "${workspaceFolder}/src/mc/mc.csproj",
+                "${workspaceFolder}/src/msc/msc.csproj",
                 "--",
                 "${fileDirname}"
             ],

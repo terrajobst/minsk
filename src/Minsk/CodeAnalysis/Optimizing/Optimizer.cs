@@ -65,6 +65,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                         builder.Add(statement);
                 }
             }
+            skipUpToNextLabel =  false;
 
             bool checkPendingRemove = true;
             while (checkPendingRemove)

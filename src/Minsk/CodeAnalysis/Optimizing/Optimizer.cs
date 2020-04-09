@@ -60,7 +60,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 void addStatement()
                 {
                     if (skipUpToNextLabel)
-                        initBuilder(i);
+                        InitBuilder(block, ref builder, i);
                     else if (builder != null)
                         builder.Add(statement);
                 }
@@ -76,7 +76,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                     var pos = item.Value;
                     if (!targetedLabels.ContainsKey(label))
                     {
-                        initBuilder(block.Statements.Length);
+                        InitBuilder(block, ref builder, block.Statements.Length);
                         builder[pos] = BoundNoOperationStatement.Instance;
                         definedLabels.Remove(label);
                     }
@@ -99,7 +99,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                                 {
                                     var cndJumpStatement = (BoundConditionalGotoStatement) getStatement(jump.line);
                                     var jumpStatement = (BoundGotoStatement) next.statement;
-                                    initBuilder(block.Statements.Length);
+                                    InitBuilder(block, ref builder, block.Statements.Length);
                                     removeStatement(jump.line);
                                     removeStatement(next.line);
                                     builder[next.line] = new BoundConditionalGotoStatement(jumpStatement.Label, cndJumpStatement.Condition, !cndJumpStatement.JumpIfTrue);
@@ -121,7 +121,7 @@ namespace Minsk.CodeAnalysis.Optimizing
 
                             if (lblPos > jump.line && !intermediateLabelsWithOuterJumps.Any())
                             {
-                                initBuilder(block.Statements.Length);
+                                InitBuilder(block, ref builder, block.Statements.Length);
                                 for (int j = jump.line; j < lblPos; j++)
                                     removeStatement(j);
                                 checkPendingRemove = true;
@@ -135,7 +135,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                                         break;
                                     if (statement.Kind != BoundNodeKind.NoOperationStatement)
                                     {
-                                        initBuilder(block.Statements.Length);
+                                        InitBuilder(block, ref builder, block.Statements.Length);
                                         removeStatement(j);
                                         checkPendingRemove = true;
                                     }
@@ -150,16 +150,6 @@ namespace Minsk.CodeAnalysis.Optimizing
                 return block;
             else
                 return new BoundBlockStatement(builder.ToImmutable());
-
-            void initBuilder(int upperLimit)
-            {
-                if (builder == null)
-                {
-                    builder = ImmutableArray.CreateBuilder<BoundStatement>();
-                    for (int j = 0; j < upperLimit; j++)
-                        builder.Add(block.Statements[j]);
-                }
-            }
 
             void addTargetToLabel(BoundLabel label, int line, bool conditional)
             {
@@ -218,25 +208,23 @@ namespace Minsk.CodeAnalysis.Optimizing
             {
                 var statement = block.Statements[i];
                 if (statement.Kind == BoundNodeKind.NoOperationStatement)
-                {
-                    if (builder == null)
-                    {
-                        builder = ImmutableArray.CreateBuilder<BoundStatement>(block.Statements.Length);
-
-                        for (var j = 0; j < i; j++)
-                            builder.Add(block.Statements[j]);
-                    }
-                }
-                else
-                {
-                    if (builder != null)
-                        builder.Add(statement);
-                }
+                    InitBuilder(block, ref builder, i);
+                else if (builder != null)
+                    builder.Add(statement);
             }
             if (builder == null)
                 return block;
             else
                 return new BoundBlockStatement(builder.ToImmutable());
+        }
+        private static void InitBuilder(BoundBlockStatement block, ref ImmutableArray<BoundStatement>.Builder builder, int upperLimit)
+        {
+            if (builder == null)
+            {
+                builder = ImmutableArray.CreateBuilder<BoundStatement>(block.Statements.Length);
+                for (int j = 0; j < upperLimit; j++)
+                    builder.Add(block.Statements[j]);
+            }
         }
 
         protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)

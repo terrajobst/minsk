@@ -96,7 +96,7 @@ namespace Minsk.Tests.CodeAnalysis
         public void Evaluator_Computes_OptimizationsCoherently(string text)
         {
             var syntaxTree = SyntaxTree.Parse(text);
-            var compilation = new Compilation(syntaxTree);
+            var compilation = Compilation.CreateScript(null, syntaxTree);
             var expectedResult = compilation.Evaluate(new Dictionary<VariableSymbol, object>(), optimize: false);
             var optimizedResult = compilation.Evaluate(new Dictionary<VariableSymbol, object>(), optimize: true);
 

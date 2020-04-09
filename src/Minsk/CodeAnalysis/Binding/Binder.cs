@@ -149,6 +149,8 @@ namespace Minsk.CodeAnalysis.Binding
             if (globalScope.MainFunction != null && globalScope.Statements.Any())
             {
                 var body = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                if (optimize)
+                    body = Optimizer.Optimize(body);
                 functionBodies.Add(globalScope.MainFunction, body);
             }
             else if (globalScope.ScriptFunction != null)
@@ -166,10 +168,10 @@ namespace Minsk.CodeAnalysis.Binding
                     statements = statements.Add(new BoundReturnStatement(nullValue));
                 }
 
-                var statements = Lowerer.Lower(new BoundBlockStatement(statements));
+                var body = Lowerer.Lower(new BoundBlockStatement(statements));
                 if (optimize)
-                    statements = Optimizer.Optimize(statements);
-                functionBodies.Add(globalScope.ScriptFunction, statements);
+                    body = Optimizer.Optimize(body);
+                functionBodies.Add(globalScope.ScriptFunction, body);
             }
 
             return new BoundProgram(previous,

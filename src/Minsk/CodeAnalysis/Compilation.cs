@@ -90,7 +90,7 @@ namespace Minsk.CodeAnalysis
 
         private BoundProgram GetProgram(bool optimize)
         {
-            var previous = Previous?.GetProgram();
+            var previous = Previous?.GetProgram(optimize);
             return Binder.BindProgram(IsScript, previous, GlobalScope, optimize);
         }
 

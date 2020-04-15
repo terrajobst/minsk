@@ -1,0 +1,10 @@
+<Project>
+
+  <Target Name="CreateManifestResourceNames" />
+
+  <Target Name="CoreCompile" DependsOnTargets="$(CoreCompileDependsOn)">
+    <Exec Command="dotnet run --project &quot;$(MSBuildThisFileDirectory)\..\src\msc\msc.csproj&quot; -- @(Compile->'&quot;%(Identity)&quot;', ' ') /o &quot;@(IntermediateAssembly)&quot; @(ReferencePath->'/r &quot;%(Identity)&quot;', ' ')"
+          WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+</Project>

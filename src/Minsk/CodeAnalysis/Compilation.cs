@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Minsk.CodeAnalysis.Binding;
+using Minsk.CodeAnalysis.Emit;
 using Minsk.CodeAnalysis.Lowering;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
@@ -138,6 +139,12 @@ namespace Minsk.CodeAnalysis
             if (!program.Functions.TryGetValue(symbol, out var body))
                 return;
             body.WriteTo(writer);
+        }
+
+        public ImmutableArray<Diagnostic> Emit(string moduleName, string[] references, string outputPath)
+        {
+            var program = GetProgram();
+            return Emitter.Emit(program, moduleName, references, outputPath);
         }
     }
 }

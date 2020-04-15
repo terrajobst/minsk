@@ -15,7 +15,7 @@ namespace Minsk
         {
             if (args.Length == 0)
             {
-                Console.Error.WriteLine("usage: mc <source-paths>");
+                Console.Error.WriteLine("usage: msc <source-paths>");
                 return 1;
             }
 

@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Minsk\Minsk.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mono.Options" Version="6.6.0.161" />
+  </ItemGroup>
+
 </Project>

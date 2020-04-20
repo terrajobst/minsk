@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
+using Mono.Cecil;
 
 namespace Minsk.CodeAnalysis
 {
@@ -186,6 +188,37 @@ namespace Minsk.CodeAnalysis
         {
             var message = $"Cannot declare main function when global statements are used.";
             Report(location, message);
+        }
+
+        public void ReportInvalidReference(string path)
+        {
+            var message = $"The reference is not a valid .NET assembly: '{path}'";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeNotFound(string minskName, string metadataName)
+        {
+            var message = minskName == null
+                ? $"The required type '{metadataName}' cannot be resolved among the given references."
+                : $"The required type '{minskName}' ('{metadataName}') cannot be resolved among the given references.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeAmbiguous(string minskName, string metadataName, TypeDefinition[] foundTypes)
+        {
+            var assemblyNames = foundTypes.Select(t => t.Module.Assembly.Name.Name);
+            var assemblyNameList = string.Join(", ", assemblyNames);
+            var message = minskName == null
+                ? $"The required type '{minskName}' was found in multiple references: {assemblyNameList}."
+                : $"The required type '{minskName}' ('{metadataName}') was found in multiple references: {assemblyNameList}.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredMethodNotFound(string typeName, string methodName, string[] parameterTypeNames)
+        {
+            var parameterTypeNameList = string.Join(", ", parameterTypeNames);
+            var message = $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
+            Report(default, message);
         }
     }
 }

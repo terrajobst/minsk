@@ -6,6 +6,7 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Minsk.CodeAnalysis.Emit
 {
@@ -180,6 +181,8 @@ namespace Minsk.CodeAnalysis.Emit
             // HACK: We should make sure that our bound tree has explicit returns.
             if (function.Type == TypeSymbol.Void)
                 ilProcessor.Emit(OpCodes.Ret);
+
+            method.Body.OptimizeMacros();
         }
 
         private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)

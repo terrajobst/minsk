@@ -172,6 +172,15 @@ namespace Minsk.CodeAnalysis.Emit
         {
             var functionType = _knownTypes[function.Type];
             var method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, functionType);
+
+            foreach (var parameter in function.Parameters)
+            {
+                var parameterType = _knownTypes[parameter.Type];
+                var parameterAttributes = ParameterAttributes.None;
+                var parameterDefinition = new ParameterDefinition(parameter.Name, parameterAttributes, parameterType);
+                method.Parameters.Add(parameterDefinition);
+            }
+
             _typeDefinition.Methods.Add(method);
             _methods.Add(function, method);
         }
@@ -318,8 +327,15 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitVariableExpression(ILProcessor ilProcessor, BoundVariableExpression node)
         {
-            var variableDefinition = _locals[node.Variable];
-            ilProcessor.Emit(OpCodes.Ldloc, variableDefinition);
+            if (node.Variable is ParameterSymbol parameter)
+            {
+                ilProcessor.Emit(OpCodes.Ldarg, parameter.Ordinal);
+            }
+            else
+            {
+                var variableDefinition = _locals[node.Variable];
+                ilProcessor.Emit(OpCodes.Ldloc, variableDefinition);
+            }
         }
 
         private void EmitAssignmentExpression(ILProcessor ilProcessor, BoundAssignmentExpression node)

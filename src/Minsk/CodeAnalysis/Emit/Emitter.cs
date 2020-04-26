@@ -6,19 +6,27 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Minsk.CodeAnalysis.Emit
 {
-    internal static class Emitter
+    internal sealed class Emitter
     {
-        public static ImmutableArray<Diagnostic> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
+        private DiagnosticBag _diagnostics = new DiagnosticBag();
+
+        private readonly Dictionary<TypeSymbol, TypeReference> _knownTypes;
+        private readonly MethodReference _consoleReadLineReference;
+        private readonly MethodReference _consoleWriteLineReference;
+        private readonly MethodReference _stringConcatReference;
+        private readonly AssemblyDefinition _assemblyDefinition;
+        private readonly Dictionary<FunctionSymbol, MethodDefinition> _methods = new Dictionary<FunctionSymbol, MethodDefinition>();
+        private readonly Dictionary<VariableSymbol, VariableDefinition> _locals = new Dictionary<VariableSymbol, VariableDefinition>();
+
+        private TypeDefinition _typeDefinition;
+
+        private Emitter(string moduleName, string[] references)
         {
-            if (program.Diagnostics.Any())
-                return program.Diagnostics;
-
             var assemblies = new List<AssemblyDefinition>();
-
-            var result = new DiagnosticBag();
 
             foreach (var reference in references)
             {
@@ -29,7 +37,7 @@ namespace Minsk.CodeAnalysis.Emit
                 }
                 catch (BadImageFormatException)
                 {
-                    result.ReportInvalidReference(reference);
+                    _diagnostics.ReportInvalidReference(reference);
                 }
             }
 
@@ -43,13 +51,13 @@ namespace Minsk.CodeAnalysis.Emit
             };
 
             var assemblyName = new AssemblyNameDefinition(moduleName, new Version(1, 0));
-            var assemblyDefinition = AssemblyDefinition.CreateAssembly(assemblyName, moduleName, ModuleKind.Console);
-            var knownTypes = new Dictionary<TypeSymbol, TypeReference>();
+            _assemblyDefinition = AssemblyDefinition.CreateAssembly(assemblyName, moduleName, ModuleKind.Console);
+            _knownTypes = new Dictionary<TypeSymbol, TypeReference>();
 
             foreach (var (typeSymbol, metadataName) in builtInTypes)
             {
                 var typeReference = ResolveType(typeSymbol.Name, metadataName);
-                knownTypes.Add(typeSymbol, typeReference);
+                _knownTypes.Add(typeSymbol, typeReference);
             }
 
             TypeReference ResolveType(string minskName, string metadataName)
@@ -60,16 +68,16 @@ namespace Minsk.CodeAnalysis.Emit
                                            .ToArray();
                 if (foundTypes.Length == 1)
                 {
-                    var typeReference = assemblyDefinition.MainModule.ImportReference(foundTypes[0]);
+                    var typeReference = _assemblyDefinition.MainModule.ImportReference(foundTypes[0]);
                     return typeReference;
                 }
                 else if (foundTypes.Length == 0)
                 {
-                    result.ReportRequiredTypeNotFound(minskName, metadataName);
+                    _diagnostics.ReportRequiredTypeNotFound(minskName, metadataName);
                 }
                 else
                 {
-                    result.ReportRequiredTypeAmbiguous(minskName, metadataName, foundTypes);
+                    _diagnostics.ReportRequiredTypeAmbiguous(minskName, metadataName, foundTypes);
                 }
 
                 return null;
@@ -105,47 +113,293 @@ namespace Minsk.CodeAnalysis.Emit
                         if (!allParametersMatch)
                             continue;
 
-                        return assemblyDefinition.MainModule.ImportReference(method);
+                        return _assemblyDefinition.MainModule.ImportReference(method);
                     }
 
-                    result.ReportRequiredMethodNotFound(typeName, methodName, parameterTypeNames);
+                    _diagnostics.ReportRequiredMethodNotFound(typeName, methodName, parameterTypeNames);
                     return null;
                 }
                 else if (foundTypes.Length == 0)
                 {
-                    result.ReportRequiredTypeNotFound(null, typeName);
+                    _diagnostics.ReportRequiredTypeNotFound(null, typeName);
                 }
                 else
                 {
-                    result.ReportRequiredTypeAmbiguous(null, typeName, foundTypes);
+                    _diagnostics.ReportRequiredTypeAmbiguous(null, typeName, foundTypes);
                 }
 
                 return null;
             }
 
-            var consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new [] { "System.String" });
+            _consoleReadLineReference = ResolveMethod("System.Console", "ReadLine", Array.Empty<string>());
+            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new [] { "System.String" });
+            _stringConcatReference = ResolveMethod("System.String", "Concat", new [] { "System.String", "System.String" });
+        }
 
-            if (result.Any())
-                return result.ToImmutableArray();
+        public static ImmutableArray<Diagnostic> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
+        {
+            if (program.Diagnostics.Any())
+                return program.Diagnostics;
 
-            var objectType = knownTypes[TypeSymbol.Any];
-            var typeDefinition = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed, objectType);
-            assemblyDefinition.MainModule.Types.Add(typeDefinition);
+            var emitter = new Emitter(moduleName, references);
+            return emitter.Emit(program, outputPath);
+        }
 
-            var voidType = knownTypes[TypeSymbol.Void];
-            var mainMethod = new MethodDefinition("Main", MethodAttributes.Static | MethodAttributes.Private, voidType);
-            typeDefinition.Methods.Add(mainMethod);
+        public ImmutableArray<Diagnostic> Emit(BoundProgram program, string outputPath)
+        {
+            if (_diagnostics.Any())
+                return _diagnostics.ToImmutableArray();
 
-            var ilProcessor = mainMethod.Body.GetILProcessor();
-            ilProcessor.Emit(OpCodes.Ldstr, "Hello world from Minsk!");
-            ilProcessor.Emit(OpCodes.Call, consoleWriteLineReference);
+            var objectType = _knownTypes[TypeSymbol.Any];
+            _typeDefinition = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed, objectType);
+            _assemblyDefinition.MainModule.Types.Add(_typeDefinition);
+
+            foreach (var functionWithBody in program.Functions)
+                EmitFunctionDeclaration(functionWithBody.Key);
+
+            foreach (var functionWithBody in program.Functions)
+                EmitFunctionBody(functionWithBody.Key, functionWithBody.Value);
+
+            if (program.MainFunction != null)
+                _assemblyDefinition.EntryPoint = _methods[program.MainFunction];
+
+            _assemblyDefinition.Write(outputPath);
+
+            return _diagnostics.ToImmutableArray();
+        }
+
+        private void EmitFunctionDeclaration(FunctionSymbol function)
+        {
+            var functionType = _knownTypes[function.Type];
+            var method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, functionType);
+
+            foreach (var parameter in function.Parameters)
+            {
+                var parameterType = _knownTypes[parameter.Type];
+                var parameterAttributes = ParameterAttributes.None;
+                var parameterDefinition = new ParameterDefinition(parameter.Name, parameterAttributes, parameterType);
+                method.Parameters.Add(parameterDefinition);
+            }
+
+            _typeDefinition.Methods.Add(method);
+            _methods.Add(function, method);
+        }
+
+        private void EmitFunctionBody(FunctionSymbol function, BoundBlockStatement body)
+        {
+            var method = _methods[function];
+            _locals.Clear();
+
+            var ilProcessor = method.Body.GetILProcessor();
+
+            foreach (var statement in body.Statements)
+                EmitStatement(ilProcessor, statement);
+
+            // HACK: We should make sure that our bound tree has explicit returns.
+            if (function.Type == TypeSymbol.Void)
+                ilProcessor.Emit(OpCodes.Ret);
+
+            method.Body.OptimizeMacros();
+        }
+
+        private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
+        {
+            switch (node.Kind)
+            {
+                case BoundNodeKind.VariableDeclaration:
+                    EmitVariableDeclaration(ilProcessor, (BoundVariableDeclaration)node);
+                    break;
+                case BoundNodeKind.LabelStatement:
+                    EmitLabelStatement(ilProcessor, (BoundLabelStatement)node);
+                    break;
+                case BoundNodeKind.GotoStatement:
+                    EmitGotoStatement(ilProcessor, (BoundGotoStatement)node);
+                    break;
+                case BoundNodeKind.ConditionalGotoStatement:
+                    EmitConditionalGotoStatement(ilProcessor, (BoundConditionalGotoStatement)node);
+                    break;
+                case BoundNodeKind.ReturnStatement:
+                    EmitReturnStatement(ilProcessor, (BoundReturnStatement)node);
+                    break;
+                case BoundNodeKind.ExpressionStatement:
+                    EmitExpressionStatement(ilProcessor, (BoundExpressionStatement)node);
+                    break;
+                default:
+                    throw new Exception($"Unexpected node kind {node.Kind}");
+            }
+        }
+
+        private void EmitVariableDeclaration(ILProcessor ilProcessor, BoundVariableDeclaration node)
+        {
+            var typeReference = _knownTypes[node.Variable.Type];
+            var variableDefinition = new VariableDefinition(typeReference);
+            _locals.Add(node.Variable, variableDefinition);
+            ilProcessor.Body.Variables.Add(variableDefinition);
+
+            EmitExpression(ilProcessor, node.Initializer);
+            ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
+        }
+
+        private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitGotoStatement(ILProcessor ilProcessor, BoundGotoStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitConditionalGotoStatement(ILProcessor ilProcessor, BoundConditionalGotoStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitReturnStatement(ILProcessor ilProcessor, BoundReturnStatement node)
+        {
+            if (node.Expression != null)
+                EmitExpression(ilProcessor, node.Expression);
+
             ilProcessor.Emit(OpCodes.Ret);
+        }
 
-            assemblyDefinition.EntryPoint = mainMethod;
+        private void EmitExpressionStatement(ILProcessor ilProcessor, BoundExpressionStatement node)
+        {
+            EmitExpression(ilProcessor, node.Expression);
 
-            assemblyDefinition.Write(outputPath);
+            if (node.Expression.Type != TypeSymbol.Void)
+                ilProcessor.Emit(OpCodes.Pop);
+        }
 
-            return result.ToImmutableArray();
+        private void EmitExpression(ILProcessor ilProcessor, BoundExpression node)
+        {
+            switch (node.Kind)
+            {
+                case BoundNodeKind.LiteralExpression:
+                    EmitLiteralExpression(ilProcessor, (BoundLiteralExpression)node);
+                    break;
+                case BoundNodeKind.VariableExpression:
+                    EmitVariableExpression(ilProcessor, (BoundVariableExpression)node);
+                    break;
+                case BoundNodeKind.AssignmentExpression:
+                    EmitAssignmentExpression(ilProcessor, (BoundAssignmentExpression)node);
+                    break;
+                case BoundNodeKind.UnaryExpression:
+                    EmitUnaryExpression(ilProcessor, (BoundUnaryExpression)node);
+                    break;
+                case BoundNodeKind.BinaryExpression:
+                    EmitBinaryExpression(ilProcessor, (BoundBinaryExpression)node);
+                    break;
+                case BoundNodeKind.CallExpression:
+                    EmitCallExpression(ilProcessor, (BoundCallExpression)node);
+                    break;
+                case BoundNodeKind.ConversionExpression:
+                    EmitConversionExpression(ilProcessor, (BoundConversionExpression)node);
+                    break;
+                default:
+                    throw new Exception($"Unexpected node kind {node.Kind}");
+            }
+        }
+
+        private void EmitLiteralExpression(ILProcessor ilProcessor, BoundLiteralExpression node)
+        {
+            if (node.Type == TypeSymbol.Bool)
+            {
+                var value = (bool)node.Value;
+                var instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
+                ilProcessor.Emit(instruction);
+            }
+            else if (node.Type == TypeSymbol.Int)
+            {
+                var value = (int)node.Value;
+                ilProcessor.Emit(OpCodes.Ldc_I4, value);
+            }
+            else if (node.Type == TypeSymbol.String)
+            {
+                var value = (string)node.Value;
+                ilProcessor.Emit(OpCodes.Ldstr, value);
+            }
+            else
+            {
+                throw new Exception($"Unexpected literal type: {node.Type}");
+            }
+        }
+
+        private void EmitVariableExpression(ILProcessor ilProcessor, BoundVariableExpression node)
+        {
+            if (node.Variable is ParameterSymbol parameter)
+            {
+                ilProcessor.Emit(OpCodes.Ldarg, parameter.Ordinal);
+            }
+            else
+            {
+                var variableDefinition = _locals[node.Variable];
+                ilProcessor.Emit(OpCodes.Ldloc, variableDefinition);
+            }
+        }
+
+        private void EmitAssignmentExpression(ILProcessor ilProcessor, BoundAssignmentExpression node)
+        {
+            var variableDefinition = _locals[node.Variable];
+            EmitExpression(ilProcessor, node.Expression);
+            ilProcessor.Emit(OpCodes.Dup);
+            ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
+        }
+
+        private void EmitUnaryExpression(ILProcessor ilProcessor, BoundUnaryExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitBinaryExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
+        {
+            if (node.Op.Kind == BoundBinaryOperatorKind.Addition)
+            {
+                if (node.Left.Type == TypeSymbol.String &&
+                    node.Right.Type == TypeSymbol.String)
+                {
+                    EmitExpression(ilProcessor, node.Left);
+                    EmitExpression(ilProcessor, node.Right);
+                    ilProcessor.Emit(OpCodes.Call, _stringConcatReference);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private void EmitCallExpression(ILProcessor ilProcessor, BoundCallExpression node)
+        {
+            foreach (var argument in node.Arguments)
+                EmitExpression(ilProcessor, argument);
+
+            if (node.Function == BuiltinFunctions.Input)
+            {
+                ilProcessor.Emit(OpCodes.Call, _consoleReadLineReference);
+            }
+            else if (node.Function == BuiltinFunctions.Print)
+            {
+                ilProcessor.Emit(OpCodes.Call, _consoleWriteLineReference);
+            }
+            else if (node.Function == BuiltinFunctions.Rnd)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                var methodDefinition = _methods[node.Function];
+                ilProcessor.Emit(OpCodes.Call, methodDefinition);
+            }
+        }
+
+        private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
+        {
+            throw new NotImplementedException();
         }
     }
 }

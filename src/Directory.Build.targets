@@ -1,8 +1,37 @@
 <Project>
 
   <PropertyGroup>
+    <Serviceable>true</Serviceable>
+    <Product>Minsk Compiler</Product>
+    <Authors>Immo Landworth</Authors>
+    <PackageIcon>Minsk.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Copyright>Copytright © 2019 Immo Landworth</Copyright>
+    <PackageRequireAcceptance>false</PackageRequireAcceptance>
+    <RepositoryUrl>https://github.com/terrajobst/minsk</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/terrajobst/minsk</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageIconPath>$(RepositoryDir)$(PackageIcon)</PackageIconPath>
+    <PackageLicensePath>$(RepositoryDir)$(PackageLicenseFile)</PackageLicensePath>
+    <PackageOutputPath>$(RepositoryDir)artifacts</PackageOutputPath>
     <PublishDir>$(RepositoryDir)artifacts\$(ProjectName)</PublishDir>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableDefaultBuildItems Condition="'$(EnableDefaultBuildItems)' == ''">false</EnableDefaultBuildItems>
+    <DefaultBuildItemIncludes>**\*.props;**\*.targets;**\*.items;**\*.tasks</DefaultBuildItemIncludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);*.props;*.targets</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <Content Update="@(Content)" Pack="true" PackagePath=""/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="@(Content)"/>
+  </ItemGroup>
 
   <!--
       HACK:

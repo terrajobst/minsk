@@ -6,6 +6,8 @@ variables:
   samples: './samples/samples.sln'
 
 steps:
+- script: mkdir artifacts
+  displayName: 'Create artifacts dir'
 - task: DotNetCoreCLI@2
   displayName: Build minsk ($(buildConfiguration))
   inputs:

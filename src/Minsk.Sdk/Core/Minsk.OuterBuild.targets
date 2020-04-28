@@ -1,0 +1,29 @@
+<Project>
+
+  <!--
+  ============================================================
+                          Publish
+
+  Multi-targeting version of Publish.
+
+  [IN]
+  $(TargetFrameworks) - Semicolon delimited list of target frameworks.
+
+  $(InnerTargets) - The targets to publish for each target framework.
+    Defaults to 'Publish' if unset, but allows override to support
+    `msbuild /p:InnerTargets=X;Y;Z` which will build X, Y & Z
+    targets for each target framework.
+
+  [OUT]
+  @(InnerOutput) - The combined output items of the inner targets across all builds.
+  ============================================================
+  -->
+  <Target Name="Publish" DependsOnTargets="_SetPublishInnerTarget;DispatchToInnerBuilds"/>
+
+  <Target Name="_SetPublishInnerTarget" Returns="@(InnerOutput)">
+    <PropertyGroup Condition="'$(InnerTargets)' == ''">
+      <InnerTargets>Publish</InnerTargets>
+    </PropertyGroup>
+  </Target>
+
+</Project>

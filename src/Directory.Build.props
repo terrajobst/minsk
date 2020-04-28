@@ -11,6 +11,15 @@
     <RepositoryDir Condition="'$(RepositoryDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\'))</RepositoryDir>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <Content Include="$(PackageIconPath)" Visible="false"/>
+    <Content Include="$(PackageLicensePath)" Visible="false"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultBuildItems)' == 'true'">
+    <Content Include="$(DefaultBuildItemIncludes)" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+  </ItemGroup>
+
   <!--
       Since we're only targeting single framework, we don't need to append
       the short TFM and RID to the output paths.

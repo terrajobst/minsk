@@ -1,0 +1,10 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- The language file extension for minsk is 'ms' -->
+    <DefaultLanguageSourceExtension>.ms</DefaultLanguageSourceExtension>
+  </PropertyGroup>
+
+  <Import Project="Minsk.ProjectSystem.props"/>
+
+</Project>

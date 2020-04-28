@@ -1,0 +1,28 @@
+<Project>
+
+  <!-- This file lists all the tasks that ship with Minsk.Sdk -->
+
+  <!--
+    NOTE: Listing a <UsingTask> tag in a *.tasks file like this one rather than in a project or targets file
+          can give a significant performance advantage in a large build, because every time a <UsingTask> tag
+          is encountered, it will cause the task to be rediscovered next time the task is used.
+  -->
+
+  <!-- NOTE: Using the fully qualified class name in a <UsingTask> tag is faster than using a partially qualified name. -->
+
+  <PropertyGroup>
+    <MinskBuildTasksPath Condition="'$(MinskBuildTasksPath)' == ''">$(MSBuildThisFileDirectory)</MinskBuildTasksPath>
+    <MinskBuildTasksAssembly Condition="'$(MinskBuildTasksAssembly)' == ''">Minsk.Build.Tasks.dll</MinskBuildTasksAssembly>
+    <MinskBuildTasksAssemblyPath Condition="'$(MinskBuildTasksAssemblyPath)' == ''">$(MinskBuildTasksPath)$(MinskBuildTasksAssembly)</MinskBuildTasksAssemblyPath>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(MinskBuildTasksAssemblyPath)" TaskName="Minsk.Build.Tasks.MinskCompile"/>
+
+  <PropertyGroup>
+    <MinskExeExt Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</MinskExeExt>
+    <MinskCompilerExe Condition="'$(MinskCompilerExe)' == ''">msc$(MinskExeExt)</MinskCompilerExe>
+    <MinskInterpreterExe Condition="'$(MinskInterpreterExe)' == ''">msi$(MinskExeExt)</MinskInterpreterExe>
+    <MinskToolsPath Condition="'$(MinskToolsPath)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\', 'Tools', '$(MSBuildRuntimeType)'))</MinskToolsPath>
+  </PropertyGroup>
+
+</Project>

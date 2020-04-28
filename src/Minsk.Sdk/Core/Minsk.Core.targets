@@ -1,0 +1,19 @@
+<Project>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.Before.targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.Managed.Before.targets')"/>
+
+  <ImportGroup Condition="'$(IsCrossTargetingBuild)' == 'true'">
+    <Import Project="$(MSBuildToolsPath)\Microsoft.Common.CrossTargeting.targets"/>
+    <Import Project="Minsk.OuterBuild.targets"/>
+  </ImportGroup>
+
+  <Import Project="Minsk.ProjectSystem.targets"/>
+
+  <ImportGroup Condition="'$(IsCrossTargetingBuild)' != 'true'">
+    <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets"/>
+    <Import Project="Minsk.CoreCompile.targets"/>
+  </ImportGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.After.targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.Managed.After.targets')"/>
+
+</Project>

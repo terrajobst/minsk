@@ -1,0 +1,37 @@
+<Project>
+
+  <Import Project="..\$(MSBuildThisFile)"/>
+
+  <!-- Fix Packing Build Outputs into '<NuGetRoot>\<BuildOutputTargetFolder>[\<TfmSpecificFolder>]\*.[dll|exe|xml|pdb]' -->
+
+  <PropertyGroup>
+    <Nullable>Enable</Nullable>
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <TargetsForTfmSpecificContentInPackage>_IncludeTfmSpecificBuildOutput</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <Target Name="_GetTfmSpecificFolder" Condition="'$(TargetFrameworks)' != ''">
+    <PropertyGroup>
+      <TfmSpecificFolder Condition="$(TargetFrameworks.Split(';').Length) == 1" />
+      <TfmSpecificFolder Condition="$(TargetFrameworks.Split(';').Length) > 2">$(TargetFramework.Trim('.0123456789'))</TfmSpecificFolder>
+    </PropertyGroup>
+    <PropertyGroup Condition="$(TargetFrameworks.Split(';').Length) == 2">
+      <TfmSpecificFolder Condition="$(TargetFramework.StartsWith('net4'))">Full</TfmSpecificFolder>
+      <TfmSpecificFolder Condition="$(TargetFramework.StartsWith('netcoreapp'))">Core</TfmSpecificFolder>
+      <TfmSpecificFolder Condition="$(TargetFramework.StartsWith('netstandard'))">Core</TfmSpecificFolder>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_IncludeTfmSpecificBuildOutput" Condition="'$(IncludeBuildOutput)' == 'false'"
+          DependsOnTargets="_GetTfmSpecificFolder;BuiltProjectOutputGroup">
+    <PropertyGroup>
+      <TfmSpecificFolder Condition="'$(TargetFrameworks)' == ''" />
+    </PropertyGroup>
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(BuiltProjectOutputGroupOutput->'%(FinalOutputPath)')" KeepMetadata="false">
+        <PackagePath>$([System.IO.Path]::Combine('$(BuildOutputTargetFolder)', '$(TfmSpecificFolder)'))</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
+
+</Project>

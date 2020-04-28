@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- TODO: Remove when nullable annotations are added -->
     <Nullable>Disable</Nullable>

@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 

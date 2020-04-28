@@ -1,4 +1,4 @@
-﻿namespace Minsk
+namespace Minsk
 {
     internal static class Program
     {

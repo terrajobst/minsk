@@ -1,4 +1,4 @@
-﻿namespace Minsk.CodeAnalysis.Binding
+namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundLabel
     {

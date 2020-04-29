@@ -18,6 +18,9 @@ namespace Minsk.CodeAnalysis.Emit
         private readonly MethodReference _consoleReadLineReference;
         private readonly MethodReference _consoleWriteLineReference;
         private readonly MethodReference _stringConcatReference;
+        private readonly MethodReference _convertToBooleanReference;
+        private readonly MethodReference _convertToInt32Reference;
+        private readonly MethodReference _convertToStringReference;
         private readonly AssemblyDefinition _assemblyDefinition;
         private readonly Dictionary<FunctionSymbol, MethodDefinition> _methods = new Dictionary<FunctionSymbol, MethodDefinition>();
         private readonly Dictionary<VariableSymbol, VariableDefinition> _locals = new Dictionary<VariableSymbol, VariableDefinition>();
@@ -134,6 +137,9 @@ namespace Minsk.CodeAnalysis.Emit
             _consoleReadLineReference = ResolveMethod("System.Console", "ReadLine", Array.Empty<string>());
             _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new [] { "System.String" });
             _stringConcatReference = ResolveMethod("System.String", "Concat", new [] { "System.String", "System.String" });
+            _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", new [] { "System.Object" });
+            _convertToInt32Reference = ResolveMethod("System.Convert", "ToInt32", new [] { "System.Object" });
+            _convertToStringReference = ResolveMethod("System.Convert", "ToString", new [] { "System.Object" });
         }
 
         public static ImmutableArray<Diagnostic> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
@@ -395,7 +401,32 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcessor, node.Expression);
+            var needsBoxing = node.Expression.Type == TypeSymbol.Bool ||
+                              node.Expression.Type == TypeSymbol.Int;
+            if (needsBoxing)
+                ilProcessor.Emit(OpCodes.Box, _knownTypes[node.Expression.Type]);
+
+            if (node.Type == TypeSymbol.Any)
+            {
+                // Done
+            }
+            else if (node.Type == TypeSymbol.Bool)
+            {
+                ilProcessor.Emit(OpCodes.Call, _convertToBooleanReference);
+            }
+            else if (node.Type == TypeSymbol.Int)
+            {
+                ilProcessor.Emit(OpCodes.Call, _convertToInt32Reference);
+            }
+            else if (node.Type == TypeSymbol.String)
+            {
+                ilProcessor.Emit(OpCodes.Call, _convertToStringReference);
+            }
+            else
+            {
+                throw new Exception($"Unexpected convertion from {node.Expression.Type} to {node.Type}");
+            }
         }
     }
 }

@@ -50,7 +50,7 @@ and `ldc.i4.1` (`true`).
 ### Local variables and parameters in IL
 
 In IL, locals and parameters aren't referred to by name. In fact, the metadata
-format doesn't even record the names of locals (it is, however, part fo the
+format doesn't even record the names of locals (it is, however, part of the
 debugging information).
 
 They are referred to by index. For example `ldloc.0` loads the first local while

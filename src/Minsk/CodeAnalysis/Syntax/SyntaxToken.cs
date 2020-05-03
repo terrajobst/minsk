@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Minsk.CodeAnalysis.Text;
 
 namespace Minsk.CodeAnalysis.Syntax
@@ -18,6 +20,11 @@ namespace Minsk.CodeAnalysis.Syntax
         public string Text { get; }
         public object Value { get; }
         public override TextSpan Span => new TextSpan(Position, Text?.Length ?? 0);
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            return Array.Empty<SyntaxNode>();
+        }
 
         /// <summary>
         /// A token is missing if it was inserted by the parser and doesn't appear in source.

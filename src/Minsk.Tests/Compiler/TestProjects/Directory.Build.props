@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <DefaultLanguageSourceExtension>.ms</DefaultLanguageSourceExtension>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+</Project>

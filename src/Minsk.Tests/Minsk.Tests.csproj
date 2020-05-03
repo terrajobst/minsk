@@ -16,5 +16,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Minsk\Minsk.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Make VS / Rider show the .msproj and hide the bin or obj folders in the TestProjects-->
+    <None Include="Compiler\TestProjects\**" Exclude="**\bin\**;**\obj\**" />
+    <None Remove="Compiler\TestProjects\**\bin\**;Compiler\TestProjects\**\obj\**" />
+  </ItemGroup>
 
 </Project>

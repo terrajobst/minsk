@@ -24,13 +24,16 @@ steps:
   inputs:
     version: 3.1.x
     packageType: runtime
-- script: dotnet build --configuration $(buildConfiguration) $(sln)
+- task: DotNetCoreCLI@2
   displayName: 'dotnet build $(buildConfiguration)'
-- script: dotnet test $(tests) --logger "xunit;LogFileName=TestResults.xml"
-  displayName: 'dotnet test'
-- task: PublishTestResults@2
-  displayName: 'publish test results to azure pipelines'
   inputs:
-    testResultsFormat: 'xUnit'
-    testResultsFiles: '**/TestResults.xml'
-  condition: always()
+    command: build
+    projects: $(sln)
+    arguments: --configuration $(buildConfiguration)
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  inputs:
+    command: test
+    projects: $(tests)
+    arguments: --configuration $(buildConfiguration)
+    publishTestResults: true

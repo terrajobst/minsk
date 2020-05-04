@@ -12,6 +12,18 @@ variables:
   tests: './src/Minsk.Tests/Minsk.Tests.csproj'
 
 steps:
+- task: UseDotNet@2
+  displayName: Use .NET 5.0 Preview
+  inputs:
+    version: 5.0.x
+    packageType: sdk
+    includePreviewVersions: true
+# We now still need .NET Core 3.1 Runtime for CI tests
+- task: UseDotNet@2
+  displayName: Install .NET Core 3.1 Runtime
+  inputs:
+    version: 3.1.x
+    packageType: runtime
 - script: dotnet build --configuration $(buildConfiguration) $(sln)
   displayName: 'dotnet build $(buildConfiguration)'
 - script: dotnet test $(tests) --logger "xunit;LogFileName=TestResults.xml"

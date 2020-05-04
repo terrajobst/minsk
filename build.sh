@@ -1,10 +1,14 @@
 #!/bin/bash
 
 # Vars
-slndir="$(dirname "${BASH_SOURCE[0]}")/src"
+RepositoryDir="$(dirname "${BASH_SOURCE[0]}")/"
+SolutionDir="${RepositoryDir}src/"
 
 # Restore + Build
-dotnet build "$slndir/minsk.sln" --nologo || exit
+dotnet build "${SolutionDir}minsk.sln" --nologo || exit
 
 # Test
-dotnet test "$slndir/Minsk.Tests" --nologo --no-build
+dotnet test "${SolutionDir}Minsk.Tests" --nologo --no-build || exit
+
+# Publish
+dotnet publish "${SolutionDir}minsk.sln" --nologo --no-build

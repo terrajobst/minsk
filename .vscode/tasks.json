@@ -14,7 +14,8 @@
                 "cwd": "${workspaceFolder}/src"
             },
             "args": [
-                "build"
+                "build",
+                "-t:Build;Publish"
             ],
             "presentation": {
                 "focus": true,
@@ -33,6 +34,7 @@
             },
             "args": [
                 "build",
+                "-t:Build;Publish",
                 "${input:csproj}"
             ],
             "presentation": {
@@ -87,7 +89,10 @@
             "type": "process",
             "group": "build",
             "options": {
-                "cwd": "${workspaceFolder}/samples"
+                "cwd": "${workspaceFolder}/samples",
+                "env": {
+                    "MinskToolsPath": "${workspaceFolder}/artifacts/Minsk"
+                }
             },
             "args": [
                 "build",
@@ -116,7 +121,10 @@
             "command": "dotnet",
             "type": "process",
             "options": {
-                "cwd": "${workspaceFolder}/samples"
+                "cwd": "${workspaceFolder}/samples",
+                "env": {
+                    "MinskToolsPath": "${workspaceFolder}/artifacts/Minsk"
+                }
             },
             "args": [
                 "run",
@@ -143,16 +151,15 @@
         // Builds and Runs the Minsk compiler with the currently opened file's folder path
         {
             "label": "msc",
-            "command": "dotnet",
+            "command": "msc",
             "type": "process",
             "options": {
-                "cwd": "${workspaceFolder}/samples"
+                "cwd": "${workspaceFolder}/samples",
+                "env": {
+                    "PATH": "%PATH%;${workspaceFolder}/artifacts/Minsk"
+                }
             },
             "args": [
-                "run",
-                "--project",
-                "${workspaceFolder}/src/msc",
-                "--",
                 "${fileDirname}"
             ],
             "presentation": {
@@ -175,17 +182,15 @@
         // Builds and Runs the Minsk interpreter
         {
             "label": "msi",
-            "command": "dotnet",
+            "command": "msi",
             "type": "process",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}/samples"
+                "cwd": "${workspaceFolder}/samples",
+                "env": {
+                    "PATH": "%PATH%;${workspaceFolder}/artifacts/Minsk"
+                }
             },
-            "args": [
-                "run",
-                "--project",
-                "${workspaceFolder}/src/msi"
-            ],
             "presentation": {
                 "clear": true,
                 "focus": true

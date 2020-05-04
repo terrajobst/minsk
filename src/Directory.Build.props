@@ -6,6 +6,11 @@
     <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
+    <RepositoryDir Condition="'$(RepositoryDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\'))</RepositoryDir>
+  </PropertyGroup>
+
   <!--
       Since we're only targeting single framework, we don't need to append
       the short TFM and RID to the output paths.

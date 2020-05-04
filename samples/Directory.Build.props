@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <DefaultLanguageSourceExtension>.ms</DefaultLanguageSourceExtension>
+    <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)</SolutionDir>
+    <RepositoryDir Condition="'$(RepositoryDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..\'))</RepositoryDir>
+    <PublishDir>$(SolutionDir)publish</PublishDir>
   </PropertyGroup>
 
   <!--

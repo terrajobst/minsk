@@ -1,5 +1,9 @@
 <Project>
 
+  <PropertyGroup>
+    <PublishDir>$(RepositoryDir)artifacts\$(ProjectName)</PublishDir>
+  </PropertyGroup>
+
   <!--
       HACK:
       There is an issue in the current preview of .NET 5 SDK where the compiler

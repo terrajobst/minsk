@@ -135,6 +135,12 @@ namespace Minsk.CodeAnalysis
 
         public ImmutableArray<Diagnostic> Emit(string moduleName, string[] references, string outputPath)
         {
+            var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
+
+            var diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
+            if (diagnostics.Any())
+                return diagnostics;
+            
             var program = GetProgram();
             return Emitter.Emit(program, moduleName, references, outputPath);
         }

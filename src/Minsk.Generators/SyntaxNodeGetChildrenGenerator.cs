@@ -24,10 +24,11 @@ namespace Minsk.Generators
 
             var compilation = (CSharpCompilation)context.Compilation;
 
-            var types = GetAllTypes(compilation.Assembly);
             var immutableArrayType = compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
             var separatedSyntaxListType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SeparatedSyntaxList`1");
             var syntaxNodeType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SyntaxNode");
+
+            var types = GetAllTypes(compilation.Assembly);
             var syntaxNodeTypes = types.Where(t => !t.IsAbstract && IsPartial(t) && IsDerivedFrom(t, syntaxNodeType));
 
             using (var stringWriter = new StringWriter())
@@ -90,38 +91,30 @@ namespace Minsk.Generators
                 indentedTextWriter.WriteLine("}");
 
                 indentedTextWriter.Flush();
+                stringWriter.Flush();
 
                 sourceText = SourceText.From(stringWriter.ToString(), Encoding.UTF8);
             }
 
-            // TODO: REMOVE HACK
-            //
-            // Normally we'd do this:
-            //
-            // context.AddSource("Generated.cs", sourceText);
-            //
-            // But the IDE won't see the generated code yet.
+            var hintName = "SyntaxNode_GetChildren.g.cs";
+            context.AddSource(hintName, sourceText);
 
-            var syntaxNodeFileName = syntaxNodeType.DeclaringSyntaxReferences.First().SyntaxTree.FilePath;
-            var syntaxDirectory = Path.GetDirectoryName(syntaxNodeFileName);
-            var fileName = Path.Combine(syntaxDirectory, "SyntaxNode_GetChildren.Generated.cs");
+            // HACK: Partially Fixes DesignTime Builds. See terrajobst/minsk#121
+#if DEBUG
+            var fileName = "SyntaxNode_GetChildren.g.cs";
+            var syntaxNodeFilePath = syntaxNodeType.DeclaringSyntaxReferences.First().SyntaxTree.FilePath;
+            var syntaxDirectory = Path.GetDirectoryName(syntaxNodeFilePath);
+            var filePath = Path.Combine(syntaxDirectory, fileName);
 
-            if (File.Exists(fileName))
+            if(File.Exists(filePath))
             {
-                var existingText = File.ReadAllText(fileName);
-                if (existingText != sourceText.ToString())
-                {
-                    var errorSourceText = SourceText.From("#error Generated code changed. Please compile again.", Encoding.UTF8);
-                    context.AddSource("SyntaxNode_GetChildren.Error.Generated.cs", errorSourceText);
-                }
+                var fileText = File.ReadAllText(filePath);
+                var sourceFileText = SourceText.From(fileText, Encoding.UTF8);
+                if(sourceText.ContentEquals(sourceFileText)) return;
             }
-            else
-            {
-                context.AddSource(fileName, sourceText);
-            }
-
-            using (var writer = new StreamWriter(fileName))
+            using (var writer = new StreamWriter(filePath))
                 sourceText.Write(writer);
+#endif
         }
 
         private IReadOnlyList<INamedTypeSymbol> GetAllTypes(IAssemblySymbol symbol)

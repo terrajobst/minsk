@@ -24,6 +24,9 @@ namespace Minsk.CodeAnalysis.Binding
                 case BoundNodeKind.BlockStatement:
                     WriteBlockStatement((BoundBlockStatement)node, writer);
                     break;
+                case BoundNodeKind.NopStatement:
+                    WriteNopStatement((BoundNopStatement)node, writer);
+                    break;
                 case BoundNodeKind.VariableDeclaration:
                     WriteVariableDeclaration((BoundVariableDeclaration)node, writer);
                     break;
@@ -130,6 +133,12 @@ namespace Minsk.CodeAnalysis.Binding
 
             writer.Indent--;
             writer.WritePunctuation(SyntaxKind.CloseBraceToken);
+            writer.WriteLine();
+        }
+
+        private static void WriteNopStatement(BoundNopStatement node, IndentedTextWriter writer)
+        {
+            writer.WriteKeyword("nop");
             writer.WriteLine();
         }
 

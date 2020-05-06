@@ -1,10 +1,7 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 pool:
-  vmImage: 'Ubuntu 16.04'
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -12,36 +9,16 @@ variables:
   tests: './src/Minsk.Tests/Minsk.Tests.csproj'
 
 steps:
-# TODO: Remove the following crazy hack once a properly listed Preview SDK for Source Generators feature becomes available.
-- script: |
-    curl -o "$AGENT_TEMPDIRECTORY/dotnet-install.sh" -sSL https://dot.net/v1/dotnet-install.sh
-    bash "$AGENT_TEMPDIRECTORY/dotnet-install.sh" --version 3.1.300-preview-015135 --install-dir "$AGENT_TOOLSDIRECTORY/dotnet" --verbose
-    echo "##vso[task.setvariable variable=Dotnet.Root;]$AGENT_TOOLSDIRECTORY/dotnet"
-    echo "##vso[task.prependpath]$AGENT_TOOLSDIRECTORY/dotnet"
-  displayName: Use .NET Core 3.1.3 Preview SDK
-# TODO: Uncomment lines below once Preview/Release SDK for Source Generators feature becomes available.
-#- task: UseDotNet@2
-#  displayName: Use .NET 5.0 Preview 1 SDK
-#  inputs:
-#    version: 5.0.100-preview.1.20155.7
-#    packageType: sdk
-#    includePreviewVersions: true
-# Uncomment if we still need .NET Core 3.1 Runtime for CI tests
-#- task: UseDotNet@2
-#  displayName: Install .NET Core 3.1 Runtime
-#  inputs:
-#    version: 3.1.x
-#    packageType: runtime
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet build $(buildConfiguration)'
+  displayName: Build minsk ($(buildConfiguration))
   inputs:
     command: build
     projects: $(sln)
-    arguments: --configuration $(buildConfiguration)
+    arguments: -c $(buildConfiguration)
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet test'
+  displayName: Run tests ($(buildConfiguration))
   inputs:
     command: test
     projects: $(tests)
-    arguments: --configuration $(buildConfiguration)
+    arguments: -c $(buildConfiguration)
     publishTestResults: true

@@ -61,18 +61,10 @@ namespace Minsk.CodeAnalysis
             var submission = this;
             var seenSymbolNames = new HashSet<string>();
 
+            var builtinFunctions = BuiltinFunctions.GetAll().ToList();
+
             while (submission != null)
             {
-                const ReflectionBindingFlags bindingFlags =
-                    ReflectionBindingFlags.Static |
-                    ReflectionBindingFlags.Public |
-                    ReflectionBindingFlags.NonPublic;
-                var builtinFunctions = typeof(BuiltinFunctions)
-                    .GetFields(bindingFlags)
-                    .Where(fi => fi.FieldType == typeof(FunctionSymbol))
-                    .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
-                    .ToList();
-
                 foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
                         yield return function;

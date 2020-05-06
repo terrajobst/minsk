@@ -4,6 +4,7 @@ namespace Minsk.CodeAnalysis.Binding
     {
         // Statements
         BlockStatement,
+        NopStatement,
         VariableDeclaration,
         IfStatement,
         WhileStatement,

@@ -31,8 +31,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                                  .Cast<SyntaxKind>()
                                  .Where(k => k != SyntaxKind.SingleLineCommentToken &&
                                              k != SyntaxKind.MultiLineCommentToken)
-                                 .Where(k => k.ToString().EndsWith("Keyword") ||
-                                             k.ToString().EndsWith("Token"));
+                                 .Where(k => k.IsToken());
 
             var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
@@ -142,8 +141,8 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
 
         private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind)
         {
-            var t1IsKeyword = t1Kind.ToString().EndsWith("Keyword");
-            var t2IsKeyword = t2Kind.ToString().EndsWith("Keyword");
+            var t1IsKeyword = t1Kind.IsKeyword();
+            var t2IsKeyword = t2Kind.IsKeyword();
 
             if (t1Kind == SyntaxKind.IdentifierToken && t2Kind == SyntaxKind.IdentifierToken)
                 return true;

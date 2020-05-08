@@ -50,6 +50,12 @@ namespace Minsk
             }
         }
 
+        [MetaCommand("exit", "Exits the REPL")]
+        private void EvaluateExit()
+        {
+            Environment.Exit(0);
+        }
+
         [MetaCommand("cls", "Clears the screen")]
         private void EvaluateCls()
         {

@@ -46,7 +46,7 @@ namespace Minsk
             {
                 var text = EditSubmission();
                 if (string.IsNullOrEmpty(text))
-                    return;
+                    continue;
 
                 if (!text.Contains(Environment.NewLine) && text.StartsWith("#"))
                     EvaluateMetaCommand(text);

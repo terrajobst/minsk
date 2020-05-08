@@ -54,6 +54,12 @@ namespace Minsk.CodeAnalysis.Syntax
             }
         }
 
+        public static bool IsComment(this SyntaxKind kind)
+        {
+            return kind == SyntaxKind.SingleLineCommentToken ||
+                   kind == SyntaxKind.MultiLineCommentToken;
+        }
+
         public static SyntaxKind GetKeywordKind(string text)
         {
             switch (text)

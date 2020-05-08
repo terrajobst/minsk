@@ -29,6 +29,8 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
         {
             var tokenKinds = Enum.GetValues(typeof(SyntaxKind))
                                  .Cast<SyntaxKind>()
+                                 .Where(k => k != SyntaxKind.SingleLineCommentToken &&
+                                             k != SyntaxKind.MultiLineCommentToken)
                                  .Where(k => k.ToString().EndsWith("Keyword") ||
                                              k.ToString().EndsWith("Token"));
 
@@ -133,7 +135,8 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                 (SyntaxKind.WhitespaceToken, "  "),
                 (SyntaxKind.WhitespaceToken, "\r"),
                 (SyntaxKind.WhitespaceToken, "\n"),
-                (SyntaxKind.WhitespaceToken, "\r\n")
+                (SyntaxKind.WhitespaceToken, "\r\n"),
+                (SyntaxKind.MultiLineCommentToken, "/**/"),
             };
         }
 
@@ -196,6 +199,18 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipePipeToken)
                 return true;
 
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SlashToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.StarToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SingleLineCommentToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.MultiLineCommentToken)
+                return true;
+
             return false;
         }
 
@@ -222,7 +237,10 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                     if (RequiresSeparator(t1.kind, t2.kind))
                     {
                         foreach (var s in GetSeparators())
-                            yield return (t1.kind, t1.text, s.kind, s.text, t2.kind, t2.text);
+                        {
+                            if (!RequiresSeparator(t1.kind, s.kind) && !RequiresSeparator(s.kind, t2.kind))
+                                yield return (t1.kind, t1.text, s.kind, s.text, t2.kind, t2.text);
+                        }
                     }
                 }
             }

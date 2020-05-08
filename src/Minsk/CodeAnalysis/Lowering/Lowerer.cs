@@ -266,9 +266,9 @@ namespace Minsk.CodeAnalysis.Lowering
                 var condition = (bool)node.Condition.ConstantValue.Value;
                 condition = node.JumpIfTrue ? condition : !condition;
                 if (condition)
-                    return new BoundGotoStatement(node.Label);
+                    return RewriteStatement(new BoundGotoStatement(node.Label));
                 else
-                    return new BoundNopStatement();
+                    return RewriteStatement(new BoundNopStatement());
             }
 
             return base.RewriteConditionalGotoStatement(node);

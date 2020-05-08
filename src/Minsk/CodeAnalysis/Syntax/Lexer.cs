@@ -41,7 +41,7 @@ namespace Minsk.CodeAnalysis.Syntax
         public SyntaxToken Lex()
         {
             _start = _position;
-            _kind = SyntaxKind.BadToken;
+            _kind = SyntaxKind.BadTokenTrivia;
             _value = null;
 
             switch (Current)
@@ -240,7 +240,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 }
             }
 
-            _kind = SyntaxKind.SingleLineCommentToken;
+            _kind = SyntaxKind.SingleLineCommentTrivia;
         }
 
         private void ReadMultiLineComment()
@@ -272,7 +272,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 }
             }
 
-            _kind = SyntaxKind.MultiLineCommentToken;
+            _kind = SyntaxKind.MultiLineCommentTriva;
         }
 
         private void ReadString()
@@ -323,7 +323,7 @@ namespace Minsk.CodeAnalysis.Syntax
             while (char.IsWhiteSpace(Current))
                 _position++;
 
-            _kind = SyntaxKind.WhitespaceToken;
+            _kind = SyntaxKind.WhitespaceTrivia;
         }
 
         private void ReadNumber()

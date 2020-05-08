@@ -32,6 +32,7 @@ namespace Minsk
                 var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
                 var isNumber = token.Kind == SyntaxKind.NumberToken;
                 var isString = token.Kind == SyntaxKind.StringToken;
+                var isComment = token.Kind == SyntaxKind.SingleLineCommentToken;
 
                 if (isKeyword)
                     Console.ForegroundColor = ConsoleColor.Blue;
@@ -41,6 +42,8 @@ namespace Minsk
                     Console.ForegroundColor = ConsoleColor.Cyan;
                 else if (isString)
                     Console.ForegroundColor = ConsoleColor.Magenta;
+                else if (isComment)
+                    Console.ForegroundColor = ConsoleColor.Green;
                 else
                     Console.ForegroundColor = ConsoleColor.DarkGray;
 
@@ -145,7 +148,8 @@ namespace Minsk
             var syntaxTree = SyntaxTree.Parse(text);
 
             // Use Members because we need to exclude the EndOfFileToken.
-            if (syntaxTree.Root.Members.Last().GetLastToken().IsMissing)
+            var lastMember = syntaxTree.Root.Members.LastOrDefault();
+            if (lastMember == null || lastMember.GetLastToken().IsMissing)
                 return false;
 
             return true;

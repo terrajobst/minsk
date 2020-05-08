@@ -311,11 +311,14 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitExpression(ILProcessor ilProcessor, BoundExpression node)
         {
+            if (node.ConstantValue != null)
+            {
+                EmitConstantExpression(ilProcessor, node);
+                return;
+            }
+
             switch (node.Kind)
             {
-                case BoundNodeKind.LiteralExpression:
-                    EmitLiteralExpression(ilProcessor, (BoundLiteralExpression)node);
-                    break;
                 case BoundNodeKind.VariableExpression:
                     EmitVariableExpression(ilProcessor, (BoundVariableExpression)node);
                     break;
@@ -339,27 +342,27 @@ namespace Minsk.CodeAnalysis.Emit
             }
         }
 
-        private void EmitLiteralExpression(ILProcessor ilProcessor, BoundLiteralExpression node)
+        private void EmitConstantExpression(ILProcessor ilProcessor, BoundExpression node)
         {
             if (node.Type == TypeSymbol.Bool)
             {
-                var value = (bool)node.Value;
+                var value = (bool)node.ConstantValue.Value;
                 var instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
                 ilProcessor.Emit(instruction);
             }
             else if (node.Type == TypeSymbol.Int)
             {
-                var value = (int)node.Value;
+                var value = (int)node.ConstantValue.Value;
                 ilProcessor.Emit(OpCodes.Ldc_I4, value);
             }
             else if (node.Type == TypeSymbol.String)
             {
-                var value = (string)node.Value;
+                var value = (string)node.ConstantValue.Value;
                 ilProcessor.Emit(OpCodes.Ldstr, value);
             }
             else
             {
-                throw new Exception($"Unexpected literal type: {node.Type}");
+                throw new Exception($"Unexpected constant expression type: {node.Type}");
             }
         }
 

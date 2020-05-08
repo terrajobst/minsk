@@ -1,0 +1,57 @@
+# EditorConfig
+root = true
+
+# All files
+[*]
+
+#### Core EditorConfig Options ####
+
+# Encoding
+charset = utf-8
+
+# Indentation and spacing
+indent_size = 4
+indent_style = space
+
+# New line preferences
+end_of_line = crlf
+insert_final_newline = false
+
+# Formatting
+trim_final_newline = true
+trim_trailing_whitespace = true
+
+#### FileType EditorConfig Overrides ####
+
+# Bash files
+[*.sh]
+end_of_line = lf
+insert_final_newline = true
+
+# Batch files
+[*.{bat,cmd}]
+end_of_line = crlf
+insert_final_newline = true
+
+# Build files
+[*.{*proj,props,targets,items,tasks}]
+indent_size = 2
+
+# Solution files
+[*.sln]
+indent_style = tab
+
+# Script files
+[*.{ps1,psm1,psd1}]
+insert_final_newline = true
+
+# Git Files
+[.git*]
+insert_final_newline = true
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+insert_final_newline = true
+
+# END

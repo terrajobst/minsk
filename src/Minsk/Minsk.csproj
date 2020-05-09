@@ -4,19 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <!--
-    HACK: Partially Fixes DesignTime Builds. See terrajobst/minsk#121
-  -->
-
-  <PropertyGroup>
-    <GeneratedSources>CodeAnalysis/**/*.g.cs</GeneratedSources>
-    <DefaultItemExcludes>$(GeneratedSources)</DefaultItemExcludes>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">
-    <Compile Include="$(GeneratedSources)" Visible="false" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />

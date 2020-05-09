@@ -5,8 +5,24 @@
     <Features>strict</Features>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Compilers" Version="3.6.0-4.final" />
-  </ItemGroup>
+  <!--
+    HACK
+
+      VS Code currently doesn't support Roslyn generators (VS does, tho). In
+      order to void seeing errors in VS Code and to get IntelliSense, we're
+      doing a trick:
+
+      1. The generator writes the file to disk, using the *.g.cs naming
+         convention (borrowed from WPF).
+      2. In MSBuild we're excluding those files
+
+      Since VS Code (or more specifically OmniSharp) doesn't use MSBuild it will
+      still include the file while neither VS nore the CLI/CI build will.
+  -->
+
+  <PropertyGroup>
+    <GeneratedSources>**/*.g.cs</GeneratedSources>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedSources)</DefaultItemExcludes>
+  </PropertyGroup>
 
 </Project>

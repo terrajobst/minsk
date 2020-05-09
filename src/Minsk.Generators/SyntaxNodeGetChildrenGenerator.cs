@@ -99,22 +99,26 @@ namespace Minsk.Generators
             var hintName = "SyntaxNode_GetChildren.g.cs";
             context.AddSource(hintName, sourceText);
 
-            // HACK: Partially Fixes DesignTime Builds. See terrajobst/minsk#121
-#if DEBUG
+            // HACK
+            //
+            // Make generator work in VS Code. See src\Directory.Build.props for
+            // details.
+
             var fileName = "SyntaxNode_GetChildren.g.cs";
             var syntaxNodeFilePath = syntaxNodeType.DeclaringSyntaxReferences.First().SyntaxTree.FilePath;
             var syntaxDirectory = Path.GetDirectoryName(syntaxNodeFilePath);
             var filePath = Path.Combine(syntaxDirectory, fileName);
 
-            if(File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 var fileText = File.ReadAllText(filePath);
                 var sourceFileText = SourceText.From(fileText, Encoding.UTF8);
-                if(sourceText.ContentEquals(sourceFileText)) return;
+                if (sourceText.ContentEquals(sourceFileText))
+                    return;
             }
+
             using (var writer = new StreamWriter(filePath))
                 sourceText.Write(writer);
-#endif
         }
 
         private IReadOnlyList<INamedTypeSymbol> GetAllTypes(IAssemblySymbol symbol)

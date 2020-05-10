@@ -17,9 +17,9 @@ namespace Minsk.CodeAnalysis
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void AddRange(DiagnosticBag diagnostics)
+        public void AddRange(IEnumerable<Diagnostic> diagnostics)
         {
-            _diagnostics.AddRange(diagnostics._diagnostics);
+            _diagnostics.AddRange(diagnostics);
         }
 
         private void Report(TextLocation location, string message)

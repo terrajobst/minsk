@@ -89,11 +89,8 @@ namespace Minsk.CodeAnalysis
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
-
-            var diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
-            if (diagnostics.Any())
-                return new EvaluationResult(diagnostics, null);
+            if (GlobalScope.Diagnostics.Any())
+                return new EvaluationResult(GlobalScope.Diagnostics, null);
 
             var program = GetProgram();
 

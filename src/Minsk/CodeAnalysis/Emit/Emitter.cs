@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
@@ -522,10 +523,22 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitStringConcatExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
         {
-            var nodes = Flatten(node).ToList();
+            // Flatten the expression tree to a sequence of nodes to concatenate, then fold consecutive constants in that sequence.
+            // This approach enables constant folding of non-sibling nodes, which cannot be done in the ConstantFolding class as it would require changing the tree.
+            // Example: folding b and c in ((a + b) + c) if they are constant.
+
+            var nodes = FoldConstants(Flatten(node)).ToList();
 
             switch (nodes.Count)
             {
+                case 0:
+                    ilProcessor.Emit(OpCodes.Ldstr, string.Empty);
+                    break;
+
+                case 1:
+                    EmitExpression(ilProcessor, nodes[0]);
+                    break;
+
                 case 2:
                     EmitExpression(ilProcessor, nodes[0]);
                     EmitExpression(ilProcessor, nodes[1]);
@@ -563,6 +576,7 @@ namespace Minsk.CodeAnalysis.Emit
                     break;
             }
 
+            // (a + b) + (c + d) --> [a, b, c, d]
             static IEnumerable<BoundExpression> Flatten(BoundExpression node)
             {
                 if (node is BoundBinaryExpression binaryExpression &&
@@ -583,6 +597,39 @@ namespace Minsk.CodeAnalysis.Emit
 
                     yield return node;
                 }
+            }
+
+            // [a, "foo", "bar", b, ""] --> [a, "foobar", b]
+            static IEnumerable<BoundExpression> FoldConstants(IEnumerable<BoundExpression> nodes)
+            {
+                StringBuilder sb = null;
+
+                foreach (var node in nodes)
+                {
+                    if (node.ConstantValue != null)
+                    {
+                        var stringValue = (string)node.ConstantValue.Value;
+
+                        if (string.IsNullOrEmpty(stringValue))
+                            continue;
+
+                        sb ??= new StringBuilder();
+                        sb.Append(stringValue);
+                    }
+                    else
+                    {
+                        if (sb?.Length > 0)
+                        {
+                            yield return new BoundLiteralExpression(sb.ToString());
+                            sb.Clear();
+                        }
+
+                        yield return node;
+                    }
+                }
+
+                if (sb?.Length > 0)
+                    yield return new BoundLiteralExpression(sb.ToString());
             }
         }
 

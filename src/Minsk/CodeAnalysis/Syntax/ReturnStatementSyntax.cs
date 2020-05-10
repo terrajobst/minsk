@@ -1,6 +1,6 @@
 namespace Minsk.CodeAnalysis.Syntax
 {
-    public sealed class ReturnStatementSyntax : StatementSyntax
+    public sealed partial class ReturnStatementSyntax : StatementSyntax
     {
         public ReturnStatementSyntax(SyntaxTree syntaxTree, SyntaxToken returnKeyword, ExpressionSyntax expression)
             : base(syntaxTree)

@@ -1,6 +1,6 @@
 namespace Minsk.CodeAnalysis.Syntax
 {
-    public sealed class VariableDeclarationSyntax : StatementSyntax
+    public sealed partial class VariableDeclarationSyntax : StatementSyntax
     {
         public VariableDeclarationSyntax(SyntaxTree syntaxTree, SyntaxToken keyword, SyntaxToken identifier, TypeClauseSyntax typeClause, SyntaxToken equalsToken, ExpressionSyntax initializer)
             : base(syntaxTree)

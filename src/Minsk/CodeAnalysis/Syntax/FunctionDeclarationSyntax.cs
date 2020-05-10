@@ -1,6 +1,6 @@
 namespace Minsk.CodeAnalysis.Syntax
 {
-    public sealed class FunctionDeclarationSyntax : MemberSyntax
+    public sealed partial class FunctionDeclarationSyntax : MemberSyntax
     {
         public FunctionDeclarationSyntax(SyntaxTree syntaxTree, SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken openParenthesisToken, SeparatedSyntaxList<ParameterSyntax> parameters, SyntaxToken closeParenthesisToken, TypeClauseSyntax type, BlockStatementSyntax body)
             : base(syntaxTree)

@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "msc", "msc\msc.csproj", "{0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "msi", "msi\msi.csproj", "{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minsk.Generators", "Minsk.Generators\Minsk.Generators.csproj", "{C106F0D5-AEA3-460F-AA42-B796C6F85B3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C106F0D5-AEA3-460F-AA42-B796C6F85B3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C106F0D5-AEA3-460F-AA42-B796C6F85B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C106F0D5-AEA3-460F-AA42-B796C6F85B3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C106F0D5-AEA3-460F-AA42-B796C6F85B3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

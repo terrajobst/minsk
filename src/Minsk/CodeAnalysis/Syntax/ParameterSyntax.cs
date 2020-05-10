@@ -1,6 +1,6 @@
 namespace Minsk.CodeAnalysis.Syntax
 {
-    public sealed class ParameterSyntax : SyntaxNode
+    public sealed partial class ParameterSyntax : SyntaxNode
     {
         public ParameterSyntax(SyntaxTree syntaxTree, SyntaxToken identifier, TypeClauseSyntax type)
             : base(syntaxTree)

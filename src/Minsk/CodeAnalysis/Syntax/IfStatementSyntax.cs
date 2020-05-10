@@ -1,6 +1,6 @@
 namespace Minsk.CodeAnalysis.Syntax
 {
-    public sealed class IfStatementSyntax : StatementSyntax
+    public sealed partial class IfStatementSyntax : StatementSyntax
     {
         public IfStatementSyntax(SyntaxTree syntaxTree, SyntaxToken ifKeyword, ExpressionSyntax condition, StatementSyntax thenStatement, ElseClauseSyntax elseClause)
             : base(syntaxTree)

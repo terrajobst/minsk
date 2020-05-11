@@ -11,6 +11,8 @@ namespace Minsk.CodeAnalysis.Binding
             {
                 case BoundNodeKind.BlockStatement:
                     return RewriteBlockStatement((BoundBlockStatement)node);
+                case BoundNodeKind.NopStatement:
+                    return RewriteNopStatement((BoundNopStatement)node);
                 case BoundNodeKind.VariableDeclaration:
                     return RewriteVariableDeclaration((BoundVariableDeclaration)node);
                 case BoundNodeKind.IfStatement:
@@ -63,6 +65,11 @@ namespace Minsk.CodeAnalysis.Binding
                 return node;
 
             return new BoundBlockStatement(builder.MoveToImmutable());
+        }
+
+        protected virtual BoundStatement RewriteNopStatement(BoundNopStatement node)
+        {
+            return node;
         }
 
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)

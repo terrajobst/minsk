@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
@@ -20,6 +20,7 @@ namespace Minsk.Generators
 
         public void Execute(SourceGeneratorContext context)
         {
+#pragma warning disable IDE0063 // Use simple 'using' statement: we want to control when the 'using' varibales go out of scope
             SourceText sourceText;
 
             var compilation = (CSharpCompilation)context.Compilation;
@@ -31,64 +32,48 @@ namespace Minsk.Generators
             var types = GetAllTypes(compilation.Assembly);
             var syntaxNodeTypes = types.Where(t => !t.IsAbstract && IsPartial(t) && IsDerivedFrom(t, syntaxNodeType));
 
+            string indentString = "    ";
             using (var stringWriter = new StringWriter())
-            using (var indentedTextWriter = new IndentedTextWriter(stringWriter, "    "))
+            using (var indentedTextWriter = new IndentedTextWriter(stringWriter, indentString))
             {
                 indentedTextWriter.WriteLine("using System;");
                 indentedTextWriter.WriteLine("using System.Collections.Generic;");
                 indentedTextWriter.WriteLine("using System.Collections.Immutable;");
                 indentedTextWriter.WriteLine();
-                indentedTextWriter.WriteLine("namespace Minsk.CodeAnalysis.Syntax");
-                indentedTextWriter.WriteLine("{");
-                indentedTextWriter.Indent++;
-
-                foreach (var type in syntaxNodeTypes)
+                using (var nameSpaceCurly = new CurlyIndenter(indentedTextWriter, "namespace Minsk.CodeAnalysis.Syntax"))
                 {
-                    indentedTextWriter.WriteLine($"partial class {type.Name}");
-                    indentedTextWriter.WriteLine("{");
-                    indentedTextWriter.Indent++;
-
-                    indentedTextWriter.WriteLine("public override IEnumerable<SyntaxNode> GetChildren()");
-                    indentedTextWriter.WriteLine("{");
-                    indentedTextWriter.Indent++;
-
-                    foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
+                    foreach (var type in syntaxNodeTypes)
                     {
-                        if (property.Type is INamedTypeSymbol propertyType)
+                        using (var classCurly = new CurlyIndenter(indentedTextWriter, $"partial class {type.Name}"))
+                        using (var getChildCurly = new CurlyIndenter(indentedTextWriter, "public override IEnumerable<SyntaxNode> GetChildren()"))
                         {
-                            if (IsDerivedFrom(propertyType, syntaxNodeType))
+                            foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
                             {
-                                indentedTextWriter.WriteLine($"yield return {property.Name};");
-                            }
-                            else if (propertyType.TypeArguments.Length == 1 &&
-                                     IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType) &&
-                                     SymbolEqualityComparer.Default.Equals(propertyType.OriginalDefinition, immutableArrayType))
-                            {
-                                indentedTextWriter.WriteLine($"foreach (var child in {property.Name})");
-                                indentedTextWriter.Indent++;
-                                indentedTextWriter.WriteLine("yield return child;");
-                                indentedTextWriter.Indent--;
-                            }
-                            else if (SymbolEqualityComparer.Default.Equals(propertyType.OriginalDefinition, separatedSyntaxListType) &&
-                                     IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType))
-                            {
-                                indentedTextWriter.WriteLine($"foreach (var child in {property.Name}.GetWithSeparators())");
-                                indentedTextWriter.Indent++;
-                                indentedTextWriter.WriteLine("yield return child;");
-                                indentedTextWriter.Indent--;
+                                if (property.Type is INamedTypeSymbol propertyType)
+                                {
+                                    if (IsDerivedFrom(propertyType, syntaxNodeType))
+                                    {
+                                        indentedTextWriter.WriteLine($"yield return {property.Name};");
+                                    }
+                                    else if (propertyType.TypeArguments.Length == 1 &&
+                                             IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType) &&
+                                             SymbolEqualityComparer.Default.Equals(propertyType.OriginalDefinition, immutableArrayType))
+                                    {
+                                        indentedTextWriter.WriteLine($"foreach (var child in {property.Name})");
+                                        indentedTextWriter.WriteLine($"{indentString}yield return child;");
+                                        
+                                    }
+                                    else if (SymbolEqualityComparer.Default.Equals(propertyType.OriginalDefinition, separatedSyntaxListType) &&
+                                             IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType))
+                                    {
+                                        indentedTextWriter.WriteLine($"foreach (var child in {property.Name}.GetWithSeparators())");
+                                        indentedTextWriter.WriteLine($"{indentString}yield return child;");
+                                    }
+                                }
                             }
                         }
                     }
-
-                    indentedTextWriter.Indent--;
-                    indentedTextWriter.WriteLine("}");
-
-                    indentedTextWriter.Indent--;
-                    indentedTextWriter.WriteLine("}");
                 }
-
-                indentedTextWriter.Indent--;
-                indentedTextWriter.WriteLine("}");
 
                 indentedTextWriter.Flush();
                 stringWriter.Flush();
@@ -119,6 +104,7 @@ namespace Minsk.Generators
 
             using (var writer = new StreamWriter(filePath))
                 sourceText.Write(writer);
+#pragma warning restore IDE0063 // Use simple 'using' statement: we want to control when the variable goes out of scope
         }
 
         private IReadOnlyList<INamedTypeSymbol> GetAllTypes(IAssemblySymbol symbol)

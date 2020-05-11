@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- TODO: Remove when nullable annotations are added -->
+    <Nullable>Disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

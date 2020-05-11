@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <!--
+      Since we're only targeting single framework, we don't need to append
+      the short TFM and RID to the output paths.
+  -->
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <!--
       HACK:
       VS Code currently doesn't support Roslyn generators (VS 16.6+ does, tho).
       In order to void seeing errors in VS Code and to get IntelliSense,

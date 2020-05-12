@@ -57,7 +57,7 @@ namespace Minsk.CodeAnalysis.Syntax
         public static bool IsComment(this SyntaxKind kind)
         {
             return kind == SyntaxKind.SingleLineCommentTrivia ||
-                   kind == SyntaxKind.MultiLineCommentTriva;
+                   kind == SyntaxKind.MultiLineCommentTrivia;
         }
 
         public static SyntaxKind GetKeywordKind(string text)
@@ -209,7 +209,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 case SyntaxKind.BadTokenTrivia:
                 case SyntaxKind.WhitespaceTrivia:
                 case SyntaxKind.SingleLineCommentTrivia:
-                case SyntaxKind.MultiLineCommentTriva:
+                case SyntaxKind.MultiLineCommentTrivia:
                     return true;
                 default:
                     return false;

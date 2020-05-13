@@ -34,7 +34,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
             var untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
-            untestedTokenKinds.Remove(SyntaxKind.BadTokenTrivia);
+            untestedTokenKinds.Remove(SyntaxKind.BadToken);
             untestedTokenKinds.Remove(SyntaxKind.EndOfFileToken);
             untestedTokenKinds.ExceptWith(testedTokenKinds);
 
@@ -50,6 +50,18 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             var token = Assert.Single(tokens);
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSeparatorsData))]
+        public void Lexer_Lexes_Separator(SyntaxKind kind, string text)
+        {
+            var tokens = SyntaxTree.ParseTokens(text, includeEndOfFile: true);
+
+            var token = Assert.Single(tokens);
+            var trivia = Assert.Single(token.LeadingTrivia);
+            Assert.Equal(kind, trivia.Kind);
+            Assert.Equal(text, trivia.Text);
         }
 
         [Theory]
@@ -76,13 +88,16 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             var text = t1Text + separatorText + t2Text;
             var tokens = SyntaxTree.ParseTokens(text).ToArray();
 
-            Assert.Equal(3, tokens.Length);
+            Assert.Equal(2, tokens.Length);
             Assert.Equal(t1Kind, tokens[0].Kind);
             Assert.Equal(t1Text, tokens[0].Text);
-            Assert.Equal(separatorKind, tokens[1].Kind);
-            Assert.Equal(separatorText, tokens[1].Text);
-            Assert.Equal(t2Kind, tokens[2].Kind);
-            Assert.Equal(t2Text, tokens[2].Text);
+
+            var separator = Assert.Single(tokens[0].TrailingTrivia);
+            Assert.Equal(separatorKind, separator.Kind);
+            Assert.Equal(separatorText, separator.Text);
+
+            Assert.Equal(t2Kind, tokens[1].Kind);
+            Assert.Equal(t2Text, tokens[1].Text);
         }
 
         [Theory]
@@ -103,7 +118,13 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
 
         public static IEnumerable<object[]> GetTokensData()
         {
-            foreach (var t in GetTokens().Concat(GetSeparators()))
+            foreach (var t in GetTokens())
+                yield return new object[] { t.kind, t.text };
+        }
+
+        public static IEnumerable<object[]> GetSeparatorsData()
+        {
+            foreach (var t in GetSeparators())
                 yield return new object[] { t.kind, t.text };
         }
 
@@ -146,9 +167,9 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             {
                 (SyntaxKind.WhitespaceTrivia, " "),
                 (SyntaxKind.WhitespaceTrivia, "  "),
-                (SyntaxKind.WhitespaceTrivia, "\r"),
-                (SyntaxKind.WhitespaceTrivia, "\n"),
-                (SyntaxKind.WhitespaceTrivia, "\r\n"),
+                (SyntaxKind.LineBreakTrivia, "\r"),
+                (SyntaxKind.LineBreakTrivia, "\n"),
+                (SyntaxKind.LineBreakTrivia, "\r\n"),
                 (SyntaxKind.MultiLineCommentTrivia, "/**/"),
             };
         }

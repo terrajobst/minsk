@@ -275,7 +275,7 @@ namespace Minsk.CodeAnalysis.Syntax
                 }
             }
 
-            _kind = SyntaxKind.MultiLineCommentTriva;
+            _kind = SyntaxKind.MultiLineCommentTrivia;
         }
 
         private void ReadString()

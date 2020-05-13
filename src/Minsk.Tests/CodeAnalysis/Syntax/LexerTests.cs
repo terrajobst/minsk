@@ -149,7 +149,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
                 (SyntaxKind.WhitespaceTrivia, "\r"),
                 (SyntaxKind.WhitespaceTrivia, "\n"),
                 (SyntaxKind.WhitespaceTrivia, "\r\n"),
-                (SyntaxKind.MultiLineCommentTriva, "/**/"),
+                (SyntaxKind.MultiLineCommentTrivia, "/**/"),
             };
         }
 
@@ -227,7 +227,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SingleLineCommentTrivia)
                 return true;
 
-            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.MultiLineCommentTriva)
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.MultiLineCommentTrivia)
                 return true;
 
             return false;

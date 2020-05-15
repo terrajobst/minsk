@@ -15,7 +15,7 @@ namespace Minsk
     {
         private bool _loadingSubmission;
         private static readonly Compilation emptyCompilation = Compilation.CreateScript(null);
-        private Compilation _previous;
+        private Compilation? _previous;
         private bool _showTree;
         private bool _showProgram;
         private readonly Dictionary<VariableSymbol, object> _variables = new Dictionary<VariableSymbol, object>();
@@ -25,7 +25,7 @@ namespace Minsk
             LoadSubmissions();
         }
 
-        protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
+        protected override object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object? state)
         {
             SyntaxTree syntaxTree;
 

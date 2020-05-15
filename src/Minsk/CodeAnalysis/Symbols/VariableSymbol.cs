@@ -5,7 +5,7 @@ namespace Minsk.CodeAnalysis.Symbols
 {
     public abstract class VariableSymbol : Symbol
     {
-        internal VariableSymbol(string name, bool isReadOnly, TypeSymbol type, BoundConstant constant)
+        internal VariableSymbol(string name, bool isReadOnly, TypeSymbol type, BoundConstant? constant)
             : base(name)
         {
             IsReadOnly = isReadOnly;
@@ -15,6 +15,6 @@ namespace Minsk.CodeAnalysis.Symbols
 
         public bool IsReadOnly { get; }
         public TypeSymbol Type { get; }
-        internal BoundConstant Constant { get; }
+        internal BoundConstant? Constant { get; }
     }
 }

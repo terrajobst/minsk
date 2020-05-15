@@ -16,6 +16,6 @@ namespace Minsk.CodeAnalysis.Binding
         public override TypeSymbol Type => Op.Type;
         public BoundUnaryOperator Op { get; }
         public BoundExpression Operand { get; }
-        public override BoundConstant ConstantValue { get; }
+        public override BoundConstant? ConstantValue { get; }
     }
 }

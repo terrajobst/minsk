@@ -73,20 +73,19 @@ namespace Minsk.CodeAnalysis.Syntax
 
             void ParseTokens(SyntaxTree st, out CompilationUnitSyntax root, out ImmutableArray<Diagnostic> d)
             {
-                root = null;
-
                 var l = new Lexer(st);
                 while (true)
                 {
                     var token = l.Lex();
-                    if (token.Kind == SyntaxKind.EndOfFileToken)
-                        root = new CompilationUnitSyntax(st, ImmutableArray<MemberSyntax>.Empty, token);
 
                     if (token.Kind != SyntaxKind.EndOfFileToken || includeEndOfFile)
                         tokens.Add(token);
 
                     if (token.Kind == SyntaxKind.EndOfFileToken)
+                    {
+                        root = new CompilationUnitSyntax(st, ImmutableArray<MemberSyntax>.Empty, token);
                         break;
+                    }
                 }
 
                 d = l.Diagnostics.ToImmutableArray();

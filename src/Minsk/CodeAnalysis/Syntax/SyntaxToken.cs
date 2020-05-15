@@ -8,12 +8,13 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed class SyntaxToken : SyntaxNode
     {
-        public SyntaxToken(SyntaxTree syntaxTree, SyntaxKind kind, int position, string text, object value, ImmutableArray<SyntaxTrivia> leadingTrivia, ImmutableArray<SyntaxTrivia> trailingTrivia)
+        public SyntaxToken(SyntaxTree syntaxTree, SyntaxKind kind, int position, string? text, object? value, ImmutableArray<SyntaxTrivia> leadingTrivia, ImmutableArray<SyntaxTrivia> trailingTrivia)
             : base(syntaxTree)
         {
             Kind = kind;
             Position = position;
-            Text = text;
+            Text = text ?? string.Empty;
+            IsMissing = text == null;
             Value = value;
             LeadingTrivia = leadingTrivia;
             TrailingTrivia = trailingTrivia;
@@ -22,8 +23,8 @@ namespace Minsk.CodeAnalysis.Syntax
         public override SyntaxKind Kind { get; }
         public int Position { get; }
         public string Text { get; }
-        public object Value { get; }
-        public override TextSpan Span => new TextSpan(Position, Text?.Length ?? 0);
+        public object? Value { get; }
+        public override TextSpan Span => new TextSpan(Position, Text.Length);
         public override TextSpan FullSpan
         {
             get
@@ -49,6 +50,6 @@ namespace Minsk.CodeAnalysis.Syntax
         /// <summary>
         /// A token is missing if it was inserted by the parser and doesn't appear in source.
         /// </summary>
-        public bool IsMissing => Text == null;
+        public bool IsMissing { get; }
     }
 }

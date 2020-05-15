@@ -15,6 +15,6 @@ namespace Minsk.CodeAnalysis.Symbols
         internal static IEnumerable<FunctionSymbol> GetAll()
             => typeof(BuiltinFunctions).GetFields(BindingFlags.Public | BindingFlags.Static)
                                        .Where(f => f.FieldType == typeof(FunctionSymbol))
-                                       .Select(f => (FunctionSymbol)f.GetValue(null));
+                                       .Select(f => (FunctionSymbol)f.GetValue(null)!);
     }
 }

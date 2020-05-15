@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -25,8 +26,8 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public SyntaxToken GetSeparator(int index)
         {
-            if (index == Count - 1)
-                return null;
+            if (index < 0 || index >= Count - 1)
+                throw new ArgumentOutOfRangeException(nameof(index));
 
             return (SyntaxToken) _nodesAndSeparators[index * 2 + 1];
         }

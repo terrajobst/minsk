@@ -202,7 +202,7 @@ namespace Minsk.CodeAnalysis
             Report(default, message);
         }
 
-        public void ReportRequiredTypeNotFound(string minskName, string metadataName)
+        public void ReportRequiredTypeNotFound(string? minskName, string metadataName)
         {
             var message = minskName == null
                 ? $"The required type '{metadataName}' cannot be resolved among the given references."
@@ -210,7 +210,7 @@ namespace Minsk.CodeAnalysis
             Report(default, message);
         }
 
-        public void ReportRequiredTypeAmbiguous(string minskName, string metadataName, TypeDefinition[] foundTypes)
+        public void ReportRequiredTypeAmbiguous(string? minskName, string metadataName, TypeDefinition[] foundTypes)
         {
             var assemblyNames = foundTypes.Select(t => t.Module.Assembly.Name.Name);
             var assemblyNameList = string.Join(", ", assemblyNames);

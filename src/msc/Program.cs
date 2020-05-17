@@ -13,8 +13,8 @@ namespace Minsk
     {
         private static int Main(string[] args)
         {
-            var outputPath = (string) null;
-            var moduleName = (string) null;
+            var outputPath = (string?) null;
+            var moduleName = (string?) null;
             var referencePaths = new List<string>();
             var sourcePaths = new List<string>();
             var helpRequested = false;

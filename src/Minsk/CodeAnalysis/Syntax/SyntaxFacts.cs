@@ -117,7 +117,7 @@ namespace Minsk.CodeAnalysis.Syntax
             }
         }
 
-        public static string GetText(SyntaxKind kind)
+        public static string? GetText(SyntaxKind kind)
         {
             switch (kind)
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Minsk.CodeAnalysis.Lowering;
 using Minsk.CodeAnalysis.Symbols;
@@ -13,13 +14,13 @@ namespace Minsk.CodeAnalysis.Binding
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly bool _isScript;
-        private readonly FunctionSymbol _function;
+        private readonly FunctionSymbol? _function;
 
         private Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)>();
         private int _labelCounter;
         private BoundScope _scope;
 
-        private Binder(bool isScript, BoundScope parent, FunctionSymbol function)
+        private Binder(bool isScript, BoundScope? parent, FunctionSymbol? function)
         {
             _scope = new BoundScope(parent);
             _isScript = isScript;
@@ -32,7 +33,7 @@ namespace Minsk.CodeAnalysis.Binding
             }
         }
 
-        public static BoundGlobalScope BindGlobalScope(bool isScript, BoundGlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
+        public static BoundGlobalScope BindGlobalScope(bool isScript, BoundGlobalScope? previous, ImmutableArray<SyntaxTree> syntaxTrees)
         {
             var parentScope = CreateParentScope(previous);
             var binder = new Binder(isScript, parentScope, function: null);
@@ -74,8 +75,8 @@ namespace Minsk.CodeAnalysis.Binding
 
             var functions = binder._scope.GetDeclaredFunctions();
 
-            FunctionSymbol mainFunction;
-            FunctionSymbol scriptFunction;
+            FunctionSymbol? mainFunction;
+            FunctionSymbol? scriptFunction;
 
             if (isScript)
             {
@@ -97,14 +98,14 @@ namespace Minsk.CodeAnalysis.Binding
                 if (mainFunction != null)
                 {
                     if (mainFunction.Type != TypeSymbol.Void || mainFunction.Parameters.Any())
-                        binder.Diagnostics.ReportMainMustHaveCorrectSignature(mainFunction.Declaration.Identifier.Location);
+                        binder.Diagnostics.ReportMainMustHaveCorrectSignature(mainFunction.Declaration!.Identifier.Location);
                 }
 
                 if (globalStatements.Any())
                 {
                     if (mainFunction != null)
                     {
-                        binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration.Identifier.Location);
+                        binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration!.Identifier.Location);
 
                         foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
                             binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(globalStatement.Location);
@@ -125,7 +126,7 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundGlobalScope(previous, diagnostics, mainFunction, scriptFunction, functions, variables, statements.ToImmutable());
         }
 
-        public static BoundProgram BindProgram(bool isScript, BoundProgram previous, BoundGlobalScope globalScope)
+        public static BoundProgram BindProgram(bool isScript, BoundProgram? previous, BoundGlobalScope globalScope)
         {
             var parentScope = CreateParentScope(globalScope);
 
@@ -138,7 +139,7 @@ namespace Minsk.CodeAnalysis.Binding
             foreach (var function in globalScope.Functions)
             {
                 var binder = new Binder(isScript, parentScope, function);
-                var body = binder.BindStatement(function.Declaration.Body);
+                var body = binder.BindStatement(function.Declaration!.Body);
                 var loweredBody = Lowerer.Lower(function, body);
 
                 if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
@@ -204,14 +205,14 @@ namespace Minsk.CodeAnalysis.Binding
             var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
-            if (function.Declaration.Identifier.Text != null &&
+            if (syntax.Identifier.Text != null &&
                 !_scope.TryDeclareFunction(function))
             {
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
             }
         }
 
-        private static BoundScope CreateParentScope(BoundGlobalScope previous)
+        private static BoundScope CreateParentScope(BoundGlobalScope? previous)
         {
             var stack = new Stack<BoundGlobalScope>();
             while (previous != null)
@@ -320,7 +321,7 @@ namespace Minsk.CodeAnalysis.Binding
                 statements.Add(statement);
             }
 
-            _scope = _scope.Parent;
+            _scope = _scope.Parent!;
 
             return new BoundBlockStatement(statements.ToImmutable());
         }
@@ -337,7 +338,8 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundVariableDeclaration(variable, convertedInitializer);
         }
 
-        private TypeSymbol BindTypeClause(TypeClauseSyntax syntax)
+        [return: NotNullIfNotNull("syntax")]
+        private TypeSymbol? BindTypeClause(TypeClauseSyntax? syntax)
         {
             if (syntax == null)
                 return null;
@@ -381,7 +383,7 @@ namespace Minsk.CodeAnalysis.Binding
             var variable = BindVariableDeclaration(syntax.Identifier, isReadOnly: true, TypeSymbol.Int);
             var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
 
-            _scope = _scope.Parent;
+            _scope = _scope.Parent!;
 
             return new BoundForStatement(variable, lowerBound, upperBound, body, breakLabel, continueLabel);
         }
@@ -438,7 +440,7 @@ namespace Minsk.CodeAnalysis.Binding
                 else if (expression != null)
                 {
                     // Main does not support return values.
-                    _diagnostics.ReportInvalidReturnWithValueInGlobalStatements(syntax.Expression.Location);
+                    _diagnostics.ReportInvalidReturnWithValueInGlobalStatements(syntax.Expression!.Location);
                 }
             }
             else
@@ -446,14 +448,14 @@ namespace Minsk.CodeAnalysis.Binding
                 if (_function.Type == TypeSymbol.Void)
                 {
                     if (expression != null)
-                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Location, _function.Name);
+                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression!.Location, _function.Name);
                 }
                 else
                 {
                     if (expression == null)
                         _diagnostics.ReportMissingReturnExpression(syntax.ReturnKeyword.Location, _function.Type);
                     else
-                        expression = BindConversion(syntax.Expression.Location, expression, _function.Type);
+                        expression = BindConversion(syntax.Expression!.Location, expression, _function.Type);
                 }
             }
 
@@ -677,7 +679,7 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundConversionExpression(type, expression);
         }
 
-        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type, BoundConstant constant = null)
+        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type, BoundConstant? constant = null)
         {
             var name = identifier.Text ?? "?";
             var declare = !identifier.IsMissing;
@@ -691,7 +693,7 @@ namespace Minsk.CodeAnalysis.Binding
             return variable;
         }
 
-        private VariableSymbol BindVariableReference(SyntaxToken identifierToken)
+        private VariableSymbol? BindVariableReference(SyntaxToken identifierToken)
         {
             var name = identifierToken.Text;
             switch (_scope.TryLookupSymbol(name))
@@ -709,7 +711,7 @@ namespace Minsk.CodeAnalysis.Binding
             }
         }
 
-        private TypeSymbol LookupType(string name)
+        private TypeSymbol? LookupType(string name)
         {
             switch (name)
             {

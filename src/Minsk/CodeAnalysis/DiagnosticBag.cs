@@ -24,7 +24,13 @@ namespace Minsk.CodeAnalysis
 
         private void Report(TextLocation location, string message)
         {
-            var diagnostic = new Diagnostic(location, message);
+            var diagnostic = Diagnostic.Error(location, message);
+            _diagnostics.Add(diagnostic);
+        }
+
+        private void ReportWarning(TextLocation location, string message)
+        {
+            var diagnostic = Diagnostic.Warning(location, message);
             _diagnostics.Add(diagnostic);
         }
 
@@ -225,6 +231,58 @@ namespace Minsk.CodeAnalysis
             var parameterTypeNameList = string.Join(", ", parameterTypeNames);
             var message = $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
             Report(default, message);
+        }
+
+        public void ReportUnreachableCode(TextLocation location)
+        {
+            var message = $"Unreachable code detected.";
+            ReportWarning(location, message);
+        }
+
+        public void ReportUnreachableCode(SyntaxNode node)
+        {
+            switch (node.Kind)
+            {
+                case SyntaxKind.BlockStatement:
+                    var firstStatement = ((BlockStatementSyntax)node).Statements.FirstOrDefault();
+                    // Report just for non empty blocks.
+                    if (firstStatement != null)
+                        ReportUnreachableCode(firstStatement);
+                    return;
+                case SyntaxKind.VariableDeclaration:
+                    ReportUnreachableCode(((VariableDeclarationSyntax)node).Keyword.Location);
+                    return;
+                case SyntaxKind.IfStatement:
+                    ReportUnreachableCode(((IfStatementSyntax)node).IfKeyword.Location);
+                    return;
+                case SyntaxKind.WhileStatement:
+                    ReportUnreachableCode(((WhileStatementSyntax)node).WhileKeyword.Location);
+                    return;
+                case SyntaxKind.DoWhileStatement:
+                    ReportUnreachableCode(((DoWhileStatementSyntax)node).DoKeyword.Location);
+                    return;
+                case SyntaxKind.ForStatement:
+                    ReportUnreachableCode(((ForStatementSyntax)node).Keyword.Location);
+                    return;
+                case SyntaxKind.BreakStatement:
+                    ReportUnreachableCode(((BreakStatementSyntax)node).Keyword.Location);
+                    return;
+                case SyntaxKind.ContinueStatement:
+                    ReportUnreachableCode(((ContinueStatementSyntax)node).Keyword.Location);
+                    return;
+                case SyntaxKind.ReturnStatement:
+                    ReportUnreachableCode(((ReturnStatementSyntax)node).ReturnKeyword.Location);
+                    return;
+                case SyntaxKind.ExpressionStatement:
+                    var expression = ((ExpressionStatementSyntax)node).Expression;
+                    ReportUnreachableCode(expression);
+                    return;
+                case SyntaxKind.CallExpression:
+                    ReportUnreachableCode(((CallExpressionSyntax)node).Identifier.Location);
+                    return;
+                default:
+                    throw new Exception($"Unexpected syntax {node.Kind}");
+            }
         }
     }
 }

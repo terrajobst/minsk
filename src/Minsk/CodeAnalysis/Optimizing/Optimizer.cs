@@ -12,7 +12,7 @@ namespace Minsk.CodeAnalysis.Optimizing
         private readonly Evaluator _evaluator;
         private Optimizer()
         {
-            _evaluator = new Evaluator(null, null);
+            _evaluator = new Evaluator(null!, null!);
         }
 
         public static BoundBlockStatement Optimize(BoundBlockStatement statements)
@@ -25,7 +25,7 @@ namespace Minsk.CodeAnalysis.Optimizing
 
         private static BoundBlockStatement RemoveUnreachableCode(BoundBlockStatement block)
         {
-            ImmutableArray<BoundStatement>.Builder builder = null;
+            ImmutableArray<BoundStatement>.Builder? builder = null;
             var skipUpToNextLabel = false;
             var definedLabels = new Dictionary<BoundLabel, int>();
             var targetedLabels = new Dictionary<BoundLabel, List<(int line, bool conditional)>>();
@@ -78,7 +78,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                     if (!targetedLabels.ContainsKey(label))
                     {
                         InitBuilder(block, ref builder, block.Statements.Length);
-                        builder[pos] = BoundNoOperationStatement.Instance;
+                        builder![pos] = BoundNoOperationStatement.Instance;
                         definedLabels.Remove(label);
                     }
                 }
@@ -101,9 +101,9 @@ namespace Minsk.CodeAnalysis.Optimizing
                                     var cndJumpStatement = (BoundConditionalGotoStatement) getStatement(jump.line);
                                     var jumpStatement = (BoundGotoStatement) next.statement;
                                     InitBuilder(block, ref builder, block.Statements.Length);
-                                    removeStatement(jump.line);
-                                    removeStatement(next.line);
-                                    builder[next.line] = new BoundConditionalGotoStatement(jumpStatement.Label, cndJumpStatement.Condition, !cndJumpStatement.JumpIfTrue);
+                                    removeStatement(builder!, jump.line);
+                                    removeStatement(builder!, next.line);
+                                    builder![next.line] = new BoundConditionalGotoStatement(jumpStatement.Label, cndJumpStatement.Condition, !cndJumpStatement.JumpIfTrue);
                                     addTargetToLabel(jumpStatement.Label, next.line, true);
                                     checkPendingRemove = true;
                                 }
@@ -124,7 +124,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                             {
                                 InitBuilder(block, ref builder, block.Statements.Length);
                                 for (int j = jump.line; j < lblPos; j++)
-                                    removeStatement(j);
+                                    removeStatement(builder!, j);
                                 checkPendingRemove = true;
                             }
                             else
@@ -137,7 +137,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                                     if (statement.Kind != BoundNodeKind.NoOperationStatement)
                                     {
                                         InitBuilder(block, ref builder, block.Statements.Length);
-                                        removeStatement(j);
+                                        removeStatement(builder!, j);
                                         checkPendingRemove = true;
                                     }
                                 }
@@ -165,7 +165,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 }
             }
 
-            void removeStatement(int line)
+            void removeStatement(ImmutableArray<BoundStatement>.Builder builder, int line)
             {
                 void removeTargetToLabel(BoundLabel label)
                 {
@@ -204,7 +204,7 @@ namespace Minsk.CodeAnalysis.Optimizing
 
         private static BoundBlockStatement RemoveNoOps(BoundBlockStatement block)
         {
-            ImmutableArray<BoundStatement>.Builder builder = null;
+            ImmutableArray<BoundStatement>.Builder? builder = null;
             for (int i = 0; i < block.Statements.Length; i++)
             {
                 var statement = block.Statements[i];
@@ -218,7 +218,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             else
                 return new BoundBlockStatement(builder.ToImmutable());
         }
-        private static void InitBuilder(BoundBlockStatement block, ref ImmutableArray<BoundStatement>.Builder builder, int upperLimit)
+        private static void InitBuilder(BoundBlockStatement block, ref ImmutableArray<BoundStatement>.Builder? builder, int upperLimit)
         {
             if (builder == null)
             {
@@ -234,7 +234,7 @@ namespace Minsk.CodeAnalysis.Optimizing
 
             if (condition.Kind == BoundNodeKind.LiteralExpression)
             {
-                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition);
+                var evaluatedCondition = (bool)_evaluator.EvaluateExpression(condition)!;
                 if (evaluatedCondition == node.JumpIfTrue)
                     return new BoundGotoStatement(node.Label);
                 else
@@ -259,7 +259,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 try
                 {
                     var result = _evaluator.EvaluateExpression(evaluableNode);
-                    return new BoundLiteralExpression(result);
+                    return new BoundLiteralExpression(result!);
                 }
                 catch
                 {
@@ -286,7 +286,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 var binaryOperand = (BoundBinaryExpression) operand;
                 var negatedSyntax = TryLogicalNegateOperator(binaryOperand.Op.Kind);
                 if (negatedSyntax != null)
-                    return new BoundBinaryExpression(binaryOperand.Left, BoundBinaryOperator.Bind(negatedSyntax.Value, binaryOperand.Op.LeftType, binaryOperand.Op.RightType), binaryOperand.Right);
+                    return new BoundBinaryExpression(binaryOperand.Left, BoundBinaryOperator.Bind(negatedSyntax.Value, binaryOperand.Op.LeftType, binaryOperand.Op.RightType)!, binaryOperand.Right);
             }
             if (operand == node.Operand)
                 return node;
@@ -310,7 +310,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 try
                 {
                     var result = _evaluator.EvaluateExpression(evaluableNode);
-                    return new BoundLiteralExpression(result);
+                    return new BoundLiteralExpression(result!);
                 }
                 catch
                 {
@@ -361,7 +361,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 try
                 {
                     var result = _evaluator.EvaluateExpression(evaluableNode);
-                    return new BoundLiteralExpression(result);
+                    return new BoundLiteralExpression(result!);
                 }
                 catch
                 {
@@ -375,9 +375,9 @@ namespace Minsk.CodeAnalysis.Optimizing
             return new BoundConversionExpression(node.Type, expression);
         }
 
-        private BoundExpression TryRewriteBoolPartiallyLiteralBinaryExpression(BoundBinaryOperator op, BoundExpression literal, BoundExpression other)
+        private BoundExpression? TryRewriteBoolPartiallyLiteralBinaryExpression(BoundBinaryOperator op, BoundExpression literal, BoundExpression other)
         {
-            var evaluatedLiteral = (bool)_evaluator.EvaluateExpression(literal);
+            var evaluatedLiteral = (bool)_evaluator.EvaluateExpression(literal)!;
             switch (op.Kind)
             {
                 case BoundBinaryOperatorKind.BitwiseAnd:
@@ -401,12 +401,12 @@ namespace Minsk.CodeAnalysis.Optimizing
 
         private BoundExpression LogicalNegateExpression(BoundExpression node)
         {
-            return RewriteUnaryExpression(new BoundUnaryExpression(BoundUnaryOperator.Bind(SyntaxKind.BangToken, node.Type), node));
+            return RewriteUnaryExpression(new BoundUnaryExpression(BoundUnaryOperator.Bind(SyntaxKind.BangToken, node.Type)!, node));
         }
 
-        private BoundExpression TryRewriteIntPartiallyLiteralBinaryExpression(BoundBinaryOperator op, BoundExpression literal, BoundExpression other, bool literalIsLeft)
+        private BoundExpression? TryRewriteIntPartiallyLiteralBinaryExpression(BoundBinaryOperator op, BoundExpression literal, BoundExpression other, bool literalIsLeft)
         {
-            var evaluatedLiteral = (int)_evaluator.EvaluateExpression(literal);
+            var evaluatedLiteral = (int)_evaluator.EvaluateExpression(literal)!;
             switch (op.Kind)
             {
                 case BoundBinaryOperatorKind.Addition:
@@ -444,7 +444,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             }
         }
 
-        private BoundExpression TryRewriteSameVarBinaryExpression(BoundVariableExpression varNode, BoundBinaryOperator op)
+        private BoundExpression? TryRewriteSameVarBinaryExpression(BoundVariableExpression varNode, BoundBinaryOperator op)
         {
             switch (op.Kind)
             {
@@ -469,7 +469,7 @@ namespace Minsk.CodeAnalysis.Optimizing
 
         private BoundExpression NegateExpression(BoundExpression node)
         {
-            return RewriteUnaryExpression(new BoundUnaryExpression(BoundUnaryOperator.Bind(SyntaxKind.MinusToken, node.Type), node));
+            return RewriteUnaryExpression(new BoundUnaryExpression(BoundUnaryOperator.Bind(SyntaxKind.MinusToken, node.Type)!, node));
         }
 
         private static SyntaxKind? TryLogicalNegateOperator(BoundBinaryOperatorKind opKind)

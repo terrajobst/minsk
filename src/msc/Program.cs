@@ -17,6 +17,7 @@ namespace Minsk
             var moduleName = (string?) null;
             var referencePaths = new List<string>();
             var sourcePaths = new List<string>();
+            var optimize = false;
             var helpRequested = false;
 
             var options = new OptionSet
@@ -25,6 +26,7 @@ namespace Minsk
                 { "r=", "The {path} of an assembly to reference", v => referencePaths.Add(v) },
                 { "o=", "The output {path} of the assembly to create", v => outputPath = v },
                 { "m=", "The {name} of the module", v => moduleName = v },
+                { "f", "Enable optimizations", v => optimize = v != null },
                 { "?|h|help", "Prints help", v => helpRequested = true },
                 { "<>", v => sourcePaths.Add(v) }
             };
@@ -79,7 +81,7 @@ namespace Minsk
                 return 1;
 
             var compilation = Compilation.Create(syntaxTrees.ToArray());
-            var diagnostics = compilation.Emit(moduleName, referencePaths.ToArray(), outputPath);
+            var diagnostics = compilation.Emit(moduleName, referencePaths.ToArray(), outputPath, optimize);
 
             if (diagnostics.Any())
             {

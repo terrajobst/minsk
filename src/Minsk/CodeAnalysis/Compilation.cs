@@ -127,7 +127,7 @@ namespace Minsk.CodeAnalysis
             body.WriteTo(writer);
         }
 
-        public ImmutableArray<Diagnostic> Emit(string moduleName, string[] references, string outputPath)
+        public ImmutableArray<Diagnostic> Emit(string moduleName, string[] references, string outputPath, bool optimize = false)
         {
             var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
 
@@ -135,7 +135,7 @@ namespace Minsk.CodeAnalysis
             if (diagnostics.Any())
                 return diagnostics;
 
-            var program = GetProgram();
+            var program = GetProgram(optimize);
             return Emitter.Emit(program, moduleName, references, outputPath);
         }
     }

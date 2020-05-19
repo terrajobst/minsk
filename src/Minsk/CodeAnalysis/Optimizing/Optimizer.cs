@@ -78,7 +78,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                     if (!targetedLabels.ContainsKey(label))
                     {
                         InitBuilder(block, ref builder, block.Statements.Length);
-                        builder![pos] = BoundNoOperationStatement.Instance;
+                        builder![pos] = new BoundNopStatement();
                         definedLabels.Remove(label);
                     }
                 }
@@ -134,7 +134,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                                     var statement = getStatement(j);
                                     if (statement.Kind == BoundNodeKind.LabelStatement)
                                         break;
-                                    if (statement.Kind != BoundNodeKind.NoOperationStatement)
+                                    if (statement.Kind != BoundNodeKind.NopStatement)
                                     {
                                         InitBuilder(block, ref builder, block.Statements.Length);
                                         removeStatement(builder!, j);
@@ -185,7 +185,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                         removeTargetToLabel(((BoundConditionalGotoStatement)statement).Label);
                         break;
                 }
-                builder[line] = BoundNoOperationStatement.Instance;
+                builder[line] = new BoundNopStatement();
             }
 
             BoundStatement getStatement(int line) => builder?[line] ?? block.Statements[line];
@@ -195,10 +195,10 @@ namespace Minsk.CodeAnalysis.Optimizing
                 for (int j = line + 1; j < (builder?.Count ?? block.Statements.Length); j++)
                 {
                     var statement = getStatement(j);
-                    if (statement.Kind != BoundNodeKind.NoOperationStatement)
+                    if (statement.Kind != BoundNodeKind.NopStatement)
                         return (statement, j);
                 }
-                return (BoundNoOperationStatement.Instance, -1);
+                return (new BoundNopStatement(), -1);
             }
         }
 
@@ -208,7 +208,7 @@ namespace Minsk.CodeAnalysis.Optimizing
             for (int i = 0; i < block.Statements.Length; i++)
             {
                 var statement = block.Statements[i];
-                if (statement.Kind == BoundNodeKind.NoOperationStatement)
+                if (statement.Kind == BoundNodeKind.NopStatement)
                     InitBuilder(block, ref builder, i);
                 else if (builder != null)
                     builder.Add(statement);
@@ -238,7 +238,7 @@ namespace Minsk.CodeAnalysis.Optimizing
                 if (evaluatedCondition == node.JumpIfTrue)
                     return new BoundGotoStatement(node.Label);
                 else
-                    return BoundNoOperationStatement.Instance;
+                    return new BoundNopStatement();
             }
 
             if (condition == node.Condition)

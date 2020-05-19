@@ -57,9 +57,6 @@ namespace Minsk.CodeAnalysis.Binding
                 case BoundNodeKind.ExpressionStatement:
                     WriteExpressionStatement((BoundExpressionStatement)node, writer);
                     break;
-                case BoundNodeKind.NoOperationStatement:
-                    WriteNoOperationStatement(writer);
-                    break;
                 case BoundNodeKind.ErrorExpression:
                     WriteErrorExpression((BoundErrorExpression)node, writer);
                     break;
@@ -255,11 +252,6 @@ namespace Minsk.CodeAnalysis.Binding
         private static void WriteExpressionStatement(BoundExpressionStatement node, IndentedTextWriter writer)
         {
             node.Expression.WriteTo(writer);
-        }
-
-        private static void WriteNoOperationStatement(IndentedTextWriter writer)
-        {
-            writer.Write("no-op");
         }
 
         private static void WriteErrorExpression(BoundErrorExpression node, IndentedTextWriter writer)

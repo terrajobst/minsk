@@ -1,0 +1,7 @@
+<Project>
+
+  <PropertyGroup>
+    <DefaultLanguageSourceExtension>.ms</DefaultLanguageSourceExtension>
+  </PropertyGroup>
+
+</Project>

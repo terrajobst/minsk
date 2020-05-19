@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
+using Mono.Cecil;
 
 namespace Minsk.CodeAnalysis
 {
@@ -15,9 +17,9 @@ namespace Minsk.CodeAnalysis
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void AddRange(DiagnosticBag diagnostics)
+        public void AddRange(IEnumerable<Diagnostic> diagnostics)
         {
-            _diagnostics.AddRange(diagnostics._diagnostics);
+            _diagnostics.AddRange(diagnostics);
         }
 
         private void Report(TextLocation location, string message)
@@ -41,6 +43,12 @@ namespace Minsk.CodeAnalysis
         public void ReportUnterminatedString(TextLocation location)
         {
             var message = "Unterminated string literal.";
+            Report(location, message);
+        }
+
+        public void ReportUnterminatedMultiLineComment(TextLocation location)
+        {
+            var message = "Unterminated multi-line comment.";
             Report(location, message);
         }
 
@@ -152,6 +160,12 @@ namespace Minsk.CodeAnalysis
             Report(location, message);
         }
 
+        public void ReportInvalidReturnWithValueInGlobalStatements(TextLocation location)
+        {
+            var message = "The 'return' keyword cannot be followed by an expression in global statements.";
+            Report(location, message);
+        }
+
         public void ReportMissingReturnExpression(TextLocation location, TypeSymbol returnType)
         {
             var message = $"An expression of type '{returnType}' is expected.";
@@ -180,6 +194,37 @@ namespace Minsk.CodeAnalysis
         {
             var message = $"Cannot declare main function when global statements are used.";
             Report(location, message);
+        }
+
+        public void ReportInvalidReference(string path)
+        {
+            var message = $"The reference is not a valid .NET assembly: '{path}'";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeNotFound(string? minskName, string metadataName)
+        {
+            var message = minskName == null
+                ? $"The required type '{metadataName}' cannot be resolved among the given references."
+                : $"The required type '{minskName}' ('{metadataName}') cannot be resolved among the given references.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeAmbiguous(string? minskName, string metadataName, TypeDefinition[] foundTypes)
+        {
+            var assemblyNames = foundTypes.Select(t => t.Module.Assembly.Name.Name);
+            var assemblyNameList = string.Join(", ", assemblyNames);
+            var message = minskName == null
+                ? $"The required type '{metadataName}' was found in multiple references: {assemblyNameList}."
+                : $"The required type '{minskName}' ('{metadataName}') was found in multiple references: {assemblyNameList}.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredMethodNotFound(string typeName, string methodName, string[] parameterTypeNames)
+        {
+            var parameterTypeNameList = string.Join(", ", parameterTypeNames);
+            var message = $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
+            Report(default, message);
         }
     }
 }

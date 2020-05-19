@@ -10,6 +10,7 @@ namespace Minsk.CodeAnalysis.Binding
             Left = left;
             Op = op;
             Right = right;
+            ConstantValue = ConstantFolding.ComputeConstant(left, op, right);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BinaryExpression;
@@ -17,5 +18,6 @@ namespace Minsk.CodeAnalysis.Binding
         public BoundExpression Left { get; }
         public BoundBinaryOperator Op { get; }
         public BoundExpression Right { get; }
+        public override BoundConstant? ConstantValue { get; }
     }
 }

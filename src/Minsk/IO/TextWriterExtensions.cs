@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Minsk.CodeAnalysis;
@@ -39,7 +40,10 @@ namespace Minsk.IO
 
         public static void WriteKeyword(this TextWriter writer, SyntaxKind kind)
         {
-            writer.WriteKeyword(SyntaxFacts.GetText(kind));
+            var text = SyntaxFacts.GetText(kind);
+            Debug.Assert(kind.IsKeyword() && text != null);
+
+            writer.WriteKeyword(text);
         }
 
         public static void WriteKeyword(this TextWriter writer, string text)
@@ -77,7 +81,10 @@ namespace Minsk.IO
 
         public static void WritePunctuation(this TextWriter writer, SyntaxKind kind)
         {
-            writer.WritePunctuation(SyntaxFacts.GetText(kind));
+            var text = SyntaxFacts.GetText(kind);
+            Debug.Assert(text != null);
+
+            writer.WritePunctuation(text);
         }
 
         public static void WritePunctuation(this TextWriter writer, string text)
@@ -89,7 +96,15 @@ namespace Minsk.IO
 
         public static void WriteDiagnostics(this TextWriter writer, IEnumerable<Diagnostic> diagnostics)
         {
-            foreach (var diagnostic in diagnostics.OrderBy(d => d.Location.FileName)
+            foreach (var diagnostic in diagnostics.Where(d => d.Location.Text == null))
+            {
+                writer.SetForeground(ConsoleColor.DarkRed);
+                writer.WriteLine(diagnostic.Message);
+                writer.ResetColor();
+            }
+
+            foreach (var diagnostic in diagnostics.Where(d => d.Location.Text != null)
+                                                  .OrderBy(d => d.Location.FileName)
                                                   .ThenBy(d => d.Location.Span.Start)
                                                   .ThenBy(d => d.Location.Span.Length))
             {

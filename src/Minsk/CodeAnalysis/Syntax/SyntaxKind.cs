@@ -2,10 +2,17 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public enum SyntaxKind
     {
-        // Tokens
         BadToken,
+
+        // Trivia
+        SkippedTextTrivia,
+        LineBreakTrivia,
+        WhitespaceTrivia,
+        SingleLineCommentTrivia,
+        MultiLineCommentTrivia,
+
+        // Tokens
         EndOfFileToken,
-        WhitespaceToken,
         NumberToken,
         StringToken,
         PlusToken,

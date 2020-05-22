@@ -64,10 +64,6 @@ namespace Minsk.CodeAnalysis.Lowering
 
         private static bool CanFallThrough(BoundStatement boundStatement)
         {
-            // TODO: We don't rewrite conditional gotos where the condition is
-            //       always true. We shouldn't handle this here, because we
-            //       should really rewrite those to unconditional gotos in the
-            //       first place.
             return boundStatement.Kind != BoundNodeKind.ReturnStatement &&
                    boundStatement.Kind != BoundNodeKind.GotoStatement;
         }

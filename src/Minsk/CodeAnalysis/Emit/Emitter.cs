@@ -40,6 +40,7 @@ namespace Minsk.CodeAnalysis.Emit
         private TypeDefinition _typeDefinition;
         private FieldDefinition? _randomFieldDefinition;
 
+        // TOOD: This constructor does too much. Resolution should be factored out.
         private Emitter(string moduleName, string[] references)
         {
             var assemblies = new List<AssemblyDefinition>();

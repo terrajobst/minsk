@@ -128,6 +128,7 @@ namespace Minsk.CodeAnalysis
             body.WriteTo(writer);
         }
 
+        // TODO: References should be part of the compilation, not arguments for Emit
         public ImmutableArray<Diagnostic> Emit(string moduleName, string[] references, string outputPath)
         {
             var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);

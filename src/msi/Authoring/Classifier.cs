@@ -17,8 +17,7 @@ namespace Minsk.CodeAnalysis.Authoring
 
         private static void ClassifyNode(SyntaxNode node, TextSpan span, ImmutableArray<ClassifiedSpan>.Builder result)
         {
-            // HACK: node should never be null, but that's tracked by #141
-            if (node == null || !node.FullSpan.OverlapsWith(span))
+            if (!node.FullSpan.OverlapsWith(span))
                 return;
 
             if (node is SyntaxToken token)

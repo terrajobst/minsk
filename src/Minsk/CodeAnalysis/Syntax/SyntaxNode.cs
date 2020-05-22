@@ -58,10 +58,6 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private static void PrettyPrint(TextWriter writer, SyntaxNode node, string indent = "", bool isLast = true)
         {
-            // HACK: node shoud never be null, but that's tracked by #141
-            if (node == null)
-                return;
-
             var isToConsole = writer == Console.Out;
             var token = node as SyntaxToken;
 

@@ -53,7 +53,17 @@ namespace Minsk.Generators
                                 {
                                     if (IsDerivedFrom(propertyType, syntaxNodeType))
                                     {
+                                        var canBeNull = property.NullableAnnotation == NullableAnnotation.Annotated;
+                                        if (canBeNull)
+                                        {
+                                            indentedTextWriter.WriteLine($"if ({property.Name} != null)");
+                                            indentedTextWriter.Indent++;
+                                        }
+
                                         indentedTextWriter.WriteLine($"yield return {property.Name};");
+
+                                        if (canBeNull)
+                                            indentedTextWriter.Indent--;
                                     }
                                     else if (propertyType.TypeArguments.Length == 1 &&
                                              IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType) &&
@@ -61,7 +71,7 @@ namespace Minsk.Generators
                                     {
                                         indentedTextWriter.WriteLine($"foreach (var child in {property.Name})");
                                         indentedTextWriter.WriteLine($"{indentString}yield return child;");
-                                        
+
                                     }
                                     else if (SymbolEqualityComparer.Default.Equals(propertyType.OriginalDefinition, separatedSyntaxListType) &&
                                              IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType))

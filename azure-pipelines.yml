@@ -7,6 +7,7 @@ variables:
   buildConfiguration: 'Release'
   sln: './src/minsk.sln'
   tests: './src/Minsk.Tests/Minsk.Tests.csproj'
+  samples: './samples/samples.sln'
 
 steps:
 - task: DotNetCoreCLI@2
@@ -22,3 +23,9 @@ steps:
     projects: $(tests)
     arguments: -c $(buildConfiguration)
     publishTestResults: true
+- task: DotNetCoreCLI@2
+  displayName: Build samples ($(buildConfiguration))
+  inputs:
+    command: build
+    projects: $(samples)
+    arguments: -c $(buildConfiguration)

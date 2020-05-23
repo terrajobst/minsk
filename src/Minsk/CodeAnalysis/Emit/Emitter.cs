@@ -57,7 +57,7 @@ namespace Minsk.CodeAnalysis.Emit
                 }
             }
 
-            var builtInTypes = new List<(TypeSymbol type, string MetadataName)>()
+            var builtInTypes = new List<(TypeSymbol type, string metadataName)>()
             {
                 (TypeSymbol.Any, "System.Object"),
                 (TypeSymbol.Bool, "System.Boolean"),

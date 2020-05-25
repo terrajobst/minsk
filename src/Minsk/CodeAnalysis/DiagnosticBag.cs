@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
+using Minsk.Resources;
 using Mono.Cecil;
 
 namespace Minsk.CodeAnalysis
@@ -36,183 +39,187 @@ namespace Minsk.CodeAnalysis
 
         public void ReportInvalidNumber(TextLocation location, string text, TypeSymbol type)
         {
-            var message = $"The number {text} isn't valid {type}.";
+            var message = string.Format(Strings.Diagnostic_InvalidNumber, text, type);
             Report(location, message);
         }
 
         public void ReportBadCharacter(TextLocation location, char character)
         {
-            var message = $"Bad character input: '{character}'.";
+            var message = string.Format(Strings.Diagnostic_BadCharacter, character);
             Report(location, message);
         }
 
         public void ReportUnterminatedString(TextLocation location)
         {
-            var message = "Unterminated string literal.";
+           var x = Strings.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, false, true);
+            var message = Strings.Diagnostic_UnterminatedString;
             Report(location, message);
         }
 
         public void ReportUnterminatedMultiLineComment(TextLocation location)
         {
-            var message = "Unterminated multi-line comment.";
+            var message = Strings.Diagnostic_UnterminatedMultiLineComment;
             Report(location, message);
         }
 
         public void ReportUnexpectedToken(TextLocation location, SyntaxKind actualKind, SyntaxKind expectedKind)
         {
-            var message = $"Unexpected token <{actualKind}>, expected <{expectedKind}>.";
+            var message = string.Format(Strings.Diagnostic_UnexpectedToken, actualKind, expectedKind);
             Report(location, message);
         }
 
         public void ReportUndefinedUnaryOperator(TextLocation location, string operatorText, TypeSymbol operandType)
         {
-            var message = $"Unary operator '{operatorText}' is not defined for type '{operandType}'.";
+            var message = string.Format(Strings.Diagnostic_UndefinedUnaryOperator, operatorText, operandType);
             Report(location, message);
         }
 
-        public void ReportUndefinedBinaryOperator(TextLocation location, string operatorText, TypeSymbol leftType, TypeSymbol rightType)
+        public void ReportUndefinedBinaryOperator(TextLocation location, string operatorText, TypeSymbol leftType,
+            TypeSymbol rightType)
         {
-            var message = $"Binary operator '{operatorText}' is not defined for types '{leftType}' and '{rightType}'.";
+            var message = string.Format(Strings.Diagnostic_UndefinedBinaryOperator, operatorText, leftType, rightType);
             Report(location, message);
         }
 
         public void ReportParameterAlreadyDeclared(TextLocation location, string parameterName)
         {
-            var message = $"A parameter with the name '{parameterName}' already exists.";
+            var message = string.Format(Strings.Diagnostic_ParameterAlreadyDeclared, parameterName);
             Report(location, message);
         }
 
         public void ReportUndefinedVariable(TextLocation location, string name)
         {
-            var message = $"Variable '{name}' doesn't exist.";
+            var message = string.Format(Strings.Diagnostic_UndefinedVariable, name);
             Report(location, message);
         }
 
         public void ReportNotAVariable(TextLocation location, string name)
         {
-            var message = $"'{name}' is not a variable.";
+            var message = string.Format(Strings.Diagnostic_NotAVariable, name);
             Report(location, message);
         }
 
         public void ReportUndefinedType(TextLocation location, string name)
         {
-            var message = $"Type '{name}' doesn't exist.";
+            var message = string.Format(Strings.Diagnostic_UndefinedType, name);
             Report(location, message);
         }
 
         public void ReportCannotConvert(TextLocation location, TypeSymbol fromType, TypeSymbol toType)
         {
-            var message = $"Cannot convert type '{fromType}' to '{toType}'.";
+            var message = string.Format(Strings.Diagnostic_CannotConvert, fromType, toType);
             Report(location, message);
         }
 
         public void ReportCannotConvertImplicitly(TextLocation location, TypeSymbol fromType, TypeSymbol toType)
         {
-            var message = $"Cannot convert type '{fromType}' to '{toType}'. An explicit conversion exists (are you missing a cast?)";
+            var message =
+                string.Format(Strings.Diagnostic_CannotConvertImplicitly, fromType, toType);
             Report(location, message);
         }
 
         public void ReportSymbolAlreadyDeclared(TextLocation location, string name)
         {
-            var message = $"'{name}' is already declared.";
+            var message = string.Format(Strings.Diagnostic_SymbolAlreadyDeclared, name);
             Report(location, message);
         }
 
         public void ReportCannotAssign(TextLocation location, string name)
         {
-            var message = $"Variable '{name}' is read-only and cannot be assigned to.";
+            var message = string.Format(Strings.Diagnostic_CannotAssign, name);
             Report(location, message);
         }
 
         public void ReportUndefinedFunction(TextLocation location, string name)
         {
-            var message = $"Function '{name}' doesn't exist.";
+            var message = string.Format(Strings.Diagnostic_UndefinedFunction, name);
             Report(location, message);
         }
 
         public void ReportNotAFunction(TextLocation location, string name)
         {
-            var message = $"'{name}' is not a function.";
+            var message = string.Format(Strings.Diagnostic_NotAFunction, name);
             Report(location, message);
         }
 
         public void ReportWrongArgumentCount(TextLocation location, string name, int expectedCount, int actualCount)
         {
-            var message = $"Function '{name}' requires {expectedCount} arguments but was given {actualCount}.";
+            var message = string.Format(Strings.Diagnostic_WrongArgumentCount, name, expectedCount, actualCount);
             Report(location, message);
         }
 
         public void ReportExpressionMustHaveValue(TextLocation location)
         {
-            var message = "Expression must have a value.";
+            var message = Strings.Diagnostic_ExpressionMustHaveValue;
             Report(location, message);
         }
 
         public void ReportInvalidBreakOrContinue(TextLocation location, string text)
         {
-            var message = $"The keyword '{text}' can only be used inside of loops.";
+            var message = string.Format(Strings.Diagnostic_InvalidBreakOrContinue, text);
             Report(location, message);
         }
 
         public void ReportAllPathsMustReturn(TextLocation location)
         {
-            var message = "Not all code paths return a value.";
+            var message = Strings.Diagnostic_AllPathsMustReturn;
             Report(location, message);
         }
 
         public void ReportInvalidReturnExpression(TextLocation location, string functionName)
         {
-            var message = $"Since the function '{functionName}' does not return a value the 'return' keyword cannot be followed by an expression.";
+            var message =
+                string.Format(Strings.Diagnostic_InvalidReturnExpression, functionName);
             Report(location, message);
         }
 
         public void ReportInvalidReturnWithValueInGlobalStatements(TextLocation location)
         {
-            var message = "The 'return' keyword cannot be followed by an expression in global statements.";
+            var message = Strings.Diagnostic_InvalidReturnWithValueInGlobalStatements;
             Report(location, message);
         }
 
         public void ReportMissingReturnExpression(TextLocation location, TypeSymbol returnType)
         {
-            var message = $"An expression of type '{returnType}' is expected.";
+            var message = string.Format(Strings.Diagnostic_MissingReturnExpression, returnType);
             Report(location, message);
         }
 
         public void ReportInvalidExpressionStatement(TextLocation location)
         {
-            var message = $"Only assignment and call expressions can be used as a statement.";
+            var message = Strings.Diagnostic_InvalidExpressionStatement;
             Report(location, message);
         }
 
         public void ReportOnlyOneFileCanHaveGlobalStatements(TextLocation location)
         {
-            var message = $"At most one file can have global statements.";
+            var message = Strings.Diagnostic_OnlyOneFileCanHaveGlobalStatements;
             Report(location, message);
         }
 
         public void ReportMainMustHaveCorrectSignature(TextLocation location)
         {
-            var message = $"main must not take arguments and not return anything.";
+            var message = Strings.Diagnostic_MainMustHaveCorrectSignature;
             Report(location, message);
         }
 
         public void ReportCannotMixMainAndGlobalStatements(TextLocation location)
         {
-            var message = $"Cannot declare main function when global statements are used.";
+            var message = Strings.Diagnostic_CannotMixMainAndGlobalStatements;
             Report(location, message);
         }
 
         public void ReportInvalidReference(string path)
         {
-            var message = $"The reference is not a valid .NET assembly: '{path}'";
+            var message = string.Format(Strings.Diagnostic_InvalidReference, path);
             Report(default, message);
         }
 
         public void ReportRequiredTypeNotFound(string? minskName, string metadataName)
         {
             var message = minskName == null
-                ? $"The required type '{metadataName}' cannot be resolved among the given references."
-                : $"The required type '{minskName}' ('{metadataName}') cannot be resolved among the given references.";
+                ? string.Format(Strings.Diagnostic_RequiredTypeNotFound, metadataName)
+                : string.Format(Strings.Diagnostic_RequiredTypeNotFoundWithMinsk, minskName, metadataName);
             Report(default, message);
         }
 
@@ -221,21 +228,23 @@ namespace Minsk.CodeAnalysis
             var assemblyNames = foundTypes.Select(t => t.Module.Assembly.Name.Name);
             var assemblyNameList = string.Join(", ", assemblyNames);
             var message = minskName == null
-                ? $"The required type '{metadataName}' was found in multiple references: {assemblyNameList}."
-                : $"The required type '{minskName}' ('{metadataName}') was found in multiple references: {assemblyNameList}.";
+                ? string.Format(Strings.Diagnostic_RequiredTypeAmbiguous, metadataName, assemblyNameList)
+                : string.Format(Strings.Diagnostic_RequiredTypeAmbiguousWithMinsk, minskName, metadataName, assemblyNameList);
             Report(default, message);
         }
 
         public void ReportRequiredMethodNotFound(string typeName, string methodName, string[] parameterTypeNames)
         {
             var parameterTypeNameList = string.Join(", ", parameterTypeNames);
-            var message = $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
+            var methodDescription = $"{typeName}.{methodName}({parameterTypeNameList})";
+            var message =
+                string.Format(Strings.Diagnostic_RequiredMethodNotFound, methodDescription);
             Report(default, message);
         }
 
         public void ReportUnreachableCode(TextLocation location)
         {
-            var message = $"Unreachable code detected.";
+            var message = Strings.Diagnostic_UnreachableCode;
             ReportWarning(location, message);
         }
 
@@ -244,41 +253,41 @@ namespace Minsk.CodeAnalysis
             switch (node.Kind)
             {
                 case SyntaxKind.BlockStatement:
-                    var firstStatement = ((BlockStatementSyntax)node).Statements.FirstOrDefault();
+                    var firstStatement = ((BlockStatementSyntax) node).Statements.FirstOrDefault();
                     // Report just for non empty blocks.
                     if (firstStatement != null)
                         ReportUnreachableCode(firstStatement);
                     return;
                 case SyntaxKind.VariableDeclaration:
-                    ReportUnreachableCode(((VariableDeclarationSyntax)node).Keyword.Location);
+                    ReportUnreachableCode(((VariableDeclarationSyntax) node).Keyword.Location);
                     return;
                 case SyntaxKind.IfStatement:
-                    ReportUnreachableCode(((IfStatementSyntax)node).IfKeyword.Location);
+                    ReportUnreachableCode(((IfStatementSyntax) node).IfKeyword.Location);
                     return;
                 case SyntaxKind.WhileStatement:
-                    ReportUnreachableCode(((WhileStatementSyntax)node).WhileKeyword.Location);
+                    ReportUnreachableCode(((WhileStatementSyntax) node).WhileKeyword.Location);
                     return;
                 case SyntaxKind.DoWhileStatement:
-                    ReportUnreachableCode(((DoWhileStatementSyntax)node).DoKeyword.Location);
+                    ReportUnreachableCode(((DoWhileStatementSyntax) node).DoKeyword.Location);
                     return;
                 case SyntaxKind.ForStatement:
-                    ReportUnreachableCode(((ForStatementSyntax)node).Keyword.Location);
+                    ReportUnreachableCode(((ForStatementSyntax) node).Keyword.Location);
                     return;
                 case SyntaxKind.BreakStatement:
-                    ReportUnreachableCode(((BreakStatementSyntax)node).Keyword.Location);
+                    ReportUnreachableCode(((BreakStatementSyntax) node).Keyword.Location);
                     return;
                 case SyntaxKind.ContinueStatement:
-                    ReportUnreachableCode(((ContinueStatementSyntax)node).Keyword.Location);
+                    ReportUnreachableCode(((ContinueStatementSyntax) node).Keyword.Location);
                     return;
                 case SyntaxKind.ReturnStatement:
-                    ReportUnreachableCode(((ReturnStatementSyntax)node).ReturnKeyword.Location);
+                    ReportUnreachableCode(((ReturnStatementSyntax) node).ReturnKeyword.Location);
                     return;
                 case SyntaxKind.ExpressionStatement:
-                    var expression = ((ExpressionStatementSyntax)node).Expression;
+                    var expression = ((ExpressionStatementSyntax) node).Expression;
                     ReportUnreachableCode(expression);
                     return;
                 case SyntaxKind.CallExpression:
-                    ReportUnreachableCode(((CallExpressionSyntax)node).Identifier.Location);
+                    ReportUnreachableCode(((CallExpressionSyntax) node).Identifier.Location);
                     return;
                 default:
                     throw new Exception($"Unexpected syntax {node.Kind}");

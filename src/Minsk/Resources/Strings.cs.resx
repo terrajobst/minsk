@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="">
+
+    </data>
+    <data name="Diagnostic_UnterminatedString">
+        <value>Neukončený řetězec.</value>
+    </data>
+    <data name="Diagnostic_UnterminatedMultiLineComment" xml:space="preserve">
+        <value>Neukončený více řádkový komentář.</value>
+    </data>
+    <data name="Diagnostic_UnexpectedToken" xml:space="preserve">
+        <value>Neočekávaný token &lt;{0}&gt;, očekávaný byl &lt;{1}&gt;.</value>
+    </data>
+    <data name="Diagnostic_InvalidNumber" xml:space="preserve">
+        <value>Číslo {0} není platný {1}.</value>
+    </data>
+    <data name="Diagnostic_BadCharacter" xml:space="preserve">
+        <value>Neočekávaný znak na vstupu: '{0}'.</value>
+    </data>
+    <data name="Diagnostic_UndefinedUnaryOperator" xml:space="preserve">
+        <value>Unarní operátor '{0}' není definovaný pro typ '{1}'.</value>
+    </data>
+    <data name="Diagnostic_UndefinedBinaryOperator" xml:space="preserve">
+        <value>Binární operátor '{0}' není definovaný pro '{1}' a '{2}'.</value>
+    </data>
+    <data name="Diagnostic_ParameterAlreadyDeclared" xml:space="preserve">
+        <value>Parametr s názvem '{0}' již existuje.</value>
+    </data>
+    <data name="Diagnostic_UndefinedVariable" xml:space="preserve">
+        <value>Proměnná '{0}' nexistuje.</value>
+    </data>
+    <data name="Diagnostic_NotAVariable" xml:space="preserve">
+        <value>'{0}' není proměnná.</value>
+    </data>
+    <data name="Diagnostic_UndefinedType" xml:space="preserve">
+        <value>Typ '{0}' nexistuje.</value>
+    </data>
+    <data name="Diagnostic_CannotConvert" xml:space="preserve">
+        <value>Nelze převést typ '{0}' na '{1}'.</value>
+    </data>
+    <data name="Diagnostic_CannotConvertImplicitly" xml:space="preserve">
+        <value>Nelze převést typ '{0}' na '{1}'. Existuje explicitní konverze (neschází vám přetypování?)</value>
+    </data>
+    <data name="Diagnostic_SymbolAlreadyDeclared" xml:space="preserve">
+        <value>'{0}' je již definován.</value>
+    </data>
+    <data name="Diagnostic_CannotAssign" xml:space="preserve">
+        <value>Proměnná '{0}' je pouze ke čtení a nelze do ní zapisovat.</value>
+    </data>
+    <data name="Diagnostic_UndefinedFunction" xml:space="preserve">
+        <value>Funkce '{0}' nexistuje.</value>
+    </data>
+    <data name="Diagnostic_NotAFunction" xml:space="preserve">
+        <value>'{0}' není funkce.</value>
+    </data>
+    <data name="Diagnostic_WrongArgumentCount" xml:space="preserve">
+        <value>Funkce '{0}' požaduje {1} argument(ů), ale dostala {2}.</value>
+    </data>
+    <data name="Diagnostic_ExpressionMustHaveValue" xml:space="preserve">
+        <value>Výraz musí mít hodnotu.</value>
+    </data>
+    <data name="Diagnostic_InvalidBreakOrContinue" xml:space="preserve">
+        <value>Klíčové slovo '{0}' může být použito jen v cyklech.</value>
+    </data>
+    <data name="Diagnostic_AllPathsMustReturn" xml:space="preserve">
+        <value>Ne všechny cesty kódu vracejí hodnotu.</value>
+    </data>
+    <data name="Diagnostic_InvalidReturnExpression" xml:space="preserve">
+        <value>Jelikož funkce '{0}' nevrací hodnotu, tak klíčové slovo 'return' nemůže být následováno výrazem.</value>
+    </data>
+    <data name="Diagnostic_InvalidReturnWithValueInGlobalStatements" xml:space="preserve">
+        <value>Klíčové slovo 'return' nemůže být následováno výrazem v globálním příkazu</value>
+    </data>
+    <data name="Diagnostic_MissingReturnExpression" xml:space="preserve">
+        <value>Výraz typu '{0}' je očekáván.</value>
+    </data>
+    <data name="Diagnostic_InvalidExpressionStatement" xml:space="preserve">
+        <value>Jako příkaz lze použít pouze přiřazení a nebo volání funkce.</value>
+    </data>
+    <data name="Diagnostic_OnlyOneFileCanHaveGlobalStatements" xml:space="preserve">
+        <value>Nanejvýše jeden soubor může mít globální příkazy.</value>
+    </data>
+    <data name="Diagnostic_UnreachableCode" xml:space="preserve">
+        <value>Byl detekován nedostupný kód.</value>
+    </data>
+    <data name="Diagnostic_RequiredMethodNotFound" xml:space="preserve">
+        <value>Požadovanou metodu '{0}' nelze najít mezi poskytnutými referencemi..</value>
+    </data>
+    <data name="Diagnostic_RequiredTypeAmbiguousWithMinsk" xml:space="preserve">
+        <value>Požadovaný typ '{0}' ('{1}') byl nalezen ve více referencích: {2}.</value>
+    </data>
+    <data name="Diagnostic_RequiredTypeAmbiguous" xml:space="preserve">
+        <value>Požadovaný typ '{0}' byl nalezen ve více referencích: {1}.</value>
+    </data>
+    <data name="Diagnostic_RequiredTypeNotFound" xml:space="preserve">
+        <value>Požadovaný typ '{0}' nelze najít mezi poskytnutými referencemi.</value>
+    </data>
+    <data name="Diagnostic_RequiredTypeNotFoundWithMinsk" xml:space="preserve">
+        <value>Požadovaný typ '{0}' ('{1}') nelze najít mezi poskytnutými referencemi.</value>
+    </data>
+    <data name="Diagnostic_InvalidReference" xml:space="preserve">
+        <value>Reference není platná .NET assembly: '{0}'</value>
+    </data>
+    <data name="Diagnostic_CannotMixMainAndGlobalStatements" xml:space="preserve">
+        <value>Nelze definovat main funkci když jsou použity globální příkazy.</value>
+    </data>
+    <data name="Diagnostic_MainMustHaveCorrectSignature" xml:space="preserve">
+        <value>main funkce nesmí mít žádné parametry a nesmí nic vracet.</value>
+    </data>
+</root>

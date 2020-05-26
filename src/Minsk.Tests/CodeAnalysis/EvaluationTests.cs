@@ -73,7 +73,17 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var result = 0 for i = 1 to 10 { result = result + i } result }", 55)]
         [InlineData("{ var a = 10 for i = 1 to (a = a - 1) { } a }", 9)]
         [InlineData("{ var a = 0 do a = a + 1 while a < 10 a}", 10)]
-        [InlineData("{ var a = 1 a += (2 + 3) a}", 6)]
+        [InlineData("{ var a = 1 a += (2 + 3) a }", 6)]
+        [InlineData("{ var a = 1 a -= (2 + 3) a }", -4)]
+        [InlineData("{ var a = 1 a *= (2 + 3) a }", 5)]
+        [InlineData("{ var a = 1 a /= (2 + 3) a }", 0)]
+        [InlineData("{ var a = true a &= (false) a }", false)]
+        [InlineData("{ var a = true a |= (false) a }", true)]
+        [InlineData("{ var a = true a ^= (true) a }", false)]
+        [InlineData("{ var a = 1 a|= 0 a }", 1)]
+        [InlineData("{ var a = 1 a&= 3 a }", 1)]
+        [InlineData("{ var a = 1 a&= 0 a }", 0)]
+        [InlineData("{ var a = 1 a^= 0 a }", 1)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);

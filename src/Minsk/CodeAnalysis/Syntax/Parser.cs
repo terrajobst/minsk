@@ -289,20 +289,27 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             if (Peek(0).Kind == SyntaxKind.IdentifierToken)
             {
-                if (Peek(1).Kind == SyntaxKind.EqualsToken)
+                switch (Peek(1).Kind)
                 {
-                    var identifierToken = NextToken();
-                    var operatorToken = NextToken();
-                    var right = ParseAssignmentExpression();
-                    return new AssignmentExpressionSyntax(identifierToken, operatorToken, right);
+                    case SyntaxKind.PlusEqualsToken:
+                    case SyntaxKind.MinusEqualsToken:
+                    case SyntaxKind.StarEqualsToken:
+                    case SyntaxKind.SlashEqualsToken:
+                    case SyntaxKind.AmpersandEqualsToken:
+                    case SyntaxKind.PipeEqualsToken:
+                    case SyntaxKind.HatEqualsToken:
+                        var identifierToken = NextToken();
+                        var operatorToken = NextToken();
+                        var right = ParseBinaryExpression();
+                        return new CompoundAssignmentExpressionSyntax(identifierToken, operatorToken, right);
+
+                    case SyntaxKind.EqualsToken:
+                        identifierToken = NextToken();
+                        operatorToken = NextToken();
+                        right = ParseAssignmentExpression();
+                        return new AssignmentExpressionSyntax(identifierToken, operatorToken, right);
                 }
-                else if (Peek(1).Kind == SyntaxKind.PlusEqualsToken)
-                {
-                    var identifierToken = NextToken();
-                    var operatorToken = NextToken();
-                    var right = ParseBinaryExpression();
-                    return new CompoundAssignmentExpressionSyntax(identifierToken, operatorToken, right);
-                }
+               
             } 
               
 

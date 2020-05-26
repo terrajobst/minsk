@@ -177,6 +177,24 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
 
             if (t1Kind == SyntaxKind.PlusToken && t2Kind == SyntaxKind.EqualsEqualsToken)
                 return true;
+
+            if (t1Kind == SyntaxKind.MinusToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.MinusToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.StarToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.StarToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
             
             if (t1Kind == SyntaxKind.LessToken && t2Kind == SyntaxKind.EqualsToken)
                 return true;
@@ -195,6 +213,15 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
 
             if (t1Kind == SyntaxKind.AmpersandToken && t2Kind == SyntaxKind.AmpersandAmpersandToken)
                 return true;
+            
+            if (t1Kind == SyntaxKind.AmpersandToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.AmpersandToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.AmpersandToken && t2Kind == SyntaxKind.AmpersandEqualsToken)
+                return true;
 
             if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipeToken)
                 return true;
@@ -202,6 +229,21 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipePipeToken)
                 return true;
             
+            if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipeEqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.HatToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+            
+            if (t1Kind == SyntaxKind.HatToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
+
             return false;
         }
 

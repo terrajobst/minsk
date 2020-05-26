@@ -73,6 +73,7 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var result = 0 for i = 1 to 10 { result = result + i } result }", 55)]
         [InlineData("{ var a = 10 for i = 1 to (a = a - 1) { } a }", 9)]
         [InlineData("{ var a = 0 do a = a + 1 while a < 10 a}", 10)]
+        [InlineData("{ var a = 1 a += (2 + 3) a}", 6)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -255,9 +256,34 @@ namespace Minsk.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_LambdaDeclarationExpression_Reports_Undefined()
+        {
+            var text = @"var x = 10 
+                         x [+=] false";
+
+            var diagnostics = @"
+                Binary operator '+=' is not defined for types 'int' and 'bool'.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_AssignmentExpression_Reports_Undefined()
         {
             var text = @"[x] = 10";
+
+            var diagnostics = @"
+                Variable 'x' doesn't exist.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+         [Fact]
+        public void Evaluator_LambdaDeclarationExpression_Assignemnt_NonDefinedVariable_Reports_Undefined()
+        {
+            var text = @"[x] += 10";
 
             var diagnostics = @"
                 Variable 'x' doesn't exist.
@@ -273,6 +299,23 @@ namespace Minsk.Tests.CodeAnalysis
                 {
                     let x = 10
                     x [=] 0
+                }
+            ";
+
+            var diagnostics = @"
+                Variable 'x' is read-only and cannot be assigned to.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+         [Fact]
+        public void Evaluator_LambdaDeclarationExpression_Reports_CannotAssign()
+        {
+            var text = @"
+                {
+                    let x = 10
+                    x [+=] 1
                 }
             ";
 

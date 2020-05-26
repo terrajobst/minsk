@@ -49,8 +49,16 @@ namespace Minsk.CodeAnalysis.Syntax
                     _kind = SyntaxKind.EndOfFileToken;
                     break;
                 case '+':
-                    _kind = SyntaxKind.PlusToken;
                     _position++;
+                    if (Current != '=')
+                    {
+                        _kind = SyntaxKind.PlusToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.PlusEqualsToken;
+                        _position++;
+                    }
                     break;
                 case '-':
                     _kind = SyntaxKind.MinusToken;

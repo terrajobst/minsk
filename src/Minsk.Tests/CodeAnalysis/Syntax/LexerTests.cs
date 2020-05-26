@@ -172,6 +172,12 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.EqualsToken && t2Kind == SyntaxKind.EqualsEqualsToken)
                 return true;
 
+            if (t1Kind == SyntaxKind.PlusToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.PlusToken && t2Kind == SyntaxKind.EqualsEqualsToken)
+                return true;
+            
             if (t1Kind == SyntaxKind.LessToken && t2Kind == SyntaxKind.EqualsToken)
                 return true;
 
@@ -195,7 +201,7 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
 
             if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipePipeToken)
                 return true;
-
+            
             return false;
         }
 

@@ -111,6 +111,8 @@ namespace Minsk.CodeAnalysis.Syntax
             {
                 case SyntaxKind.PlusToken:
                     return "+";
+                 case SyntaxKind.PlusEqualsToken:
+                    return "+=";
                 case SyntaxKind.MinusToken:
                     return "-";
                 case SyntaxKind.StarToken:
@@ -181,6 +183,17 @@ namespace Minsk.CodeAnalysis.Syntax
                     return "do";
                 default:
                     return null;
+            }
+        }
+    
+        public static SyntaxKind GetSyntaxKindEquivalentForCompoundAssignemntExpressionSyntax(SyntaxKind kind)
+        {
+            switch(kind)
+            {
+                case SyntaxKind.PlusEqualsToken:
+                    return SyntaxKind.PlusToken;
+                default:
+                    throw new Exception($"Invalid syntax kind: '{kind}'");
             }
         }
     }

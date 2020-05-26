@@ -289,6 +289,8 @@ namespace Minsk.CodeAnalysis.Binding
                     return BindNameExpression((NameExpressionSyntax)syntax);
                 case SyntaxKind.AssignmentExpression:
                     return BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
+                case SyntaxKind.CompoundAssignmentExpression:
+                    return BindCompoundAssignmentExpression((CompoundAssignmentExpressionSyntax)syntax);
                 case SyntaxKind.UnaryExpression:
                     return BindUnaryExpression((UnaryExpressionSyntax)syntax);
                 case SyntaxKind.BinaryExpression:
@@ -348,6 +350,35 @@ namespace Minsk.CodeAnalysis.Binding
 
             return new BoundAssignmentExpression(variable, convertedExpression);
         }
+
+        private BoundExpression BindCompoundAssignmentExpression(CompoundAssignmentExpressionSyntax syntax)
+        {
+            var name = syntax.IdentifierToken.Text;
+            var boundExpression = BindExpression(syntax.Expression);
+
+            if (!_scope.TryLookupVariable(name, out var variable))
+            {
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+                return boundExpression;
+            }
+
+            if (variable.IsReadOnly)
+                _diagnostics.ReportCannotAssign(syntax.OperatorToken.Span, name);
+
+            var equivalentOperatorTokenKind = SyntaxFacts.GetSyntaxKindEquivalentForCompoundAssignemntExpressionSyntax(syntax.OperatorToken.Kind);
+            var boundOperator = BoundBinaryOperator.Bind(equivalentOperatorTokenKind, variable.Type, boundExpression.Type);
+            if (boundOperator == null)
+            {
+                _diagnostics.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, variable.Type, boundExpression.Type);
+                return new BoundErrorExpression();
+            }
+
+            var convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
+
+            return new BoundCompoundAssignmentExpression(variable, boundOperator, convertedExpression);
+        }
+
+        
 
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
         {

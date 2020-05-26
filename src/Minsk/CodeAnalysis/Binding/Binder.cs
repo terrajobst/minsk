@@ -365,7 +365,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (variable.IsReadOnly)
                 _diagnostics.ReportCannotAssign(syntax.OperatorToken.Span, name);
 
-            var equivalentOperatorTokenKind = SyntaxFacts.GetSyntaxKindEquivalentForCompoundAssignemntExpressionSyntax(syntax.OperatorToken.Kind);
+            var equivalentOperatorTokenKind = SyntaxFacts.GetSyntaxKindEquivalentForCompoundAssignmentExpressionSyntax(syntax.OperatorToken.Kind);
             var boundOperator = BoundBinaryOperator.Bind(equivalentOperatorTokenKind, variable.Type, boundExpression.Type);
             if (boundOperator == null)
             {

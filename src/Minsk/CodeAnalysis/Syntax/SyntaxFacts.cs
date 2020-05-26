@@ -198,7 +198,7 @@ namespace Minsk.CodeAnalysis.Syntax
             }
         }
     
-        public static SyntaxKind GetSyntaxKindEquivalentForCompoundAssignemntExpressionSyntax(SyntaxKind kind)
+        public static SyntaxKind GetSyntaxKindEquivalentForCompoundAssignmentExpressionSyntax(SyntaxKind kind)
         {
             switch(kind)
             {

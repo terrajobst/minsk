@@ -360,7 +360,7 @@ namespace Minsk.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_LambdaDeclarationExpression_Reports_Undefined()
+        public void Evaluator_CompoundExpression_Reports_Undefined()
         {
             var text = @"var x = 10
                          x [+=] false";

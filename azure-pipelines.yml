@@ -13,6 +13,8 @@ parameters:
     vmImage:  ubuntu-latest
   - name:     Windows
     vmImage:  windows-latest
+  - name:     macOS
+    vmImage:  macOS-latest
 - name:     configurations
   type:     object
   default:

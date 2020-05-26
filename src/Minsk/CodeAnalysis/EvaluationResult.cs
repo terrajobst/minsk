@@ -13,6 +13,8 @@ namespace Minsk.CodeAnalysis
             WarningDiagnostics = Diagnostics.Where(d => d.IsWarning).ToImmutableArray();
         }
 
+        // TODO: I think we should not have separate collections but instead
+        //       have an extension method over ImmutableArray<Diagnostic>
         public ImmutableArray<Diagnostic> Diagnostics { get; }
         public ImmutableArray<Diagnostic> ErrorDiagnostics { get; }
         public ImmutableArray<Diagnostic> WarningDiagnostics { get; }

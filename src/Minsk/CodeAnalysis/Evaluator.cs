@@ -6,6 +6,7 @@ using Minsk.CodeAnalysis.Symbols;
 
 namespace Minsk.CodeAnalysis
 {
+    // TODO: Get rid of evaluator in favor of Emitter (see #113)
     internal sealed class Evaluator
     {
         private readonly BoundProgram _program;

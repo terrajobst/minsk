@@ -4,29 +4,29 @@ namespace Minsk.CodeAnalysis
 {
     public sealed class Diagnostic
     {
-        private Diagnostic(TextLocation location, string message, bool isError)
+        private Diagnostic(bool isError, TextLocation location, string message)
         {
+            IsError = isError;
             Location = location;
             Message = message;
-            IsError = isError;
             IsWarning = !IsError;
         }
 
+        public bool IsError { get; }
         public TextLocation Location { get; }
         public string Message { get; }
-        public bool IsError { get; }
         public bool IsWarning { get; }
 
         public override string ToString() => Message;
 
         public static Diagnostic Error(TextLocation location, string message)
         {
-            return new Diagnostic(location, message, isError: true);
+            return new Diagnostic(isError: true, location, message);
         }
 
         public static Diagnostic Warning(TextLocation location, string message)
         {
-            return new Diagnostic(location, message, isError: false);
+            return new Diagnostic(isError: false, location, message);
         }
     }
 }

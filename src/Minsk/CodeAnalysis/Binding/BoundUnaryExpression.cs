@@ -9,11 +9,13 @@ namespace Minsk.CodeAnalysis.Binding
         {
             Op = op;
             Operand = operand;
+            ConstantValue = ConstantFolding.Fold(op, operand);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.UnaryExpression;
         public override TypeSymbol Type => Op.Type;
         public BoundUnaryOperator Op { get; }
         public BoundExpression Operand { get; }
+        public override BoundConstant? ConstantValue { get; }
     }
 }

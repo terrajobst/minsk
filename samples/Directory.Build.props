@@ -1,0 +1,16 @@
+<Project>
+
+  <PropertyGroup>
+    <DefaultLanguageSourceExtension>.ms</DefaultLanguageSourceExtension>
+  </PropertyGroup>
+
+  <!--
+      Since we're only targeting single framework, we don't need to append
+      the short TFM and RID to the output paths.
+  -->
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+</Project>

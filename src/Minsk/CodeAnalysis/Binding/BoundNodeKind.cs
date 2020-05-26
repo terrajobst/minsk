@@ -4,6 +4,7 @@ namespace Minsk.CodeAnalysis.Binding
     {
         // Statements
         BlockStatement,
+        NopStatement,
         VariableDeclaration,
         IfStatement,
         WhileStatement,
@@ -12,6 +13,7 @@ namespace Minsk.CodeAnalysis.Binding
         LabelStatement,
         GotoStatement,
         ConditionalGotoStatement,
+        ReturnStatement,
         ExpressionStatement,
 
         // Expressions

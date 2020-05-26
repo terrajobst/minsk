@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsTool>true</IsTool>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <ProjectName>Minsk</ProjectName>
+    <RootNamespace>Minsk</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Minsk\Minsk.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,13 +1,15 @@
 # Episode 8
 
 [Video](https://www.youtube.com/watch?v=PfpayNvfu20&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=8) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/35)
+[Pull Request](https://github.com/terrajobst/minsk/pull/35) |
+[Previous](episode-07.md) |
+[Next](episode-09.md)
 
 ## Completed items
 
-* Add support for bitwise operators
-* Add ability to output the bound tree
-* Add ability to lower bound tree
+* Added support for bitwise operators
+* Added ability to output the bound tree
+* Added ability to lower bound tree
 * Lower `for`-statements into `while`-statements
 * Print syntax and bound tree before evaluation
 * Lower `if`, `while`, and `for` into gotos

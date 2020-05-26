@@ -1,15 +1,17 @@
 # Episode 7
 
 [Video](https://www.youtube.com/watch?v=SJE_gUnJl2Y&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=7) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/28)
+[Pull Request](https://github.com/terrajobst/minsk/pull/28) |
+[Previous](episode-06.md) |
+[Next](episode-08.md)
 
 ## Completed items
 
-* Make evaluation tests more declarative, especially for diagnostics
-* Add support for `<,` `<=`, `>=`, and `>`
-* Add support for if-statements
-* Add support for while-statements
-* Add support for for-statements
+* Made evaluation tests more declarative, especially for diagnostics
+* Added support for `<,` `<=`, `>=`, and `>`
+* Added support for if-statements
+* Added support for while-statements
+* Added support for for-statements
 * Ensure parser doesn't loop infinitely on malformed block
 * Ensure binder doesn't crash when binding fabricated identifiers
 

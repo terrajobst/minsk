@@ -2,10 +2,17 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public enum SyntaxKind
     {
-        // Tokens
         BadToken,
+
+        // Trivia
+        SkippedTextTrivia,
+        LineBreakTrivia,
+        WhitespaceTrivia,
+        SingleLineCommentTrivia,
+        MultiLineCommentTrivia,
+
+        // Tokens
         EndOfFileToken,
-        WhitespaceToken,
         NumberToken,
         StringToken,
         PlusToken,
@@ -42,12 +49,15 @@ namespace Minsk.CodeAnalysis.Syntax
         IdentifierToken,
 
         // Keywords
+        BreakKeyword,
+        ContinueKeyword,
         ElseKeyword,
         FalseKeyword,
         ForKeyword,
         FunctionKeyword,
         IfKeyword,
         LetKeyword,
+        ReturnKeyword,
         ToKeyword,
         TrueKeyword,
         VarKeyword,
@@ -69,6 +79,9 @@ namespace Minsk.CodeAnalysis.Syntax
         WhileStatement,
         DoWhileStatement,
         ForStatement,
+        BreakStatement,
+        ContinueStatement,
+        ReturnStatement,
         ExpressionStatement,
 
         // Expressions

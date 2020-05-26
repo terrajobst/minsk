@@ -2,16 +2,43 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using Minsk.IO;
 
 namespace Minsk
 {
     internal abstract class Repl
     {
-        private List<string> _submissionHistory = new List<string>();
+        private readonly List<MetaCommand> _metaCommands = new List<MetaCommand>();
+        private readonly List<string> _submissionHistory = new List<string>();
         private int _submissionHistoryIndex;
 
         private bool _done;
+
+        protected Repl()
+        {
+            InitializeMetaCommands();
+        }
+
+        private void InitializeMetaCommands()
+        {
+            var methods = GetType().GetMethods(BindingFlags.Public |
+                                               BindingFlags.NonPublic |
+                                               BindingFlags.Static |
+                                               BindingFlags.Instance |
+                                               BindingFlags.FlattenHierarchy);
+            foreach (var method in methods)
+            {
+                var attribute = method.GetCustomAttribute<MetaCommandAttribute>();
+                if (attribute == null)
+                    continue;
+
+                var metaCommand = new MetaCommand(attribute.Name, attribute.Description, method);
+                _metaCommands.Add(metaCommand);
+            }
+        }
 
         public void Run()
         {
@@ -19,7 +46,7 @@ namespace Minsk
             {
                 var text = EditSubmission();
                 if (string.IsNullOrEmpty(text))
-                    return;
+                    continue;
 
                 if (!text.Contains(Environment.NewLine) && text.StartsWith("#"))
                     EvaluateMetaCommand(text);
@@ -31,16 +58,18 @@ namespace Minsk
             }
         }
 
+        private delegate object? LineRenderHandler(IReadOnlyList<string> lines, int lineIndex, object? state);
+
         private sealed class SubmissionView
         {
-            private readonly Action<string> _lineRenderer;
+            private readonly LineRenderHandler _lineRenderer;
             private readonly ObservableCollection<string> _submissionDocument;
-            private readonly int _cursorTop;
+            private int _cursorTop;
             private int _renderedLineCount;
             private int _currentLine;
             private int _currentCharacter;
 
-            public SubmissionView(Action<string> lineRenderer, ObservableCollection<string> submissionDocument)
+            public SubmissionView(LineRenderHandler lineRenderer, ObservableCollection<string> submissionDocument)
             {
                 _lineRenderer = lineRenderer;
                 _submissionDocument = submissionDocument;
@@ -59,9 +88,18 @@ namespace Minsk
                 Console.CursorVisible = false;
 
                 var lineCount = 0;
+                var state = (object?)null;
 
                 foreach (var line in _submissionDocument)
                 {
+                    if (_cursorTop + lineCount >= Console.WindowHeight)
+                    {
+                        Console.SetCursorPosition(0, Console.WindowHeight - 1);
+                        Console.WriteLine();
+                        if (_cursorTop > 0)
+                            _cursorTop--;
+                    }
+
                     Console.SetCursorPosition(0, _cursorTop + lineCount);
                     Console.ForegroundColor = ConsoleColor.Green;
 
@@ -71,8 +109,8 @@ namespace Minsk
                         Console.Write("· ");
 
                     Console.ResetColor();
-                    _lineRenderer(line);
-                    Console.WriteLine(new string(' ', Console.WindowWidth - line.Length));
+                    state = _lineRenderer(_submissionDocument, lineCount, state);
+                    Console.Write(new string(' ', Console.WindowWidth - line.Length - 2));
                     lineCount++;
                 }
 
@@ -205,13 +243,15 @@ namespace Minsk
                 }
             }
 
-            if (key.KeyChar >= ' ')
+            if (key.Key != ConsoleKey.Backspace && key.KeyChar >= ' ')
                 HandleTyping(document, view, key.KeyChar.ToString());
         }
 
         private void HandleEscape(ObservableCollection<string> document, SubmissionView view)
         {
-            document[view.CurrentLine] = string.Empty;
+            document.Clear();
+            document.Add(string.Empty);
+            view.CurrentLine = 0;
             view.CurrentCharacter = 0;
         }
 
@@ -348,7 +388,7 @@ namespace Minsk
         private void HandlePageDown(ObservableCollection<string> document, SubmissionView view)
         {
             _submissionHistoryIndex++;
-            if (_submissionHistoryIndex > _submissionHistory.Count -1)
+            if (_submissionHistoryIndex > _submissionHistory.Count - 1)
                 _submissionHistoryIndex = 0;
             UpdateDocumentFromHistory(document, view);
         }
@@ -382,20 +422,160 @@ namespace Minsk
             _submissionHistory.Clear();
         }
 
-        protected virtual void RenderLine(string line)
+        protected virtual object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object? state)
         {
-            Console.Write(line);
+            Console.Write(lines[lineIndex]);
+            return state;
         }
 
-        protected virtual void EvaluateMetaCommand(string input)
+        private void EvaluateMetaCommand(string input)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Invalid command {input}.");
-            Console.ResetColor();
+            // Parse arguments
+
+            var args = new List<string>();
+            var inQuotes = false;
+            var position = 1;
+            var sb = new StringBuilder();
+            while (position < input.Length)
+            {
+                var c = input[position];
+                var l = position + 1 >= input.Length ? '\0' : input[position + 1];
+
+                if (char.IsWhiteSpace(c))
+                {
+                    if (!inQuotes)
+                        CommitPendingArgument();
+                    else
+                        sb.Append(c);
+                }
+                else if (c == '\"')
+                {
+                    if (!inQuotes)
+                        inQuotes = true;
+                    else if (l == '\"')
+                    {
+                        sb.Append(c);
+                        position++;
+                    }
+                    else
+                        inQuotes = false;
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+
+                position++;
+            }
+
+            CommitPendingArgument();
+
+            void CommitPendingArgument()
+            {
+                var arg = sb.ToString();
+                if (!string.IsNullOrWhiteSpace(arg))
+                    args.Add(arg);
+                sb.Clear();
+            }
+
+            var commandName = args.FirstOrDefault();
+            if (args.Count > 0)
+                args.RemoveAt(0);
+
+            var command = _metaCommands.SingleOrDefault(mc => mc.Name == commandName);
+            if (command == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Invalid command {input}.");
+                Console.ResetColor();
+                return;
+            }
+
+            var parameters = command.Method.GetParameters();
+
+            if (args.Count != parameters.Length)
+            {
+                var parameterNames = string.Join(" ", parameters.Select(p => $"<{p.Name}>"));
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"error: invalid number of arguments");
+                Console.WriteLine($"usage: #{command.Name} {parameterNames}");
+                Console.ResetColor();
+                return;
+            }
+
+            var instance = command.Method.IsStatic ? null : this;
+            command.Method.Invoke(instance, args.ToArray());
         }
 
         protected abstract bool IsCompleteSubmission(string text);
 
         protected abstract void EvaluateSubmission(string text);
+
+        [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+        protected sealed class MetaCommandAttribute : Attribute
+        {
+            public MetaCommandAttribute(string name, string description)
+            {
+                Name = name;
+                Description = description;
+            }
+
+            public string Name { get; }
+            public string Description { get; }
+        }
+
+        private sealed class MetaCommand
+        {
+            public MetaCommand(string name, string description, MethodInfo method)
+            {
+                Name = name;
+                Description = description;
+                Method = method;
+            }
+
+            public string Name { get; }
+            public string Description { get; }
+            public MethodInfo Method { get; }
+        }
+
+        [MetaCommand("help", "Shows help")]
+        protected void EvaluateHelp()
+        {
+            var maxNameLength = _metaCommands.Max(mc => mc.Name.Length);
+
+            foreach (var metaCommand in _metaCommands.OrderBy(mc => mc.Name))
+            {
+                var metaParams = metaCommand.Method.GetParameters();
+                if (metaParams.Length == 0)
+                {
+                    var paddedName = metaCommand.Name.PadRight(maxNameLength);
+
+                    Console.Out.WritePunctuation("#");
+                    Console.Out.WriteIdentifier(paddedName);
+                }
+                else
+                {
+                    Console.Out.WritePunctuation("#");
+                    Console.Out.WriteIdentifier(metaCommand.Name);
+                    foreach (var pi in metaParams)
+                    {
+                        Console.Out.WriteSpace();
+                        Console.Out.WritePunctuation("<");
+                        Console.Out.WriteIdentifier(pi.Name!);
+                        Console.Out.WritePunctuation(">");
+                    }
+                    Console.Out.WriteLine();
+                    Console.Out.WriteSpace();
+                    for (int _ = 0; _ < maxNameLength; _++)
+                        Console.Out.WriteSpace();
+
+                }
+                Console.Out.WriteSpace();
+                Console.Out.WriteSpace();
+                Console.Out.WriteSpace();
+                Console.Out.WritePunctuation(metaCommand.Description);
+                Console.Out.WriteLine();
+            }
+        }
     }
 }

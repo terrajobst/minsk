@@ -85,6 +85,7 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
+*.g.cs
 
 # Chutzpah Test files
 _Chutzpah*
@@ -141,6 +142,8 @@ _TeamCity*
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
+*.ncrunchsolution
+*.ncrunchproject
 
 # MightyMoose
 *.mm.*

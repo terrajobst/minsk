@@ -1,15 +1,222 @@
 {
     "version": "2.0.0",
     "tasks": [
+        // Builds 'minsk.sln' solution with default configurations
         {
             "label": "build",
             "command": "dotnet",
             "type": "process",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
+            "args": [
+                "build"
+            ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        // Builds the specified source project as selected by the user
+        {
+            "label": "build-csproj",
+            "command": "dotnet",
+            "type": "process",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
             "args": [
                 "build",
-                "${workspaceFolder}/src/Minsk.sln"
+                "${input:csproj}"
             ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
             "problemMatcher": "$msCompile"
+        },
+        // Builds 'minsk.sln' solution and runs the test projects in the solution
+        {
+            "label": "test",
+            "command": "dotnet",
+            "type": "process",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
+            "args": [
+                "test"
+            ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        // Cleans the build outputs of the 'minsk.sln' solution
+        {
+            "label": "clean",
+            "command": "dotnet",
+            "type": "process",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
+            "args": [
+                "clean"
+            ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        // Builds the specified sample project as selected by the user
+        {
+            "label": "build-msproj",
+            "command": "dotnet",
+            "type": "process",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/samples"
+            },
+            "args": [
+                "build",
+                "${input:msproj}"
+            ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "minsk",
+                "fileLocation": "absolute",
+                "pattern": [
+                    {
+                        "regexp": "^(.+)\\((\\d+,\\d+,\\d+,\\d+)\\):\\s+(.+)$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    }
+                ]
+            }
+        },
+        // Builds and Runs the specified sample project as selected by the user
+        {
+            "label": "run-msproj",
+            "command": "dotnet",
+            "type": "process",
+            "options": {
+                "cwd": "${workspaceFolder}/samples"
+            },
+            "args": [
+                "run",
+                "--project",
+                "${input:msproj}"
+            ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "minsk",
+                "fileLocation": "absolute",
+                "pattern": [
+                    {
+                        "regexp": "^(.+)\\((\\d+,\\d+,\\d+,\\d+)\\):\\s+(.+)$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    }
+                ]
+            }
+        },
+        // Builds and Runs the Minsk compiler with the currently opened file's folder path
+        {
+            "label": "msc",
+            "command": "dotnet",
+            "type": "process",
+            "options": {
+                "cwd": "${workspaceFolder}/samples"
+            },
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/msc",
+                "--",
+                "${fileDirname}"
+            ],
+            "presentation": {
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "minsk",
+                "fileLocation": "absolute",
+                "pattern": [
+                    {
+                        "regexp": "^(.+)\\((\\d+,\\d+,\\d+,\\d+)\\):\\s+(.+)$",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    }
+                ]
+            }
+        },
+        // Builds and Runs the Minsk interpreter
+        {
+            "label": "msi",
+            "command": "dotnet",
+            "type": "process",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/samples"
+            },
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/msi"
+            ],
+            "presentation": {
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        // Inputs for the source projects. Be sure to update the list if you've added new project(s).
+        {
+            "id": "csproj",
+            "type": "pickString",
+            "description": "Pick your Source project",
+            "options": [
+                "msc",
+                "msi",
+                "Minsk",
+                "Minsk.Generators",
+                "Minsk.Tests"
+            ],
+            "default": "msc"
+        },
+        // Inputs for the sample projects. Be sure to update the list if you've added new project(s).
+        {
+            "id": "msproj",
+            "type": "pickString",
+            "description": "Pick your Sample minsk project",
+            "options": [
+                "hello"
+            ],
+            "default": "hello"
         }
     ]
 }

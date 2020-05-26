@@ -1,3 +1,5 @@
+using System;
+
 namespace Minsk.CodeAnalysis.Text
 {
     public struct TextSpan
@@ -16,6 +18,12 @@ namespace Minsk.CodeAnalysis.Text
         {
             var length = end - start;
             return new TextSpan(start, length);
+        }
+
+        public bool OverlapsWith(TextSpan span)
+        {
+            return Start < span.End &&
+                   End > span.Start;
         }
 
         public override string ToString() => $"{Start}..{End}";

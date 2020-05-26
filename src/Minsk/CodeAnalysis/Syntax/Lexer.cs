@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 using System.Text;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Text;
@@ -8,17 +9,19 @@ namespace Minsk.CodeAnalysis.Syntax
     internal sealed class Lexer
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private readonly SyntaxTree _syntaxTree;
         private readonly SourceText _text;
-
         private int _position;
 
         private int _start;
         private SyntaxKind _kind;
-        private object _value;
+        private object? _value;
+        private ImmutableArray<SyntaxTrivia>.Builder _triviaBuilder = ImmutableArray.CreateBuilder<SyntaxTrivia>();
 
-        public Lexer(SourceText text)
+        public Lexer(SyntaxTree syntaxTree)
         {
-            _text = text;
+            _syntaxTree = syntaxTree;
+            _text = syntaxTree.Text;
         }
 
         public DiagnosticBag Diagnostics => _diagnostics;
@@ -38,6 +41,184 @@ namespace Minsk.CodeAnalysis.Syntax
         }
 
         public SyntaxToken Lex()
+        {
+            ReadTrivia(leading: true);
+
+            var leadingTrivia = _triviaBuilder.ToImmutable();
+            var tokenStart = _position;
+
+            ReadToken();
+
+            var tokenKind = _kind;
+            var tokenValue = _value;
+            var tokenLength = _position - _start;
+
+            ReadTrivia(leading: false);
+
+            var trailingTrivia = _triviaBuilder.ToImmutable();
+
+            var tokenText = SyntaxFacts.GetText(tokenKind);
+            if (tokenText == null)
+                tokenText = _text.ToString(tokenStart, tokenLength);
+
+            return new SyntaxToken(_syntaxTree, tokenKind, tokenStart, tokenText, tokenValue, leadingTrivia, trailingTrivia);
+        }
+
+        private void ReadTrivia(bool leading)
+        {
+            _triviaBuilder.Clear();
+
+            var done = false;
+
+            while (!done)
+            {
+                _start = _position;
+                _kind = SyntaxKind.BadToken;
+                _value = null;
+
+                switch (Current)
+                {
+                    case '\0':
+                        done = true;
+                        break;
+                    case '/':
+                        if (Lookahead == '/')
+                        {
+                            ReadSingleLineComment();
+                        }
+                        else if (Lookahead == '*')
+                        {
+                            ReadMultiLineComment();
+                        }
+                        else
+                        {
+                            done = true;
+                        }
+                        break;
+                    case '\n':
+                    case '\r':
+                        if (!leading)
+                            done = true;
+                        ReadLineBreak();
+                        break;
+                    case ' ':
+                    case '\t':
+                        ReadWhiteSpace();
+                        break;
+                    default:
+                        if (char.IsWhiteSpace(Current))
+                            ReadWhiteSpace();
+                        else
+                            done = true;
+                        break;
+                }
+
+                var length = _position - _start;
+                if (length > 0)
+                {
+                    var text = _text.ToString(_start, length);
+                    var trivia = new SyntaxTrivia(_syntaxTree, _kind, _start, text);
+                    _triviaBuilder.Add(trivia);
+                }
+            }
+        }
+
+        private void ReadLineBreak()
+        {
+            if (Current == '\r' && Lookahead == '\n')
+            {
+                _position += 2;
+            }
+            else
+            {
+                _position++;
+            }
+
+            _kind = SyntaxKind.LineBreakTrivia;
+        }
+
+        private void ReadWhiteSpace()
+        {
+            var done = false;
+
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                        done = true;
+                        break;
+                    default:
+                        if (!char.IsWhiteSpace(Current))
+                            done = true;
+                        else
+                            _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.WhitespaceTrivia;
+        }
+
+
+        private void ReadSingleLineComment()
+        {
+            _position += 2;
+            var done = false;
+
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                        done = true;
+                        break;
+                    default:
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.SingleLineCommentTrivia;
+        }
+
+        private void ReadMultiLineComment()
+        {
+            _position += 2;
+            var done = false;
+
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\0':
+                        var span = new TextSpan(_start, 2);
+                        var location = new TextLocation(_text, span);
+                        _diagnostics.ReportUnterminatedMultiLineComment(location);
+                        done = true;
+                        break;
+                    case '*':
+                        if (Lookahead == '/')
+                        {
+                            _position++;
+                            done = true;
+                        }
+                        _position++;
+                        break;
+                    default:
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.MultiLineCommentTrivia;
+        }
+
+        private void ReadToken()
         {
             _start = _position;
             _kind = SyntaxKind.BadToken;
@@ -225,35 +406,23 @@ namespace Minsk.CodeAnalysis.Syntax
                 case '5': case '6': case '7': case '8': case '9':
                     ReadNumber();
                     break;
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\r':
-                    ReadWhiteSpace();
+                case '_':
+                    ReadIdentifierOrKeyword();
                     break;
                 default:
                     if (char.IsLetter(Current))
                     {
                         ReadIdentifierOrKeyword();
                     }
-                    else if (char.IsWhiteSpace(Current))
-                    {
-                        ReadWhiteSpace();
-                    }
                     else
                     {
-                        _diagnostics.ReportBadCharacter(_position, Current);
+                        var span = new TextSpan(_position, 1);
+                        var location = new TextLocation(_text, span);
+                        _diagnostics.ReportBadCharacter(location, Current);
                         _position++;
                     }
                     break;
             }
-
-            var length = _position - _start;
-            var text = SyntaxFacts.GetText(_kind);
-            if (text == null)
-                text = _text.ToString(_start, length);
-
-            return new SyntaxToken(_kind, _start, text, _value);
         }
 
         private void ReadString()
@@ -272,7 +441,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     case '\r':
                     case '\n':
                         var span = new TextSpan(_start, 1);
-                        _diagnostics.ReportUnterminatedString(span);
+                        var location = new TextLocation(_text, span);
+                        _diagnostics.ReportUnterminatedString(location);
                         done = true;
                         break;
                     case '"':
@@ -298,14 +468,6 @@ namespace Minsk.CodeAnalysis.Syntax
             _value = sb.ToString();
         }
 
-        private void ReadWhiteSpace()
-        {
-            while (char.IsWhiteSpace(Current))
-                _position++;
-
-            _kind = SyntaxKind.WhitespaceToken;
-        }
-
         private void ReadNumber()
         {
             while (char.IsDigit(Current))
@@ -314,7 +476,11 @@ namespace Minsk.CodeAnalysis.Syntax
             var length = _position - _start;
             var text = _text.ToString(_start, length);
             if (!int.TryParse(text, out var value))
-                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, TypeSymbol.Int);
+            {
+                var span = new TextSpan(_start, length);
+                var location = new TextLocation(_text, span);
+                _diagnostics.ReportInvalidNumber(location, text, TypeSymbol.Int);
+            }
 
             _value = value;
             _kind = SyntaxKind.NumberToken;
@@ -322,7 +488,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private void ReadIdentifierOrKeyword()
         {
-            while (char.IsLetter(Current))
+            while (char.IsLetterOrDigit(Current) || Current == '_')
                 _position++;
 
             var length = _position - _start;

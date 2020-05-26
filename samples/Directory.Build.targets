@@ -1,0 +1,27 @@
+<Project>
+
+  <Target Name="CreateManifestResourceNames" />
+
+  <Target Name="CoreCompile" DependsOnTargets="$(CoreCompileDependsOn)">
+    <ItemGroup>
+      <ReferencePath Remove="@(ReferencePath)"
+                     Condition="'%(FileName)' != 'System.Console' AND
+                                '%(FileName)' != 'System.Runtime' AND
+                                '%(FileName)' != 'System.Runtime.Extensions'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <MinskCompilerArgs>@(Compile->'"%(Identity)"', ' ')</MinskCompilerArgs>
+      <MinskCompilerArgs>$(MinskCompilerArgs) /o "@(IntermediateAssembly)"</MinskCompilerArgs>
+      <MinskCompilerArgs>$(MinskCompilerArgs) @(ReferencePath->'/r "%(Identity)"', ' ')</MinskCompilerArgs>
+
+      <MinskScriptExt Condition="$([MSBuild]::IsOSUnixLike())">.sh</MinskScriptExt>
+      <MinskScriptExt Condition="$([MSBuild]::IsOSPlatform('Windows'))">.cmd</MinskScriptExt>
+      <MinskCompilerScript Condition="'$(MinskCompilerScript)' == ''">msc$(MinskScriptExt)</MinskCompilerScript>
+      <MinskCompileCommand>"$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\', '$(MinskCompilerScript)'))" $(MinskCompilerArgs)</MinskCompileCommand>
+    </PropertyGroup>
+
+    <Exec Command="$(MinskCompileCommand)" />
+  </Target>
+
+</Project>

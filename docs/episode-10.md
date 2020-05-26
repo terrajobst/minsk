@@ -1,7 +1,9 @@
 # Episode 10
 
-[Video](https://www.youtube.com/watch?v=VkFNanrdvLc&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=11) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/49)
+[Video](https://www.youtube.com/watch?v=VkFNanrdvLc&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=10) |
+[Pull Request](https://github.com/terrajobst/minsk/pull/49) |
+[Previous](episode-09.md) |
+[Next](episode-11.md)
 
 ## Completed items
 

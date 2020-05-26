@@ -1,12 +1,14 @@
 # Episode 3
 
-[Video](https://www.youtube.com/watch?v=61dLQNgd9o8) |
-[Pull Request](https://github.com/terrajobst/minsk/pull/7)
+[Video](https://www.youtube.com/watch?v=61dLQNgd9o8&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=3) |
+[Pull Request](https://github.com/terrajobst/minsk/pull/7) |
+[Previous](episode-02.md) |
+[Next](episode-04.md)
 
 ## Completed items
 
-* Extract compiler into a separate library
-* Expose span on diagnostics that indicate where the error occurred
+* Extracted compiler into a separate library
+* Exposed span on diagnostics that indicate where the error occurred
 * Support for assignments and variables
 
 ## Interesting aspects

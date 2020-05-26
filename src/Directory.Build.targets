@@ -1,0 +1,14 @@
+<Project>
+
+  <!--
+      HACK:
+      There is an issue in the current preview of .NET 5 SDK where the compiler
+      that was shipped with it doesn't support source generators.
+
+      We work this around by specifically depending on a later version of the compiler.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Compilers.ToolSet" Version="3.6.0-4.final" />
+  </ItemGroup>
+
+</Project>

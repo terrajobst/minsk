@@ -2,7 +2,8 @@
 {
     public sealed class CompoundAssignmentExpressionSyntax : ExpressionSyntax
     {
-        public CompoundAssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression)
+        public CompoundAssignmentExpressionSyntax(SyntaxTree syntaxTree, SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression)
+            : base(syntaxTree)
         {
             IdentifierToken = identifierToken;
             OperatorToken = operatorToken;

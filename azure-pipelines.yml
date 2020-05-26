@@ -1,24 +1,31 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 pool:
-  vmImage: 'Ubuntu 16.04'
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Release'
   sln: './src/minsk.sln'
   tests: './src/Minsk.Tests/Minsk.Tests.csproj'
+  samples: './samples/samples.sln'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration) $(sln)
-  displayName: 'dotnet build $(buildConfiguration)'
-- script: dotnet test $(tests) --logger "xunit;LogFileName=TestResults.xml"
-  displayName: 'dotnet test'
-- task: PublishTestResults@2
-  displayName: 'publish test results to azure pipelines'
+- task: DotNetCoreCLI@2
+  displayName: Build minsk ($(buildConfiguration))
   inputs:
-    testResultsFormat: 'xUnit'
-    testResultsFiles: '**/TestResults.xml'
-  condition: always()
+    command: build
+    projects: $(sln)
+    arguments: -c $(buildConfiguration)
+- task: DotNetCoreCLI@2
+  displayName: Run tests ($(buildConfiguration))
+  inputs:
+    command: test
+    projects: $(tests)
+    arguments: -c $(buildConfiguration)
+    publishTestResults: true
+- task: DotNetCoreCLI@2
+  displayName: Build samples ($(buildConfiguration))
+  inputs:
+    command: build
+    projects: $(samples)
+    arguments: -c $(buildConfiguration)

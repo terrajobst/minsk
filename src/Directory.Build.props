@@ -1,7 +1,37 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>7.3</LangVersion>
+    <Features>Strict</Features>
+    <Nullable>Enable</Nullable>
+    <LangVersion>Preview</LangVersion>
+  </PropertyGroup>
+
+  <!--
+      Since we're only targeting single framework, we don't need to append
+      the short TFM and RID to the output paths.
+  -->
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <!--
+      HACK:
+      VS Code currently doesn't support Roslyn generators (VS 16.6+ does, tho).
+      In order to void seeing errors in VS Code and to get IntelliSense,
+      we're doing a trick:
+
+      1. The generator writes the file to disk, using the *.g.cs naming
+         convention (borrowed from WPF).
+      2. In MSBuild we're excluding those files
+
+      Since VS Code's C# extension (or more specifically OmniSharp) doesn't
+      resolve items from MSBuild, it will include the file while neither
+      VS nor the CLI/CI build will.
+  -->
+  <PropertyGroup>
+    <GeneratedSources>**/*.g.cs</GeneratedSources>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedSources)</DefaultItemExcludes>
   </PropertyGroup>
 
 </Project>

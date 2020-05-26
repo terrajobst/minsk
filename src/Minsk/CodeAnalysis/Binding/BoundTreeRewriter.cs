@@ -11,6 +11,8 @@ namespace Minsk.CodeAnalysis.Binding
             {
                 case BoundNodeKind.BlockStatement:
                     return RewriteBlockStatement((BoundBlockStatement)node);
+                case BoundNodeKind.NopStatement:
+                    return RewriteNopStatement((BoundNopStatement)node);
                 case BoundNodeKind.VariableDeclaration:
                     return RewriteVariableDeclaration((BoundVariableDeclaration)node);
                 case BoundNodeKind.IfStatement:
@@ -27,6 +29,8 @@ namespace Minsk.CodeAnalysis.Binding
                     return RewriteGotoStatement((BoundGotoStatement)node);
                 case BoundNodeKind.ConditionalGotoStatement:
                     return RewriteConditionalGotoStatement((BoundConditionalGotoStatement)node);
+                case BoundNodeKind.ReturnStatement:
+                    return RewriteReturnStatement((BoundReturnStatement)node);
                 case BoundNodeKind.ExpressionStatement:
                     return RewriteExpressionStatement((BoundExpressionStatement)node);
                 default:
@@ -36,7 +40,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
-            ImmutableArray<BoundStatement>.Builder builder = null;
+            ImmutableArray<BoundStatement>.Builder? builder = null;
 
             for (var i = 0; i< node.Statements.Length; i++)
             {
@@ -61,6 +65,11 @@ namespace Minsk.CodeAnalysis.Binding
                 return node;
 
             return new BoundBlockStatement(builder.MoveToImmutable());
+        }
+
+        protected virtual BoundStatement RewriteNopStatement(BoundNopStatement node)
+        {
+            return node;
         }
 
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
@@ -90,7 +99,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (condition == node.Condition && body == node.Body)
                 return node;
 
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
@@ -100,7 +109,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (body == node.Body && condition == node.Condition)
                 return node;
 
-            return new BoundDoWhileStatement(body, condition);
+            return new BoundDoWhileStatement(body, condition, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
@@ -111,7 +120,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (lowerBound == node.LowerBound && upperBound == node.UpperBound && body == node.Body)
                 return node;
 
-            return new BoundForStatement(node.Variable, lowerBound, upperBound, body);
+            return new BoundForStatement(node.Variable, lowerBound, upperBound, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node)
@@ -131,6 +140,15 @@ namespace Minsk.CodeAnalysis.Binding
                 return node;
 
             return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
+        }
+
+        protected virtual BoundStatement RewriteReturnStatement(BoundReturnStatement node)
+        {
+            var expression = node.Expression == null ? null : RewriteExpression(node.Expression);
+            if (expression == node.Expression)
+                return node;
+
+            return new BoundReturnStatement(expression);
         }
 
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
@@ -223,7 +241,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
         {
-            ImmutableArray<BoundExpression>.Builder builder = null;
+            ImmutableArray<BoundExpression>.Builder? builder = null;
 
             for (var i = 0; i< node.Arguments.Length; i++)
             {

@@ -215,6 +215,7 @@ namespace Minsk.CodeAnalysis.Syntax
                     return null;
             }
         }
+
         public static bool IsTrivia(this SyntaxKind kind)
         {
             switch (kind)

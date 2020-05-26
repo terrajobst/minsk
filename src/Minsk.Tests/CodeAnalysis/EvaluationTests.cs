@@ -86,18 +86,17 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var a = 0 do a = a + 1 while a < 10 return a}", 10)]
         [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } return i }", 5)]
         [InlineData("{ var i = 0 do { i = i + 1 if i == 5 continue } while i < 5 return i }", 5)]
-        [InlineData("{ var a = 1 a += (2 + 3) a }", 6)]
-        [InlineData("{ var a = 1 a -= (2 + 3) a }", -4)]
-        [InlineData("{ var a = 1 a *= (2 + 3) a }", 5)]
-        [InlineData("{ var a = 1 a /= (2 + 3) a }", 0)]
-        [InlineData("{ var a = true a &= (false) a }", false)]
-        [InlineData("{ var a = true a |= (false) a }", true)]
-        [InlineData("{ var a = true a ^= (true) a }", false)]
-        [InlineData("{ var a = 1 a|= 0 a }", 1)]
-        [InlineData("{ var a = 1 a&= 3 a }", 1)]
-        [InlineData("{ var a = 1 a&= 0 a }", 0)]
-        [InlineData("{ var a = 1 a^= 0 a }", 1)]
-
+        [InlineData("{ var a = 1 a += (2 + 3) return a }", 6)]
+        [InlineData("{ var a = 1 a -= (2 + 3) return a }", -4)]
+        [InlineData("{ var a = 1 a *= (2 + 3) return a }", 5)]
+        [InlineData("{ var a = 1 a /= (2 + 3) return a }", 0)]
+        [InlineData("{ var a = true a &= (false) return a }", false)]
+        [InlineData("{ var a = true a |= (false) return a }", true)]
+        [InlineData("{ var a = true a ^= (true) return a }", false)]
+        [InlineData("{ var a = 1 a |= 0 return a }", 1)]
+        [InlineData("{ var a = 1 a &= 3 return a }", 1)]
+        [InlineData("{ var a = 1 a &= 0 return a }", 0)]
+        [InlineData("{ var a = 1 a ^= 0 return a }", 1)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -386,7 +385,7 @@ namespace Minsk.Tests.CodeAnalysis
         }
 
          [Fact]
-        public void Evaluator_LambdaDeclarationExpression_Assignemnt_NonDefinedVariable_Reports_Undefined()
+        public void Evaluator_CompoundExpression_Assignemnt_NonDefinedVariable_Reports_Undefined()
         {
             var text = @"[x] += 10";
 
@@ -427,7 +426,7 @@ namespace Minsk.Tests.CodeAnalysis
         }
 
          [Fact]
-        public void Evaluator_LambdaDeclarationExpression_Reports_CannotAssign()
+        public void Evaluator_CompoundDeclarationExpression_Reports_CannotAssign()
         {
             var text = @"
                 {

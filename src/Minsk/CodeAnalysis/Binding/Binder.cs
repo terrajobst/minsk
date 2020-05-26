@@ -272,7 +272,8 @@ namespace Minsk.CodeAnalysis.Binding
                 {
                     var isAllowedExpression = es.Expression.Kind == BoundNodeKind.ErrorExpression ||
                                               es.Expression.Kind == BoundNodeKind.AssignmentExpression ||
-                                              es.Expression.Kind == BoundNodeKind.CallExpression;
+                                              es.Expression.Kind == BoundNodeKind.CallExpression ||
+                                              es.Expression.Kind == BoundNodeKind.CompoundAssignmentExpression;
                     if (!isAllowedExpression)
                         _diagnostics.ReportInvalidExpressionStatement(syntax.Location);
                 }
@@ -578,29 +579,25 @@ namespace Minsk.CodeAnalysis.Binding
             var name = syntax.IdentifierToken.Text;
             var boundExpression = BindExpression(syntax.Expression);
 
-            if (!_scope.TryLookupVariable(name, out var variable))
-            {
-                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+            var variable = BindVariableReference(syntax.IdentifierToken);
+            if (variable == null)
                 return boundExpression;
-            }
 
             if (variable.IsReadOnly)
-                _diagnostics.ReportCannotAssign(syntax.OperatorToken.Span, name);
+                _diagnostics.ReportCannotAssign(syntax.OperatorToken.Location, name);
 
             var equivalentOperatorTokenKind = SyntaxFacts.GetSyntaxKindEquivalentForCompoundAssignmentExpressionSyntax(syntax.OperatorToken.Kind);
             var boundOperator = BoundBinaryOperator.Bind(equivalentOperatorTokenKind, variable.Type, boundExpression.Type);
             if (boundOperator == null)
             {
-                _diagnostics.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, variable.Type, boundExpression.Type);
+                _diagnostics.ReportUndefinedBinaryOperator(syntax.OperatorToken.Location, syntax.OperatorToken.Text, variable.Type, boundExpression.Type);
                 return new BoundErrorExpression();
             }
 
-            var convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
+            var convertedExpression = BindConversion(syntax.Expression.Location, boundExpression, variable.Type);
 
             return new BoundCompoundAssignmentExpression(variable, boundOperator, convertedExpression);
         }
-
-        
 
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
         {

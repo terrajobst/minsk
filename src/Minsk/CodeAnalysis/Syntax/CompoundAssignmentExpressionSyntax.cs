@@ -1,6 +1,6 @@
 ﻿namespace Minsk.CodeAnalysis.Syntax
 {
-    public sealed class CompoundAssignmentExpressionSyntax : ExpressionSyntax
+    public sealed partial class CompoundAssignmentExpressionSyntax : ExpressionSyntax
     {
         public CompoundAssignmentExpressionSyntax(SyntaxTree syntaxTree, SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression)
             : base(syntaxTree)

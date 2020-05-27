@@ -565,16 +565,16 @@ namespace Minsk.CodeAnalysis.Binding
                 return boundExpression;
 
             if (variable.IsReadOnly)
-                _diagnostics.ReportCannotAssign(syntax.EqualsToken.Location, name);
+                _diagnostics.ReportCannotAssign(syntax.AssignmentToken.Location, name);
 
-            if (syntax.EqualsToken.Kind != SyntaxKind.EqualsToken)
+            if (syntax.AssignmentToken.Kind != SyntaxKind.EqualsToken)
             {
-                var equivalentOperatorTokenKind = SyntaxFacts.GetBinaryOperatorOfAssignmentOperator(syntax.EqualsToken.Kind);
+                var equivalentOperatorTokenKind = SyntaxFacts.GetBinaryOperatorOfAssignmentOperator(syntax.AssignmentToken.Kind);
                 var boundOperator = BoundBinaryOperator.Bind(equivalentOperatorTokenKind, variable.Type, boundExpression.Type);
 
                 if (boundOperator == null)
                 {
-                    _diagnostics.ReportUndefinedBinaryOperator(syntax.EqualsToken.Location, syntax.EqualsToken.Text, variable.Type, boundExpression.Type);
+                    _diagnostics.ReportUndefinedBinaryOperator(syntax.AssignmentToken.Location, syntax.AssignmentToken.Text, variable.Type, boundExpression.Type);
                     return new BoundErrorExpression();
                 }
 

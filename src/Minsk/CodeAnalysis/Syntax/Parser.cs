@@ -362,7 +362,7 @@ namespace Minsk.CodeAnalysis.Syntax
                     case SyntaxKind.HatEqualsToken:
                         var identifierToken = NextToken();
                         var operatorToken = NextToken();
-                        var right = ParseBinaryExpression();
+                        var right = ParseAssignmentExpression();
                         return new CompoundAssignmentExpressionSyntax(_syntaxTree, identifierToken, operatorToken, right);
 
                     case SyntaxKind.EqualsToken:

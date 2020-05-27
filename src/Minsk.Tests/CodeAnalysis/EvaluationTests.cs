@@ -97,6 +97,8 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var a = 1 a &= 3 return a }", 1)]
         [InlineData("{ var a = 1 a &= 0 return a }", 0)]
         [InlineData("{ var a = 1 a ^= 0 return a }", 1)]
+        [InlineData("{ var a = 1 var b = 2 var c = 3 a += b += c return a }", 6)]
+        [InlineData("{ var a = 1 var b = 2 var c = 3 a += b += c return b }", 5)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);

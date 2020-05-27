@@ -1,31 +1,50 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
-  buildConfiguration: 'Release'
   sln: './src/minsk.sln'
   tests: './src/Minsk.Tests/Minsk.Tests.csproj'
   samples: './samples/samples.sln'
 
-steps:
-- task: DotNetCoreCLI@2
-  displayName: Build minsk ($(buildConfiguration))
-  inputs:
-    command: build
-    projects: $(sln)
-    arguments: -c $(buildConfiguration)
-- task: DotNetCoreCLI@2
-  displayName: Run tests ($(buildConfiguration))
-  inputs:
-    command: test
-    projects: $(tests)
-    arguments: -c $(buildConfiguration)
-    publishTestResults: true
-- task: DotNetCoreCLI@2
-  displayName: Build samples ($(buildConfiguration))
-  inputs:
-    command: build
-    projects: $(samples)
-    arguments: -c $(buildConfiguration)
+parameters:
+- name:     operatingSystems
+  type:     object
+  default:
+  - name:     Ubuntu
+    vmImage:  ubuntu-latest
+  - name:     Windows
+    vmImage:  windows-latest
+  - name:     macOS
+    vmImage:  macOS-latest
+- name:     configurations
+  type:     object
+  default:
+  - Debug
+  - Release
+
+jobs:
+- ${{ each c in parameters.configurations }}:
+  - ${{ each os in parameters.operatingSystems }}:
+    - job:  job${{ os.name }}${{ c }}
+      displayName: ${{ c }} (${{ os.name }})
+      pool:
+        vmImage:  ${{ os.vmImage }}
+      steps:
+      - task: DotNetCoreCLI@2
+        displayName: Build minsk (${{ os.name }} ${{ c }})
+        inputs:
+          command: build
+          projects: $(sln)
+          arguments: --configuration ${{ c }}
+      - task: DotNetCoreCLI@2
+        displayName: Run tests (${{ os.name }} ${{ c }})
+        inputs:
+          command: test
+          projects: $(tests)
+          arguments: --configuration ${{ c }}
+          publishTestResults: true
+      - task: DotNetCoreCLI@2
+        displayName: Build samples (${{ os.name }} ${{ c }})
+        inputs:
+          command: build
+          projects: $(samples)
+          arguments: --configuration ${{ c }}

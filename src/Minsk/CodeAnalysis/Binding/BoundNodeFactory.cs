@@ -35,21 +35,16 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundWhileStatement(syntax, condition, body, breakLabel, continueLabel);
         }
 
-        public static BoundGotoStatement Goto(SyntaxNode syntax, BoundLabelStatement label)
-        {
-            return new BoundGotoStatement(syntax, label.Label);
-        }
-
         public static BoundGotoStatement Goto(SyntaxNode syntax, BoundLabel label)
         {
             return new BoundGotoStatement(syntax, label);
         }
 
-        public static BoundConditionalGotoStatement GotoTrue(SyntaxNode syntax, BoundLabelStatement label, BoundExpression condition)
-            => new BoundConditionalGotoStatement(syntax, label.Label, condition, jumpIfTrue: true);
+        public static BoundConditionalGotoStatement GotoTrue(SyntaxNode syntax, BoundLabel label, BoundExpression condition)
+            => new BoundConditionalGotoStatement(syntax, label, condition, jumpIfTrue: true);
 
-        public static BoundConditionalGotoStatement GotoFalse(SyntaxNode syntax, BoundLabelStatement label, BoundExpression condition)
-            => new BoundConditionalGotoStatement(syntax, label.Label, condition, jumpIfTrue: false);
+        public static BoundConditionalGotoStatement GotoFalse(SyntaxNode syntax, BoundLabel label, BoundExpression condition)
+            => new BoundConditionalGotoStatement(syntax, label, condition, jumpIfTrue: false);
 
         public static BoundLabelStatement Label(SyntaxNode syntax, BoundLabel label)
         {

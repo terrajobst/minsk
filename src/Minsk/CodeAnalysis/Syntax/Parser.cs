@@ -360,15 +360,10 @@ namespace Minsk.CodeAnalysis.Syntax
                     case SyntaxKind.AmpersandEqualsToken:
                     case SyntaxKind.PipeEqualsToken:
                     case SyntaxKind.HatEqualsToken:
+                    case SyntaxKind.EqualsToken:
                         var identifierToken = NextToken();
                         var operatorToken = NextToken();
                         var right = ParseAssignmentExpression();
-                        return new CompoundAssignmentExpressionSyntax(_syntaxTree, identifierToken, operatorToken, right);
-
-                    case SyntaxKind.EqualsToken:
-                        identifierToken = NextToken();
-                        operatorToken = NextToken();
-                        right = ParseAssignmentExpression();
                         return new AssignmentExpressionSyntax(_syntaxTree, identifierToken, operatorToken, right);
                 }
 

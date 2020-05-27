@@ -190,11 +190,10 @@ namespace Minsk
                 compilation.EmitTree(Console.Out);
 
             var result = compilation.Evaluate(_variables);
+            Console.Out.WriteDiagnostics(result.Diagnostics);
 
-            if (!result.ErrorDiagnostics.Any())
+            if (!result.Diagnostics.HasErrors())
             {
-                Console.Out.WriteDiagnostics(result.WarningDiagnostics);
-
                 if (result.Value != null)
                 {
                     Console.ForegroundColor = ConsoleColor.White;
@@ -204,10 +203,6 @@ namespace Minsk
                 _previous = compilation;
 
                 SaveSubmission(text);
-            }
-            else
-            {
-                Console.Out.WriteDiagnostics(result.Diagnostics);
             }
         }
 

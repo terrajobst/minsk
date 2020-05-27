@@ -101,13 +101,13 @@ namespace Minsk.CodeAnalysis
             // using (var streamWriter = new StreamWriter(cfgPath))
             //     cfg.WriteTo(streamWriter);
 
-            if (program.ErrorDiagnostics.Any())
+            if (program.Diagnostics.HasErrors())
                 return new EvaluationResult(program.Diagnostics, null);
 
             var evaluator = new Evaluator(program, variables);
             var value = evaluator.Evaluate();
 
-            return new EvaluationResult(program.WarningDiagnostics, value);
+            return new EvaluationResult(program.Diagnostics, value);
         }
 
         public void EmitTree(TextWriter writer)
@@ -134,8 +134,7 @@ namespace Minsk.CodeAnalysis
             var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
 
             var diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
-            var errorDiagnostics = diagnostics.Where(d => d.IsError);
-            if (errorDiagnostics.Any())
+            if (diagnostics.HasErrors())
                 return diagnostics;
 
             var program = GetProgram();

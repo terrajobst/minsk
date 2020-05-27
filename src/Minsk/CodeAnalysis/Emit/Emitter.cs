@@ -176,7 +176,7 @@ namespace Minsk.CodeAnalysis.Emit
 
         public static ImmutableArray<Diagnostic> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
         {
-            if (program.ErrorDiagnostics.Any())
+            if (program.Diagnostics.HasErrors())
                 return program.Diagnostics;
 
             var emitter = new Emitter(moduleName, references);

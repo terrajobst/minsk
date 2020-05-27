@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using Minsk.CodeAnalysis;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
@@ -599,7 +601,7 @@ namespace Minsk.Tests.CodeAnalysis
             var diagnostics = @"
                 Unreachable code detected.
             ";
-            AssertDiagnostics(text, diagnostics, assertWarnings: true);
+            AssertDiagnostics(text, diagnostics);
         }
 
         [Fact]
@@ -623,7 +625,7 @@ namespace Minsk.Tests.CodeAnalysis
                 Unreachable code detected.
             ";
 
-            AssertDiagnostics(text, diagnostics, assertWarnings: true);
+            AssertDiagnostics(text, diagnostics);
         }
 
         [Fact]
@@ -643,7 +645,7 @@ namespace Minsk.Tests.CodeAnalysis
                 Unreachable code detected.
             ";
 
-            AssertDiagnostics(text, diagnostics, assertWarnings: true);
+            AssertDiagnostics(text, diagnostics);
         }
 
         [Theory]
@@ -744,11 +746,11 @@ namespace Minsk.Tests.CodeAnalysis
             var variables = new Dictionary<VariableSymbol, object>();
             var result = compilation.Evaluate(variables);
 
-            Assert.Empty(result.ErrorDiagnostics);
+            Assert.False(result.Diagnostics.HasErrors());
             Assert.Equal(expectedValue, result.Value);
         }
 
-        private void AssertDiagnostics(string text, string diagnosticText, bool assertWarnings = false)
+        private void AssertDiagnostics(string text, string diagnosticText)
         {
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
@@ -760,7 +762,7 @@ namespace Minsk.Tests.CodeAnalysis
             if (annotatedText.Spans.Length != expectedDiagnostics.Length)
                 throw new Exception("ERROR: Must mark as many spans as there are expected diagnostics");
 
-            var diagnostics = assertWarnings ? result.Diagnostics : result.ErrorDiagnostics;
+            var diagnostics = result.Diagnostics;
             Assert.Equal(expectedDiagnostics.Length, diagnostics.Length);
 
             for (var i = 0; i < expectedDiagnostics.Length; i++)

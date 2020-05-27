@@ -41,6 +41,21 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public TextLocation Location => new TextLocation(SyntaxTree.Text, Span);
 
+        public IEnumerable<SyntaxNode> AncestorsAndSelf()
+        {
+            var node = this;
+            while (node != null)
+            {
+                yield return node;
+                node = node.Parent;
+            }
+        }
+
+        public IEnumerable<SyntaxNode> Ancestors()
+        {
+            return AncestorsAndSelf().Skip(1);
+        }
+
         public abstract IEnumerable<SyntaxNode> GetChildren();
 
         public SyntaxToken GetLastToken()

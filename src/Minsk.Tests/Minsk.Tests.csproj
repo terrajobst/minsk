@@ -4,8 +4,6 @@
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <!-- TODO: Remove when nullable annotations are added -->
-    <Nullable>Disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@ using Minsk.CodeAnalysis.Text;
 
 namespace Minsk.CodeAnalysis.Syntax
 {
+    // TODO: All constructors should be internal
     public abstract class SyntaxNode
     {
         protected SyntaxNode(SyntaxTree syntaxTree)
@@ -57,10 +58,6 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private static void PrettyPrint(TextWriter writer, SyntaxNode node, string indent = "", bool isLast = true)
         {
-            // HACK: node shoud never be null, but that's tracked by #141
-            if (node == null)
-                return;
-
             var isToConsole = writer == Console.Out;
             var token = node as SyntaxToken;
 

@@ -29,6 +29,9 @@ namespace Minsk.Generators
             var separatedSyntaxListType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SeparatedSyntaxList`1");
             var syntaxNodeType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SyntaxNode");
 
+            if (immutableArrayType == null || separatedSyntaxListType == null || syntaxNodeType == null)
+                return;
+
             var types = GetAllTypes(compilation.Assembly);
             var syntaxNodeTypes = types.Where(t => !t.IsAbstract && IsPartial(t) && IsDerivedFrom(t, syntaxNodeType));
 
@@ -53,7 +56,17 @@ namespace Minsk.Generators
                                 {
                                     if (IsDerivedFrom(propertyType, syntaxNodeType))
                                     {
+                                        var canBeNull = property.NullableAnnotation == NullableAnnotation.Annotated;
+                                        if (canBeNull)
+                                        {
+                                            indentedTextWriter.WriteLine($"if ({property.Name} != null)");
+                                            indentedTextWriter.Indent++;
+                                        }
+
                                         indentedTextWriter.WriteLine($"yield return {property.Name};");
+
+                                        if (canBeNull)
+                                            indentedTextWriter.Indent--;
                                     }
                                     else if (propertyType.TypeArguments.Length == 1 &&
                                              IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType) &&
@@ -61,7 +74,7 @@ namespace Minsk.Generators
                                     {
                                         indentedTextWriter.WriteLine($"foreach (var child in {property.Name})");
                                         indentedTextWriter.WriteLine($"{indentString}yield return child;");
-                                        
+
                                     }
                                     else if (SymbolEqualityComparer.Default.Equals(propertyType.OriginalDefinition, separatedSyntaxListType) &&
                                              IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType))
@@ -127,12 +140,14 @@ namespace Minsk.Generators
 
         private bool IsDerivedFrom(ITypeSymbol type, INamedTypeSymbol baseType)
         {
-            while (type != null)
+            var current = type;
+
+            while (current != null)
             {
-                if (SymbolEqualityComparer.Default.Equals(type, baseType))
+                if (SymbolEqualityComparer.Default.Equals(current, baseType))
                     return true;
 
-                type = type.BaseType;
+                current = current.BaseType;
             }
 
             return false;

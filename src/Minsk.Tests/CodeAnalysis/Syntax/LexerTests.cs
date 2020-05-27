@@ -144,9 +144,9 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
         {
             var fixedTokens = Enum.GetValues(typeof(SyntaxKind))
                                   .Cast<SyntaxKind>()
-                                  .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
-                                  .Where(t => t.text != null);
-
+                                  .Select(k => (k, text: SyntaxFacts.GetText(k)))
+                                  .Where(t => t.text != null)
+                                  .Cast<(SyntaxKind, string)>();
 
             var dynamicTokens = new[]
             {

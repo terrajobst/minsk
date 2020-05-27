@@ -57,31 +57,26 @@ namespace Minsk.CodeAnalysis.Binding
         public static BoundConditionalGotoStatement GotoFalse(BoundLabelStatement label, BoundExpression condition)
             => GotoIf(label, condition, jumpIfTrue: false);
 
-        public static BoundVariableDeclaration VariableDeclaration(VariableSymbol symbol, BoundExpression initializer)
-        {
-            return new BoundVariableDeclaration(symbol, initializer);
-        }
-
         public static BoundVariableExpression Variable(BoundVariableDeclaration variable)
         {
             return new BoundVariableExpression(variable.Variable);
         }
 
-        public static BoundVariableDeclaration ConstantDeclaration(string name, BoundExpression initializer)
-            => VariableDeclarationInternal(name, initializer, initializer.Type, isReadOnly: true);
-
-        public static BoundVariableDeclaration VariableDeclaration(string name, BoundExpression initializer)
-            => VariableDeclarationInternal(name, initializer, initializer.Type, isReadOnly: false);
-
-        public static BoundVariableDeclaration VariableDeclarationInternal(string name, BoundExpression initializer, TypeSymbol? type, bool isReadOnly)
+        public static BoundVariableDeclaration VariableDeclaration(VariableSymbol symbol, BoundExpression initializer)
         {
-            var symbol = Local(name, type ?? initializer.Type, isReadOnly, initializer.ConstantValue);
             return new BoundVariableDeclaration(symbol, initializer);
         }
 
-        public static LocalVariableSymbol Local(string name, TypeSymbol type, bool isReadOnly = true, BoundConstant? constant = null)
+        public static BoundVariableDeclaration VariableDeclaration(string name, BoundExpression initializer)
+            => VariableDeclarationInternal(name, initializer, isReadOnly: false);
+
+        public static BoundVariableDeclaration ConstantDeclaration(string name, BoundExpression initializer)
+            => VariableDeclarationInternal(name, initializer, isReadOnly: true);
+
+        private static BoundVariableDeclaration VariableDeclarationInternal(string name, BoundExpression initializer, bool isReadOnly)
         {
-            return new LocalVariableSymbol(name, isReadOnly, type, constant);
+            var local = new LocalVariableSymbol(name, isReadOnly, initializer.Type, initializer.ConstantValue);
+            return new BoundVariableDeclaration(local, initializer);
         }
 
         public static BoundBinaryExpression Binary(BoundExpression left, SyntaxKind kind, BoundExpression right)

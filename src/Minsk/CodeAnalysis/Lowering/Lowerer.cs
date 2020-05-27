@@ -202,16 +202,19 @@ namespace Minsk.CodeAnalysis.Lowering
             //      }
             // }
 
+
             var lowerBound = VariableDeclaration(node.Variable, node.LowerBound);
             var upperBound = ConstantDeclaration("upperBound", node.UpperBound);
             var result = Block(lowerBound,
                                upperBound,
-                               While(LessOrEqual(Variable(lowerBound), Variable(upperBound)),
-                               Block(node.Body,
-                                     Label(node.ContinueLabel),
-                                     Increment(Variable(lowerBound))),
-                               node.BreakLabel,
-                               continueLabel: GenerateLabel()));
+                               While(LessOrEqual(Variable(lowerBound),Variable(upperBound)),
+                                     Block(node.Body,
+                                           Label(node.ContinueLabel),
+                                           Increment(Variable(lowerBound))),
+                                     node.BreakLabel,
+                                     continueLabel: GenerateLabel())
+            );
+
 
             return RewriteStatement(result);
         }

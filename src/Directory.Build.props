@@ -28,10 +28,13 @@
       Since VS Code's C# extension (or more specifically OmniSharp) doesn't
       resolve items from MSBuild, it will include the file while neither
       VS nor the CLI/CI build will.
+
+      Also include the generated file in Rider, which retrieves items from
+      MSBuild, but doesn't currently support generators.
   -->
   <PropertyGroup>
     <GeneratedSources>**/*.g.cs</GeneratedSources>
-    <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedSources)</DefaultItemExcludes>
+    <DefaultItemExcludes Condition="'$(JetBrainsDesignTimeBuild)' == ''">$(DefaultItemExcludes);$(GeneratedSources)</DefaultItemExcludes>
   </PropertyGroup>
 
 </Project>

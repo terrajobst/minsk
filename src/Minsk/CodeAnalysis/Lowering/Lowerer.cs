@@ -10,7 +10,6 @@ using static Minsk.CodeAnalysis.Binding.BoundNodeFactory;
 
 namespace Minsk.CodeAnalysis.Lowering
 {
-    // TODO: Consider creating a BoundNodeFactory to construct nodes to make lowering easier to read.
     internal sealed class Lowerer : BoundTreeRewriter
     {
         private int _labelCount;

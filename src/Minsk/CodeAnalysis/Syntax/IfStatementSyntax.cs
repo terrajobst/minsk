@@ -2,7 +2,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed partial class IfStatementSyntax : StatementSyntax
     {
-        public IfStatementSyntax(SyntaxTree syntaxTree, SyntaxToken ifKeyword, ExpressionSyntax condition, StatementSyntax thenStatement, ElseClauseSyntax? elseClause)
+        internal IfStatementSyntax(SyntaxTree syntaxTree, SyntaxToken ifKeyword, ExpressionSyntax condition, StatementSyntax thenStatement, ElseClauseSyntax? elseClause)
             : base(syntaxTree)
         {
             IfKeyword = ifKeyword;

@@ -4,7 +4,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed class SyntaxTrivia
     {
-        public SyntaxTrivia(SyntaxTree syntaxTree, SyntaxKind kind, int position, string text)
+        internal SyntaxTrivia(SyntaxTree syntaxTree, SyntaxKind kind, int position, string text)
         {
             SyntaxTree = syntaxTree;
             Kind = kind;

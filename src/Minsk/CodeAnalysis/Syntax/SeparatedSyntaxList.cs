@@ -7,6 +7,10 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public abstract class SeparatedSyntaxList
     {
+        private protected SeparatedSyntaxList()
+        {
+        }
+
         public abstract ImmutableArray<SyntaxNode> GetWithSeparators();
     }
 
@@ -15,7 +19,7 @@ namespace Minsk.CodeAnalysis.Syntax
     {
         private readonly ImmutableArray<SyntaxNode> _nodesAndSeparators;
 
-        public SeparatedSyntaxList(ImmutableArray<SyntaxNode> nodesAndSeparators)
+        internal SeparatedSyntaxList(ImmutableArray<SyntaxNode> nodesAndSeparators)
         {
             _nodesAndSeparators = nodesAndSeparators;
         }

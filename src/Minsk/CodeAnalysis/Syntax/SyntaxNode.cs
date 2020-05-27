@@ -6,10 +6,9 @@ using Minsk.CodeAnalysis.Text;
 
 namespace Minsk.CodeAnalysis.Syntax
 {
-    // TODO: All constructors should be internal
     public abstract class SyntaxNode
     {
-        protected SyntaxNode(SyntaxTree syntaxTree)
+        private protected SyntaxNode(SyntaxTree syntaxTree)
         {
             SyntaxTree = syntaxTree;
         }

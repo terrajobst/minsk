@@ -2,7 +2,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed partial class ForStatementSyntax : StatementSyntax
     {
-        public ForStatementSyntax(SyntaxTree syntaxTree, SyntaxToken keyword, SyntaxToken identifier, SyntaxToken equalsToken, ExpressionSyntax lowerBound, SyntaxToken toKeyword, ExpressionSyntax upperBound, StatementSyntax body)
+        internal ForStatementSyntax(SyntaxTree syntaxTree, SyntaxToken keyword, SyntaxToken identifier, SyntaxToken equalsToken, ExpressionSyntax lowerBound, SyntaxToken toKeyword, ExpressionSyntax upperBound, StatementSyntax body)
             : base(syntaxTree)
         {
             Keyword = keyword;

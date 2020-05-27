@@ -254,15 +254,11 @@ namespace Minsk.CodeAnalysis.Binding
 
             private BoundExpression Negate(BoundExpression condition)
             {
-                if (condition is BoundLiteralExpression literal)
-                {
-                    var value = (bool)literal.Value;
-                    return new BoundLiteralExpression(!value);
-                }
+                var negated = BoundNodeFactory.Not(condition.Syntax, condition);
+                if (negated.ConstantValue != null)
+                    return new BoundLiteralExpression(condition.Syntax, negated.ConstantValue.Value);
 
-                var op = BoundUnaryOperator.Bind(SyntaxKind.BangToken, TypeSymbol.Bool);
-                Debug.Assert(op != null);
-                return new BoundUnaryExpression(op, condition);
+                return negated;
             }
         }
 

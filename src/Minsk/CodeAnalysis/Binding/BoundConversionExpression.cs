@@ -1,10 +1,12 @@
 using Minsk.CodeAnalysis.Symbols;
+using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundConversionExpression : BoundExpression
     {
-        public BoundConversionExpression(TypeSymbol type, BoundExpression expression)
+        public BoundConversionExpression(SyntaxNode syntax, TypeSymbol type, BoundExpression expression)
+            : base(syntax)
         {
             Type = type;
             Expression = expression;

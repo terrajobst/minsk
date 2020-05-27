@@ -1,8 +1,11 @@
+using Minsk.CodeAnalysis.Syntax;
+
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundConditionalGotoStatement : BoundStatement
     {
-        public BoundConditionalGotoStatement(BoundLabel label, BoundExpression condition, bool jumpIfTrue = true)
+        public BoundConditionalGotoStatement(SyntaxNode syntax, BoundLabel label, BoundExpression condition, bool jumpIfTrue = true)
+            : base(syntax)
         {
             Label = label;
             Condition = condition;

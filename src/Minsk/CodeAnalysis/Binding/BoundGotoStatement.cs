@@ -1,8 +1,11 @@
+using Minsk.CodeAnalysis.Syntax;
+
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundGotoStatement : BoundStatement
     {
-        public BoundGotoStatement(BoundLabel label)
+        public BoundGotoStatement(SyntaxNode syntax, BoundLabel label)
+            : base(syntax)
         {
             Label = label;
         }

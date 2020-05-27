@@ -1,11 +1,13 @@
 using System;
 using Minsk.CodeAnalysis.Symbols;
+using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundAssignmentExpression : BoundExpression
     {
-        public BoundAssignmentExpression(VariableSymbol variable, BoundExpression expression)
+        public BoundAssignmentExpression(SyntaxNode syntax, VariableSymbol variable, BoundExpression expression)
+            : base(syntax)
         {
             Variable = variable;
             Expression = expression;

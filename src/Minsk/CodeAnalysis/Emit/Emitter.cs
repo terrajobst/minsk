@@ -538,7 +538,7 @@ namespace Minsk.CodeAnalysis.Emit
             // This approach enables constant folding of non-sibling nodes, which cannot be done in the ConstantFolding class as it would require changing the tree.
             // Example: folding b and c in ((a + b) + c) if they are constant.
 
-            var nodes = FoldConstants(Flatten(node)).ToList();
+            var nodes = FoldConstants(node.Syntax, Flatten(node)).ToList();
 
             switch (nodes.Count)
             {
@@ -611,7 +611,7 @@ namespace Minsk.CodeAnalysis.Emit
             }
 
             // [a, "foo", "bar", b, ""] --> [a, "foobar", b]
-            static IEnumerable<BoundExpression> FoldConstants(IEnumerable<BoundExpression> nodes)
+            static IEnumerable<BoundExpression> FoldConstants(SyntaxNode syntax, IEnumerable<BoundExpression> nodes)
             {
                 StringBuilder? sb = null;
 
@@ -631,7 +631,7 @@ namespace Minsk.CodeAnalysis.Emit
                     {
                         if (sb?.Length > 0)
                         {
-                            yield return new BoundLiteralExpression(sb.ToString());
+                            yield return new BoundLiteralExpression(syntax, sb.ToString());
                             sb.Clear();
                         }
 
@@ -640,7 +640,7 @@ namespace Minsk.CodeAnalysis.Emit
                 }
 
                 if (sb?.Length > 0)
-                    yield return new BoundLiteralExpression(sb.ToString());
+                    yield return new BoundLiteralExpression(syntax, sb.ToString());
             }
         }
 

@@ -1,11 +1,13 @@
 using System.Collections.Immutable;
 using Minsk.CodeAnalysis.Symbols;
+using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundCallExpression : BoundExpression
     {
-        public BoundCallExpression(FunctionSymbol function, ImmutableArray<BoundExpression> arguments)
+        public BoundCallExpression(SyntaxNode syntax, FunctionSymbol function, ImmutableArray<BoundExpression> arguments)
+            : base(syntax)
         {
             Function = function;
             Arguments = arguments;

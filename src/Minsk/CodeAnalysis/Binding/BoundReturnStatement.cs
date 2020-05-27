@@ -1,8 +1,11 @@
+using Minsk.CodeAnalysis.Syntax;
+
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundReturnStatement : BoundStatement
     {
-        public BoundReturnStatement(BoundExpression? expression)
+        public BoundReturnStatement(SyntaxNode syntax, BoundExpression? expression)
+            : base(syntax)
         {
             Expression = expression;
         }

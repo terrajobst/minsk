@@ -15,6 +15,8 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public SyntaxTree SyntaxTree { get; }
 
+        public SyntaxNode? Parent => SyntaxTree.GetParent(this);
+
         public abstract SyntaxKind Kind { get; }
 
         public virtual TextSpan Span

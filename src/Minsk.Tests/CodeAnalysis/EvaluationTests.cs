@@ -86,6 +86,19 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("{ var a = 0 do a = a + 1 while a < 10 return a}", 10)]
         [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } return i }", 5)]
         [InlineData("{ var i = 0 do { i = i + 1 if i == 5 continue } while i < 5 return i }", 5)]
+        [InlineData("{ var a = 1 a += (2 + 3) return a }", 6)]
+        [InlineData("{ var a = 1 a -= (2 + 3) return a }", -4)]
+        [InlineData("{ var a = 1 a *= (2 + 3) return a }", 5)]
+        [InlineData("{ var a = 1 a /= (2 + 3) return a }", 0)]
+        [InlineData("{ var a = true a &= (false) return a }", false)]
+        [InlineData("{ var a = true a |= (false) return a }", true)]
+        [InlineData("{ var a = true a ^= (true) return a }", false)]
+        [InlineData("{ var a = 1 a |= 0 return a }", 1)]
+        [InlineData("{ var a = 1 a &= 3 return a }", 1)]
+        [InlineData("{ var a = 1 a &= 0 return a }", 0)]
+        [InlineData("{ var a = 1 a ^= 0 return a }", 1)]
+        [InlineData("{ var a = 1 var b = 2 var c = 3 a += b += c return a }", 6)]
+        [InlineData("{ var a = 1 var b = 2 var c = 3 a += b += c return b }", 5)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -349,9 +362,34 @@ namespace Minsk.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_CompoundExpression_Reports_Undefined()
+        {
+            var text = @"var x = 10
+                         x [+=] false";
+
+            var diagnostics = @"
+                Binary operator '+=' is not defined for types 'int' and 'bool'.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_AssignmentExpression_Reports_Undefined()
         {
             var text = @"[x] = 10";
+
+            var diagnostics = @"
+                Variable 'x' doesn't exist.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+         [Fact]
+        public void Evaluator_CompoundExpression_Assignemnt_NonDefinedVariable_Reports_Undefined()
+        {
+            var text = @"[x] += 10";
 
             var diagnostics = @"
                 Variable 'x' doesn't exist.
@@ -379,6 +417,23 @@ namespace Minsk.Tests.CodeAnalysis
                 {
                     let x = 10
                     x [=] 0
+                }
+            ";
+
+            var diagnostics = @"
+                Variable 'x' is read-only and cannot be assigned to.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+         [Fact]
+        public void Evaluator_CompoundDeclarationExpression_Reports_CannotAssign()
+        {
+            var text = @"
+                {
+                    let x = 10
+                    x [+=] 1
                 }
             ";
 

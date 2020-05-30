@@ -106,6 +106,7 @@ namespace Minsk.CodeAnalysis.Binding
                             break;
                         case BoundNodeKind.NopStatement:
                         case BoundNodeKind.VariableDeclaration:
+                        case BoundNodeKind.SequencePointStatement:
                         case BoundNodeKind.ExpressionStatement:
                             _statements.Add(statement);
                             break;
@@ -192,6 +193,7 @@ namespace Minsk.CodeAnalysis.Binding
                             case BoundNodeKind.NopStatement:
                             case BoundNodeKind.VariableDeclaration:
                             case BoundNodeKind.LabelStatement:
+                            case BoundNodeKind.SequencePointStatement:
                             case BoundNodeKind.ExpressionStatement:
                                 if (isLastStatementInBlock)
                                     Connect(current, next);

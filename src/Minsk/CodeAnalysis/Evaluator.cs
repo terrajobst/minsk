@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 
@@ -57,11 +58,19 @@ namespace Minsk.CodeAnalysis
                     labelToIndex.Add(l.Label, i + 1);
             }
 
+            var statements = body.Statements.ToArray();
+
+            for (int i = 0; i < statements.Length; i++)
+            {
+                if (statements[i] is BoundSequencePointStatement s)
+                    statements[i] = s.Statement;
+            }
+
             var index = 0;
 
-            while (index < body.Statements.Length)
+            while (index < statements.Length)
             {
-                var s = body.Statements[index];
+                var s = statements[index];
 
                 switch (s.Kind)
                 {

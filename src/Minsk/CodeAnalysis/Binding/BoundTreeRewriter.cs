@@ -33,6 +33,8 @@ namespace Minsk.CodeAnalysis.Binding
                     return RewriteReturnStatement((BoundReturnStatement)node);
                 case BoundNodeKind.ExpressionStatement:
                     return RewriteExpressionStatement((BoundExpressionStatement)node);
+                case BoundNodeKind.SequencePointStatement:
+                    return RewriteSequencePointStatement((BoundSequencePointStatement)node);
                 default:
                     throw new Exception($"Unexpected node: {node.Kind}");
             }
@@ -158,6 +160,15 @@ namespace Minsk.CodeAnalysis.Binding
                 return node;
 
             return new BoundExpressionStatement(node.Syntax, expression);
+        }
+
+        private BoundStatement RewriteSequencePointStatement(BoundSequencePointStatement node)
+        {
+            var statement = RewriteStatement(node.Statement);
+            if (statement == node.Statement)
+                return node;
+
+            return new BoundSequencePointStatement(node.Syntax, statement, node.Location);
         }
 
         public virtual BoundExpression RewriteExpression(BoundExpression node)

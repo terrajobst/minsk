@@ -255,6 +255,18 @@ namespace Minsk.CodeAnalysis.Lowering
             return base.RewriteConditionalGotoStatement(node);
         }
 
+        protected override BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
+        {
+            var rewrittenNode = base.RewriteVariableDeclaration(node);
+            return new BoundSequencePointStatement(rewrittenNode.Syntax, rewrittenNode, rewrittenNode.Syntax.Location);
+        }
+
+        protected override BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
+        {
+            var rewrittenNode = base.RewriteExpressionStatement(node);
+            return new BoundSequencePointStatement(rewrittenNode.Syntax, rewrittenNode, rewrittenNode.Syntax.Location);
+        }
+
         protected override BoundExpression RewriteCompoundAssignmentExpression(BoundCompoundAssignmentExpression node)
         {
             var newNode = (BoundCompoundAssignmentExpression) base.RewriteCompoundAssignmentExpression(node);

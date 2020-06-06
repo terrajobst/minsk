@@ -240,7 +240,7 @@ namespace Minsk.CodeAnalysis.Emit
                 instructionToFixup.Operand = targetInstruction;
             }
 
-            method.Body.OptimizeMacros();
+            method.Body.Optimize();
         }
 
         private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)

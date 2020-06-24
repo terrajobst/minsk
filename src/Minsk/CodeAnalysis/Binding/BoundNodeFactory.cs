@@ -53,7 +53,12 @@ namespace Minsk.CodeAnalysis.Binding
 
         public static BoundVariableExpression Variable(BoundVariableDeclaration variable)
         {
-            return new BoundVariableExpression(variable.Variable);
+            return Variable(variable.Variable);
+        }
+
+        public static BoundVariableExpression Variable(VariableSymbol variable)
+        {
+            return new BoundVariableExpression(variable);
         }
 
         public static BoundVariableDeclaration VariableDeclaration(VariableSymbol symbol, BoundExpression initializer)
@@ -73,9 +78,19 @@ namespace Minsk.CodeAnalysis.Binding
             return new BoundVariableDeclaration(local, initializer);
         }
 
+        public static BoundAssignmentExpression Assignment(VariableSymbol variable, BoundExpression expression)
+        {
+            return new BoundAssignmentExpression(variable, expression);
+        }
+
         public static BoundBinaryExpression Binary(BoundExpression left, SyntaxKind kind, BoundExpression right)
         {
             var op = BoundBinaryOperator.Bind(kind, left.Type, right.Type)!;
+            return Binary(left, op, right);
+        }
+
+        public static BoundBinaryExpression Binary(BoundExpression left, BoundBinaryOperator op, BoundExpression right)
+        {
             return new BoundBinaryExpression(left, op, right);
         }
 

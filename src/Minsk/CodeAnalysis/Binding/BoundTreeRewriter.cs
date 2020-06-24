@@ -213,11 +213,11 @@ namespace Minsk.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteCompoundAssignmentExpression(BoundCompoundAssignmentExpression node)
         {
-            var boundVariableExpression = new BoundVariableExpression(node.Variable);
-            var boundBinaryExpression = new BoundBinaryExpression(boundVariableExpression, node.Op, node.Expression);
-            var boundAssignmentExpression = new BoundAssignmentExpression(node.Variable, boundBinaryExpression);
+            var expression = RewriteExpression(node.Expression);
+            if (expression == node.Expression)
+                return node;
 
-            return RewriteAssignmentExpression(boundAssignmentExpression);
+            return new BoundCompoundAssignmentExpression(node.Variable, node.Op, expression);
         }
 
         protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)

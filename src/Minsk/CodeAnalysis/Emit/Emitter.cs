@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
+using Minsk.CodeAnalysis.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -28,6 +30,7 @@ namespace Minsk.CodeAnalysis.Emit
         private readonly MethodReference _convertToBooleanReference;
         private readonly MethodReference _convertToInt32Reference;
         private readonly MethodReference _convertToStringReference;
+        private readonly MethodReference _debuggableAttributeCtorReference;
         private readonly TypeReference _randomReference;
         private readonly MethodReference _randomCtorReference;
         private readonly MethodReference _randomNextReference;
@@ -39,6 +42,7 @@ namespace Minsk.CodeAnalysis.Emit
 
         private TypeDefinition _typeDefinition;
         private FieldDefinition? _randomFieldDefinition;
+        private Dictionary<SourceText, Document> _documents = new Dictionary<SourceText, Document>();
 
         // TOOD: This constructor does too much. Resolution should be factored out.
         private Emitter(string moduleName, string[] references)
@@ -161,6 +165,7 @@ namespace Minsk.CodeAnalysis.Emit
             _randomReference = ResolveType(null, "System.Random");
             _randomCtorReference = ResolveMethod("System.Random", ".ctor", Array.Empty<string>());
             _randomNextReference = ResolveMethod("System.Random", "Next", new [] { "System.Int32" });
+            _debuggableAttributeCtorReference = ResolveMethod("System.Diagnostics.DebuggableAttribute", ".ctor", new [] { "System.Boolean", "System.Boolean" });
 
             var objectType = _knownTypes[TypeSymbol.Any];
             if (objectType != null)
@@ -197,7 +202,25 @@ namespace Minsk.CodeAnalysis.Emit
             if (program.MainFunction != null)
                 _assemblyDefinition.EntryPoint = _methods[program.MainFunction];
 
-            _assemblyDefinition.Write(outputPath);
+            // TODO: We should not emit this attribute unless we produce a debug build
+            var debuggableAttribute = new CustomAttribute(_debuggableAttributeCtorReference);
+            debuggableAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_knownTypes[TypeSymbol.Bool], true));
+            debuggableAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_knownTypes[TypeSymbol.Bool], true));
+            _assemblyDefinition.CustomAttributes.Add(debuggableAttribute);
+
+            // TODO: We should not be computing paths in here.
+            var symbolsPath = Path.ChangeExtension(outputPath, ".pdb");
+
+            // TODO: We should support not emitting symbols
+            using (var outputStream = File.Create(outputPath))
+            using (var symbolsStream = File.Create(symbolsPath))
+            {
+                var writerParameters = new WriterParameters();
+                writerParameters.WriteSymbols = true;
+                writerParameters.SymbolStream = symbolsStream;
+                writerParameters.SymbolWriterProvider = new PortablePdbWriterProvider();
+                _assemblyDefinition.Write(outputStream, writerParameters);
+            }
 
             return _diagnostics.ToImmutableArray();
         }
@@ -241,6 +264,18 @@ namespace Minsk.CodeAnalysis.Emit
             }
 
             method.Body.OptimizeMacros();
+
+            // TODO: Only emit this when emitting symbols
+
+            method.DebugInformation.Scope = new ScopeDebugInformation(method.Body.Instructions.First(), method.Body.Instructions.Last());
+
+            foreach (var local in _locals)
+            {
+                var symbol = local.Key;
+                var definition = local.Value;
+                var debugInfo = new VariableDebugInformation(definition, symbol.Name);
+                method.DebugInformation.Scope.Variables.Add(debugInfo);
+            }
         }
 
         private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
@@ -267,6 +302,9 @@ namespace Minsk.CodeAnalysis.Emit
                     break;
                 case BoundNodeKind.ExpressionStatement:
                     EmitExpressionStatement(ilProcessor, (BoundExpressionStatement)node);
+                    break;
+                case BoundNodeKind.SequencePointStatement:
+                    EmitSequencePointStatement(ilProcessor, (BoundSequencePointStatement)node);
                     break;
                 default:
                     throw new Exception($"Unexpected node kind {node.Kind}");
@@ -323,6 +361,31 @@ namespace Minsk.CodeAnalysis.Emit
 
             if (node.Expression.Type != TypeSymbol.Void)
                 ilProcessor.Emit(OpCodes.Pop);
+        }
+
+        private void EmitSequencePointStatement(ILProcessor ilProcessor, BoundSequencePointStatement node)
+        {
+            var index = ilProcessor.Body.Instructions.Count;
+            EmitStatement(ilProcessor, node.Statement);
+
+            var instruction = ilProcessor.Body.Instructions[index];
+
+            if (!_documents.TryGetValue(node.Location.Text, out var document))
+            {
+                var fullPath = Path.GetFullPath(node.Location.Text.FileName);
+                document = new Document(fullPath);
+                _documents.Add(node.Location.Text, document);
+            }
+
+            var sequencePoint = new SequencePoint(instruction, document)
+            {
+                StartLine = node.Location.StartLine + 1,
+                StartColumn = node.Location.StartCharacter + 1,
+                EndLine = node.Location.EndLine + 1,
+                EndColumn = node.Location.EndCharacter + 1
+            };
+
+            ilProcessor.Body.Method.DebugInformation.SequencePoints.Add(sequencePoint);
         }
 
         private void EmitExpression(ILProcessor ilProcessor, BoundExpression node)

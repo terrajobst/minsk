@@ -2,7 +2,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed partial class AssignmentExpressionSyntax : ExpressionSyntax
     {
-        public AssignmentExpressionSyntax(SyntaxTree syntaxTree, SyntaxToken identifierToken, SyntaxToken assignmentToken, ExpressionSyntax expression)
+        internal AssignmentExpressionSyntax(SyntaxTree syntaxTree, SyntaxToken identifierToken, SyntaxToken assignmentToken, ExpressionSyntax expression)
             : base(syntaxTree)
         {
             IdentifierToken = identifierToken;

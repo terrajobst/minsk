@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.IO;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
+using Minsk.CodeAnalysis.Text;
 using Minsk.IO;
 
 namespace Minsk.CodeAnalysis.Binding
@@ -53,6 +54,9 @@ namespace Minsk.CodeAnalysis.Binding
                     break;
                 case BoundNodeKind.ReturnStatement:
                     WriteReturnStatement((BoundReturnStatement)node, writer);
+                    break;
+                case BoundNodeKind.SequencePointStatement:
+                    WriteSequencePointStatement((BoundSequencePointStatement)node, writer);
                     break;
                 case BoundNodeKind.ExpressionStatement:
                     WriteExpressionStatement((BoundExpressionStatement)node, writer);
@@ -253,6 +257,29 @@ namespace Minsk.CodeAnalysis.Binding
                 node.Expression.WriteTo(writer);
             }
             writer.WriteLine();
+        }
+
+        private static void WriteSequencePointStatement(BoundSequencePointStatement node, IndentedTextWriter writer)
+        {
+            var sourceText = node.Location.Text;
+            var span = node.Location.Span;
+
+            var startLine = sourceText.GetLineIndex(span.Start);
+            var endLine = sourceText.GetLineIndex(span.End - 1);
+
+            for (var i = startLine; i <= endLine; i++)
+            {
+                var line = sourceText.Lines[i];
+                var start = Math.Max(line.Start, span.Start);
+                var end = Math.Min(line.End, span.End);
+                var lineSpan = TextSpan.FromBounds(start, end);
+
+                var text = sourceText.ToString(lineSpan);
+                writer.WriteComment(text);
+                writer.WriteLine();
+            }
+
+            node.Statement.WriteTo(writer);
         }
 
         private static void WriteExpressionStatement(BoundExpressionStatement node, IndentedTextWriter writer)

@@ -15,6 +15,7 @@ namespace Minsk.CodeAnalysis.Binding
         ConditionalGotoStatement,
         ReturnStatement,
         ExpressionStatement,
+        SequencePointStatement,
 
         // Expressions
         ErrorExpression,

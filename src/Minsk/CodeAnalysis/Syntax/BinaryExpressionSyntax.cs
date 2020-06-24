@@ -2,7 +2,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed partial class BinaryExpressionSyntax : ExpressionSyntax
     {
-        public BinaryExpressionSyntax(SyntaxTree syntaxTree, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
+        internal BinaryExpressionSyntax(SyntaxTree syntaxTree, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
             : base(syntaxTree)
         {
             Left = left;

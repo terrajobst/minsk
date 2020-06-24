@@ -6,15 +6,16 @@ using Minsk.CodeAnalysis.Text;
 
 namespace Minsk.CodeAnalysis.Syntax
 {
-    // TODO: All constructors should be internal
     public abstract class SyntaxNode
     {
-        protected SyntaxNode(SyntaxTree syntaxTree)
+        private protected SyntaxNode(SyntaxTree syntaxTree)
         {
             SyntaxTree = syntaxTree;
         }
 
         public SyntaxTree SyntaxTree { get; }
+
+        public SyntaxNode? Parent => SyntaxTree.GetParent(this);
 
         public abstract SyntaxKind Kind { get; }
 
@@ -39,6 +40,21 @@ namespace Minsk.CodeAnalysis.Syntax
         }
 
         public TextLocation Location => new TextLocation(SyntaxTree.Text, Span);
+
+        public IEnumerable<SyntaxNode> AncestorsAndSelf()
+        {
+            var node = this;
+            while (node != null)
+            {
+                yield return node;
+                node = node.Parent;
+            }
+        }
+
+        public IEnumerable<SyntaxNode> Ancestors()
+        {
+            return AncestorsAndSelf().Skip(1);
+        }
 
         public abstract IEnumerable<SyntaxNode> GetChildren();
 

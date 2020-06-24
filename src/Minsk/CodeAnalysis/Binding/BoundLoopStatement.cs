@@ -1,8 +1,11 @@
+using Minsk.CodeAnalysis.Syntax;
+
 namespace Minsk.CodeAnalysis.Binding
 {
     internal abstract class BoundLoopStatement : BoundStatement
     {
-        protected BoundLoopStatement(BoundLabel breakLabel, BoundLabel continueLabel)
+        protected BoundLoopStatement(SyntaxNode syntax, BoundLabel breakLabel, BoundLabel continueLabel)
+            : base(syntax)
         {
             BreakLabel = breakLabel;
             ContinueLabel = continueLabel;

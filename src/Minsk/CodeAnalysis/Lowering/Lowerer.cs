@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
-using Minsk.CodeAnalysis.Syntax;
 using static Minsk.CodeAnalysis.Binding.BoundNodeFactory;
 
 namespace Minsk.CodeAnalysis.Lowering
 {
-    // TODO: Consider creating a BoundNodeFactory to construct nodes to make lowering easier to read.
     internal sealed class Lowerer : BoundTreeRewriter
     {
         private int _labelCount;
@@ -57,11 +54,11 @@ namespace Minsk.CodeAnalysis.Lowering
             {
                 if (builder.Count == 0 || CanFallThrough(builder.Last()))
                 {
-                    builder.Add(new BoundReturnStatement(null));
+                    builder.Add(new BoundReturnStatement(statement.Syntax, null));
                 }
             }
 
-            return new BoundBlockStatement(builder.ToImmutable());
+            return new BoundBlockStatement(statement.Syntax, builder.ToImmutable());
         }
 
         private static bool CanFallThrough(BoundStatement boundStatement)
@@ -83,7 +80,7 @@ namespace Minsk.CodeAnalysis.Lowering
                     builder.RemoveAt(i);
             }
 
-            return new BoundBlockStatement(builder.ToImmutable());
+            return new BoundBlockStatement(node.Syntax, builder.ToImmutable());
         }
 
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
@@ -99,10 +96,13 @@ namespace Minsk.CodeAnalysis.Lowering
                 // <then>
                 // end:
 
-                var endLabel = Label(GenerateLabel());
-                var result = Block(GotoFalse(endLabel, node.Condition),
-                                   node.ThenStatement,
-                                   endLabel);
+                var endLabel = GenerateLabel();
+                var result = Block(
+                    node.Syntax,
+                    GotoFalse(node.Syntax, endLabel, node.Condition),
+                    node.ThenStatement,
+                    Label(node.Syntax, endLabel)
+                );
 
                 return RewriteStatement(result);
             }
@@ -122,14 +122,17 @@ namespace Minsk.CodeAnalysis.Lowering
                 // <else>
                 // end:
 
-                var elseLabel = Label(GenerateLabel());
-                var endLabel = Label(GenerateLabel());
-                var result = Block(GotoFalse(elseLabel, node.Condition),
-                                   node.ThenStatement,
-                                   Goto(endLabel),
-                                   elseLabel,
-                                   node.ElseStatement,
-                                   endLabel);
+                var elseLabel = GenerateLabel();
+                var endLabel = GenerateLabel();
+                var result = Block(
+                    node.Syntax,
+                    GotoFalse(node.Syntax, elseLabel, node.Condition),
+                    node.ThenStatement,
+                    Goto(node.Syntax, endLabel),
+                    Label(node.Syntax, elseLabel),
+                    node.ElseStatement,
+                    Label(node.Syntax, endLabel)
+                );
 
                 return RewriteStatement(result);
             }
@@ -149,13 +152,16 @@ namespace Minsk.CodeAnalysis.Lowering
             // gotoTrue <condition> body
             // break:
 
-            var bodyLabel = Label(GenerateLabel());
-            var result = Block(Goto(node.ContinueLabel),
-                               bodyLabel,
-                               node.Body,
-                               Label(node.ContinueLabel),
-                               GotoTrue(bodyLabel, node.Condition),
-                               Label(node.BreakLabel));
+            var bodyLabel = GenerateLabel();
+            var result = Block(
+                node.Syntax,
+                Goto(node.Syntax, node.ContinueLabel),
+                Label(node.Syntax, bodyLabel),
+                node.Body,
+                Label(node.Syntax, node.ContinueLabel),
+                GotoTrue(node.Syntax, bodyLabel, node.Condition),
+                Label(node.Syntax, node.BreakLabel)
+            );
 
             return RewriteStatement(result);
         }
@@ -174,12 +180,15 @@ namespace Minsk.CodeAnalysis.Lowering
             // gotoTrue <condition> body
             // break:
 
-            var bodyLabel = Label(GenerateLabel());
-            var result = Block(bodyLabel,
-                               node.Body,
-                               Label(node.ContinueLabel),
-                               GotoTrue(bodyLabel, node.Condition),
-                               Label(node.BreakLabel));
+            var bodyLabel = GenerateLabel();
+            var result = Block(
+                node.Syntax,
+                Label(node.Syntax, bodyLabel),
+                node.Body,
+                Label(node.Syntax, node.ContinueLabel),
+                GotoTrue(node.Syntax, bodyLabel, node.Condition),
+                Label(node.Syntax, node.BreakLabel)
+            );
 
             return RewriteStatement(result);
         }
@@ -202,17 +211,29 @@ namespace Minsk.CodeAnalysis.Lowering
             //      }
             // }
 
-
-            var lowerBound = VariableDeclaration(node.Variable, node.LowerBound);
-            var upperBound = ConstantDeclaration("upperBound", node.UpperBound);
-            var result = Block(lowerBound,
-                               upperBound,
-                               While(LessOrEqual(Variable(lowerBound),Variable(upperBound)),
-                                     Block(node.Body,
-                                           Label(node.ContinueLabel),
-                                           Increment(Variable(lowerBound))),
-                                     node.BreakLabel,
-                                     continueLabel: GenerateLabel())
+            var lowerBound = VariableDeclaration(node.Syntax, node.Variable, node.LowerBound);
+            var upperBound = ConstantDeclaration(node.Syntax, "upperBound", node.UpperBound);
+            var result = Block(
+                node.Syntax,
+                lowerBound,
+                upperBound,
+                While(node.Syntax,
+                    LessOrEqual(
+                        node.Syntax,
+                        Variable(node.Syntax, lowerBound),
+                        Variable(node.Syntax, upperBound)
+                    ),
+                    Block(
+                        node.Syntax,
+                        node.Body,
+                        Label(node.Syntax, node.ContinueLabel),
+                        Increment(
+                            node.Syntax,
+                            Variable(node.Syntax, lowerBound)
+                    )
+                ),
+                node.BreakLabel,
+                continueLabel: GenerateLabel())
             );
 
 
@@ -226,12 +247,36 @@ namespace Minsk.CodeAnalysis.Lowering
                 var condition = (bool)node.Condition.ConstantValue.Value;
                 condition = node.JumpIfTrue ? condition : !condition;
                 if (condition)
-                    return RewriteStatement(Goto(node.Label));
+                    return RewriteStatement(Goto(node.Syntax, node.Label));
                 else
-                    return RewriteStatement(Nop());
+                    return RewriteStatement(Nop(node.Syntax));
             }
 
             return base.RewriteConditionalGotoStatement(node);
+        }
+
+        protected override BoundExpression RewriteCompoundAssignmentExpression(BoundCompoundAssignmentExpression node)
+        {
+            var newNode = (BoundCompoundAssignmentExpression) base.RewriteCompoundAssignmentExpression(node);
+
+            // a <op>= b
+            //
+            // ---->
+            //
+            // a = (a <op> b)
+
+            var result = Assignment(
+                newNode.Syntax,
+                newNode.Variable,
+                Binary(
+                    newNode.Syntax,
+                    Variable(newNode.Syntax, newNode.Variable),
+                    newNode.Op,
+                    newNode.Expression
+                )
+            );
+
+            return result;
         }
     }
 }

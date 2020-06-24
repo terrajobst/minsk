@@ -1,11 +1,13 @@
 using System;
 using Minsk.CodeAnalysis.Symbols;
+using Minsk.CodeAnalysis.Syntax;
 
 namespace Minsk.CodeAnalysis.Binding
 {
     internal sealed class BoundLiteralExpression : BoundExpression
     {
-        public BoundLiteralExpression(object value)
+        public BoundLiteralExpression(SyntaxNode syntax, object value)
+            : base(syntax)
         {
             if (value is bool)
                 Type = TypeSymbol.Bool;

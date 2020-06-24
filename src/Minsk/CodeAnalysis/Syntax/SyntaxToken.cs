@@ -8,7 +8,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
     public sealed class SyntaxToken : SyntaxNode
     {
-        public SyntaxToken(SyntaxTree syntaxTree, SyntaxKind kind, int position, string? text, object? value, ImmutableArray<SyntaxTrivia> leadingTrivia, ImmutableArray<SyntaxTrivia> trailingTrivia)
+        internal SyntaxToken(SyntaxTree syntaxTree, SyntaxKind kind, int position, string? text, object? value, ImmutableArray<SyntaxTrivia> leadingTrivia, ImmutableArray<SyntaxTrivia> trailingTrivia)
             : base(syntaxTree)
         {
             Kind = kind;

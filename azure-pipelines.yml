@@ -28,6 +28,9 @@ jobs:
       displayName: ${{ c }} (${{ os.name }})
       pool:
         vmImage:  ${{ os.vmImage }}
+      variables:
+        BuildConfiguration: ${{ c }}
+        BuildPlatform:      ${{ os.name }}
       steps:
       - task: DotNetCoreCLI@2
         displayName: Build minsk (${{ os.name }} ${{ c }})
@@ -42,9 +45,6 @@ jobs:
           projects: $(tests)
           arguments: --configuration ${{ c }}
           publishTestResults: true
-        env:
-          BuildConfiguration: ${{ c }}
-          BuildPlatform:      ${{ os.name }}
       - task: DotNetCoreCLI@2
         displayName: Build samples (${{ os.name }} ${{ c }})
         inputs:

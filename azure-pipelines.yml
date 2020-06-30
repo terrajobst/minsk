@@ -30,7 +30,7 @@ jobs:
         vmImage:  ${{ os.vmImage }}
       steps:
 
-      # TODO: A nuget-restore is required, bugfix for #164
+      # TODO: A nuget-restore is required, bugfix for #165
       - task: NugetToolInstaller@1
       - task: DotNetCoreCLI@2
         inputs:

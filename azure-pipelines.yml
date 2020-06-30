@@ -29,6 +29,14 @@ jobs:
       pool:
         vmImage:  ${{ os.vmImage }}
       steps:
+
+      # TODO: A nuget-restore is required, bugfix for #164
+      - task: NugetToolInstaller@1
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: restore
+          projects: $(sln)
+
       - task: DotNetCoreCLI@2
         displayName: Build minsk (${{ os.name }} ${{ c }})
         inputs:

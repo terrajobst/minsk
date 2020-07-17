@@ -1,0 +1,44 @@
+<Project>
+
+  <!-- Import design time targets for the Roslyn Project System. These are only available if Visual Studio is installed. -->
+  <PropertyGroup>
+    <DesignTimeExtensionsPath Condition="'$(DesignTimeExtensionsPath)'==''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed</DesignTimeExtensionsPath>
+    <DesignTimeLanguageTargets Condition="'$(DesignTimeLanguageTargets)'==''">$(DesignTimeExtensionsPath)\Microsoft.Managed.DesignTime.targets</DesignTimeLanguageTargets>
+  </PropertyGroup>
+
+  <Import Project="$(DesignTimeLanguageTargets)" Condition="'$(DesignTimeLanguageTargets)' != '' AND Exists('$(DesignTimeLanguageTargets)')"/>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\Minsk.ProjectItemsSchema.xaml"/>
+    <!-- TODO: Remove CSharp when Minsk support is added in VS -->
+    <ProjectCapability Include="CSharp"/>
+    <ProjectCapability Include="Minsk;Managed;ClassDesigner"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DefineCommonManagedItemSchemas)' == 'true'">
+
+    <PropertyPageSchema Include="$(ManagedXamlNeutralResourcesDirectory)EditorConfigFiles.xaml">
+      <Context>File</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(ManagedXamlResourcesDirectory)EditorConfigFiles.BrowseObject.xaml">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+
+  </ItemGroup>
+
+  <!-- Targets -->
+
+  <!-- Returns Msc command-line arguments for the language service -->
+  <Target Name="CompileDesignTime"
+          Returns="@(_CompilerCommandLineArgs)"
+          DependsOnTargets="_CheckCompileDesignTimePrerequisite;Compile"
+          Condition="'$(IsCrossTargetingBuild)' != 'true'">
+
+    <ItemGroup>
+      <_CompilerCommandLineArgs Include="@(MscCommandLineArgs)"/>
+    </ItemGroup>
+
+  </Target>
+
+</Project>

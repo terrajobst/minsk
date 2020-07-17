@@ -1,0 +1,53 @@
+<Project>
+
+  <Import Project="..\Tasks\Minsk.tasks"/>
+
+  <Target Name="CreateManifestResourceNames"/>
+
+  <Target Name="GetCoreCompileInputsOutputs">
+    <ItemGroup>
+      <!-- Inputs -->
+      <CoreCompileInput Include="@(Compile)"/>
+      <CoreCompileInput Include="@(_CoreCompileResourceInputs)"/>
+      <CoreCompileInput Include="$(ApplicationIcon)"/>
+      <CoreCompileInput Include="$(AssemblyOriginatorKeyFile)"/>
+      <CoreCompileInput Include="@(ReferencePathWithRefAssemblies)"/>
+      <CoreCompileInput Include="@(CompiledLicenseFile)"/>
+      <CoreCompileInput Include="@(LinkResource)"/>
+      <CoreCompileInput Include="@(EmbeddedDocumentation)"/>
+      <CoreCompileInput Include="$(Win32Resource)"/>
+      <CoreCompileInput Include="$(Win32Manifest)"/>
+      <CoreCompileInput Include="@(CustomAdditionalCompileInputs)"/>
+      <CoreCompileInput Include="$(ResolvedCodeAnalysisRuleSet)"/>
+      <CoreCompileInput Include="@(AdditionalFiles)"/>
+      <CoreCompileInput Include="@(EmbeddedFiles)"/>
+      <CoreCompileInput Include="@(EditorConfigFiles)"/>
+      <!-- Outputs -->
+      <CoreCompileOutput Include="@(DocFileItem)"/>
+      <CoreCompileOutput Include="@(IntermediateAssembly)"/>
+      <CoreCompileOutput Include="@(IntermediateRefAssembly)"/>
+      <CoreCompileOutput Include="@(_DebugSymbolsIntermediatePath)"/>
+      <CoreCompileOutput Include="$(NonExistentFile)"/>
+      <CoreCompileOutput Include="@(CustomAdditionalCompileOutputs)"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CoreCompile" Inputs="@(CoreCompileInput)" Outputs="@(CoreCompileOutput)" DependsOnTargets="GetCoreCompileInputsOutputs;$(CoreCompileDependsOn)">
+    <MinskCompile
+      ToolPath="$(MinskToolsPath)"
+      ToolExe="$(MinskCompilerExe)"
+      Condition="'%(_CoreCompileResourceInputs.WithCulture)' != 'true'"
+      Sources="@(Compile)"
+      OutputAssembly="@(IntermediateAssembly)"
+      References="@(ReferencePathWithRefAssemblies)">
+      <Output TaskParameter="CommandLineArgs" ItemName="MscCommandLineArgs"/>
+    </MinskCompile>
+
+    <ItemGroup>
+      <_CoreCompileResourceInputs Remove="@(_CoreCompileResourceInputs)"/>
+    </ItemGroup>
+
+    <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''"/>
+  </Target>
+
+</Project>

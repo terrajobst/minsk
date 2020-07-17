@@ -1,10 +1,12 @@
 @echo off
 
 REM Vars
-set "SLNDIR=%~dp0src"
+set "RepositoryDir=%~dp0"
+set "SolutionDir=%RepositoryDir%src\"
+set "MinskToolsPath=%RepositoryDir%artifacts\Minsk\"
 
-REM Restore + Build
-dotnet build "%SLNDIR%\msc" --nologo || exit /b
+REM Restore + Build + Publish
+dotnet publish "%SolutionDir%msc" --nologo || exit /b
 
 REM Run
-dotnet run -p "%SLNDIR%\msc" --no-build -- %*
+dotnet "%MinskToolsPath%msc.dll" %*

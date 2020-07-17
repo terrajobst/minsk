@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsTool>true</IsTool>
+    <AssemblyName>Minsk.Build.Tasks</AssemblyName>
+    <RootNamespace>Minsk.Build.Tasks</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnableDefaultBuildItems>true</EnableDefaultBuildItems>
+  </PropertyGroup>
+
+  <PropertyGroup Label="BuildInfo">
+    <IsPublishable>false</IsPublishable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <BuildOutputTargetFolder>Tasks</BuildOutputTargetFolder>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <PropertyGroup Label="PackageInfo">
+    <PackageId>Minsk.Sdk</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PackageType>MSBuildSdk</PackageType>
+    <PackageTags>msbuild sdk minsk</PackageTags>
+    <Description>MSBuild SDK for Minsk</Description>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Project Rule Definitions -->
+    <Content Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.0.461" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.0.461" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
+  </ItemGroup>
+
+</Project>

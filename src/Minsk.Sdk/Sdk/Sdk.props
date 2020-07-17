@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- Indicate whether `Minsk.Sdk` is being used. -->
+  <PropertyGroup>
+    <UsingMinskSdk>true</UsingMinskSdk>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props"/>
+
+  <Import Project="..\Core\Minsk.Core.props" Condition="'$(MSBuildProjectExtension)' == '.msproj'"/>
+
+</Project>

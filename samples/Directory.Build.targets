@@ -15,10 +15,9 @@
       <MinskCompilerArgs>$(MinskCompilerArgs) /o "@(IntermediateAssembly)"</MinskCompilerArgs>
       <MinskCompilerArgs>$(MinskCompilerArgs) @(ReferencePath->'/r "%(Identity)"', ' ')</MinskCompilerArgs>
 
-      <MinskScriptExt Condition="$([MSBuild]::IsOSUnixLike())">.sh</MinskScriptExt>
-      <MinskScriptExt Condition="$([MSBuild]::IsOSPlatform('Windows'))">.cmd</MinskScriptExt>
-      <MinskCompilerScript Condition="'$(MinskCompilerScript)' == ''">msc$(MinskScriptExt)</MinskCompilerScript>
-      <MinskCompileCommand>"$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\', '$(MinskCompilerScript)'))" $(MinskCompilerArgs)</MinskCompileCommand>
+      <MinskExeExt Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</MinskExeExt>
+      <MinskCompilerExe Condition="'$(MinskCompilerExe)' == ''">msc$(MinskExeExt)</MinskCompilerExe>
+      <MinskCompileCommand>"$([MSBuild]::NormalizePath('$(MinskToolsPath)', '$(MinskCompilerExe)'))" $(MinskCompilerArgs)</MinskCompileCommand>
     </PropertyGroup>
 
     <Exec Command="$(MinskCompileCommand)" />

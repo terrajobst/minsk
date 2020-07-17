@@ -1,0 +1,43 @@
+<Project>
+
+  <!-- Properties -->
+  <PropertyGroup>
+    <AppDesignerFolder Condition="'$(AppDesignerFolder)' == ''">Properties</AppDesignerFolder>
+    <AppDesignerFolderContentsVisibleOnlyInShowAllFiles Condition="'$(AppDesignerFolderContentsVisibleOnlyInShowAllFiles)' == ''">false</AppDesignerFolderContentsVisibleOnlyInShowAllFiles>
+    <TemplateLanguage Condition="'$(TemplateLanguage)' == ''">Minsk</TemplateLanguage>
+    <LanguageServiceName Condition="'$(LanguageServiceName)' == ''">Minsk</LanguageServiceName>
+    <DesignerVariableNaming Condition="'$(DesignerVariableNaming)' == ''">Camel</DesignerVariableNaming>
+    <DesignerFunctionVisibility Condition="'$(DesignerFunctionVisibility)' == ''">Private</DesignerFunctionVisibility>
+    <DesignerHiddenCodeGeneration Condition="'$(DesignerHiddenCodeGeneration)' == ''">Declarations</DesignerHiddenCodeGeneration>
+  </PropertyGroup>
+
+  <!--
+    CL CPS: {13B669BE-BB05-4DDF-9536-439F39A36129}
+    C# CPS: {9A19103F-16F7-4668-BE54-9A1E7A4F7556}
+    VB CPS: {778DAE3C-4631-46EA-AA77-85C1314464D9}
+    F# CPS: {6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}
+  -->
+  <PropertyGroup>
+    <DefaultProjectTypeGuid>{13B669BE-BB05-4DDF-9536-439F39A36129}</DefaultProjectTypeGuid>
+  </PropertyGroup>
+
+  <!-- TODO: Replace with Minsk ProjectSystem GUIDs when developed -->
+  <PropertyGroup>
+    <LanguageServiceId Condition="'$(LanguageServiceId)'==''">$(DefaultProjectTypeGuid)</LanguageServiceId>
+    <AddItemTemplatesGuid Condition="'$(AddItemTemplatesGuid)' == ''">$(DefaultProjectTypeGuid)</AddItemTemplatesGuid>
+    <GeneratorsTypeGuid Condition="'$(GeneratorsTypeGuid)' == ''">$(DefaultProjectTypeGuid)</GeneratorsTypeGuid>
+    <CmdUIContextGuid Condition="'$(CmdUIContextGuid)' == ''">$(DefaultProjectTypeGuid)</CmdUIContextGuid>
+  </PropertyGroup>
+
+  <!-- TODO: Remove CSharp when Minsk support is added in VS -->
+  <PropertyGroup Condition="'$(DisableCSharpProjectSystem)' != 'true'">
+    <TemplateLanguage>CSharp</TemplateLanguage>
+    <LanguageServiceName>C#</LanguageServiceName>
+    <DefaultProjectTypeGuid>{9A19103F-16F7-4668-BE54-9A1E7A4F7556}</DefaultProjectTypeGuid>
+    <LanguageServiceId>{694DD9B6-B865-4C5B-AD85-86356E9C88DC}</LanguageServiceId>
+    <AddItemTemplatesGuid>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</AddItemTemplatesGuid>
+    <GeneratorsTypeGuid>{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}</GeneratorsTypeGuid>
+    <CmdUIContextGuid>{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}</CmdUIContextGuid>
+  </PropertyGroup>
+
+</Project>

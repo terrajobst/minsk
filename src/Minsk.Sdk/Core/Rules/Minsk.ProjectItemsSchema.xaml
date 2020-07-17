@@ -1,0 +1,16 @@
+<ProjectSchemaDefinitions
+    xmlns="http://schemas.microsoft.com/build/2009/properties">
+
+  <ContentType
+      Name="MinskFile"
+      DisplayName="Minsk file"
+      ItemType="Compile">
+  </ContentType>
+
+  <ItemType Name="Compile" DisplayName="Minsk compiler"/>
+  <ItemType Name="AdditionalFiles" DisplayName="Minsk analyzer additional file"/>
+  <ItemType Name="EditorConfigFiles" DisplayName=".editorconfig file" />
+
+  <FileExtension Name=".ms" ContentType="MinskFile"/>
+
+</ProjectSchemaDefinitions>

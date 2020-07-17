@@ -1,10 +1,14 @@
 @echo off
 
 REM Vars
-set "SLNDIR=%~dp0src"
+set "RepositoryDir=%~dp0"
+set "SolutionDir=%RepositoryDir%src\"
 
 REM Restore + Build
-dotnet build "%SLNDIR%\minsk.sln" --nologo || exit /b
+dotnet build "%SolutionDir%minsk.sln" --nologo || exit /b
 
 REM Test
-dotnet test "%SLNDIR%\Minsk.Tests" --nologo --no-build
+dotnet test "%SolutionDir%Minsk.Tests" --nologo --no-build || exit /b
+
+REM Publish
+dotnet publish "%SolutionDir%minsk.sln" --nologo --no-build

@@ -109,7 +109,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_VariableDeclaration_Reports_Redeclaration()
         {
-            var text = @"
+            string? text = @"
                 {
                     var x = 10
                     var y = 100
@@ -120,7 +120,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 'x' is already declared.
             ";
 
@@ -130,12 +130,12 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_BlockStatement_NoInfiniteLoop()
         {
-            var text = @"
+            string? text = @"
                 {
                 [)][]
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
                 Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
             ";
@@ -146,11 +146,11 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_InvokeFunctionArguments_Missing()
         {
-            var text = @"
+            string? text = @"
                 print([)]
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Function 'print' requires 1 arguments but was given 0.
             ";
 
@@ -160,11 +160,11 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_InvokeFunctionArguments_Exceeding()
         {
-            var text = @"
+            string? text = @"
                 print(""Hello""[, "" "", "" world!""])
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Function 'print' requires 1 arguments but was given 3.
             ";
 
@@ -174,11 +174,11 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_InvokeFunctionArguments_NoInfiniteLoop()
         {
-            var text = @"
+            string? text = @"
                 print(""Hi""[[=]][)]
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
                 Unexpected token <EqualsToken>, expected <IdentifierToken>.
                 Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
@@ -190,14 +190,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_FunctionParameters_NoInfiniteLoop()
         {
-            var text = @"
+            string? text = @"
                 function hi(name: string[[[=]]][)]
                 {
                     print(""Hi "" + name + ""!"" )
                 }[]
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
                 Unexpected token <EqualsToken>, expected <OpenBraceToken>.
                 Unexpected token <EqualsToken>, expected <IdentifierToken>.
@@ -211,13 +211,13 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_FunctionReturn_Missing()
         {
-            var text = @"
+            string? text = @"
                 function [add](a: int, b: int): int
                 {
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Not all code paths return a value.
             ";
 
@@ -227,7 +227,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_IfStatement_Reports_CannotConvert()
         {
-            var text = @"
+            string? text = @"
                 {
                     var x = 0
                     if [10]
@@ -235,7 +235,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'int' to 'bool'.
             ";
 
@@ -245,7 +245,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_WhileStatement_Reports_CannotConvert()
         {
-            var text = @"
+            string? text = @"
                 {
                     var x = 0
                     while [10]
@@ -253,7 +253,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'int' to 'bool'.
             ";
 
@@ -263,7 +263,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_DoWhileStatement_Reports_CannotConvert()
         {
-            var text = @"
+            string? text = @"
                 {
                     var x = 0
                     do
@@ -272,7 +272,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'int' to 'bool'.
             ";
 
@@ -282,7 +282,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_ForStatement_Reports_CannotConvert_LowerBound()
         {
-            var text = @"
+            string? text = @"
                 {
                     var result = 0
                     for i = [false] to 10
@@ -290,7 +290,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'bool' to 'int'.
             ";
 
@@ -300,7 +300,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_ForStatement_Reports_CannotConvert_UpperBound()
         {
-            var text = @"
+            string? text = @"
                 {
                     var result = 0
                     for i = 1 to [true]
@@ -308,7 +308,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'bool' to 'int'.
             ";
 
@@ -318,9 +318,9 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_NameExpression_Reports_Undefined()
         {
-            var text = @"[x] * 10";
+            string? text = @"[x] * 10";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Variable 'x' doesn't exist.
             ";
 
@@ -330,9 +330,9 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_NameExpression_Reports_NoErrorForInsertedToken()
         {
-            var text = @"1 + []";
+            string? text = @"1 + []";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
             ";
 
@@ -342,9 +342,9 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_UnaryExpression_Reports_Undefined()
         {
-            var text = @"[+]true";
+            string? text = @"[+]true";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unary operator '+' is not defined for type 'bool'.
             ";
 
@@ -354,9 +354,9 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_BinaryExpression_Reports_Undefined()
         {
-            var text = @"10 [*] false";
+            string? text = @"10 [*] false";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Binary operator '*' is not defined for types 'int' and 'bool'.
             ";
 
@@ -366,10 +366,10 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_CompoundExpression_Reports_Undefined()
         {
-            var text = @"var x = 10
+            string? text = @"var x = 10
                          x [+=] false";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Binary operator '+=' is not defined for types 'int' and 'bool'.
             ";
 
@@ -379,21 +379,21 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_AssignmentExpression_Reports_Undefined()
         {
-            var text = @"[x] = 10";
+            string? text = @"[x] = 10";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Variable 'x' doesn't exist.
             ";
 
             AssertDiagnostics(text, diagnostics);
         }
 
-         [Fact]
+        [Fact]
         public void Evaluator_CompoundExpression_Assignemnt_NonDefinedVariable_Reports_Undefined()
         {
-            var text = @"[x] += 10";
+            string? text = @"[x] += 10";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Variable 'x' doesn't exist.
             ";
 
@@ -403,9 +403,9 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_AssignmentExpression_Reports_NotAVariable()
         {
-            var text = @"[print] = 42";
+            string? text = @"[print] = 42";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 'print' is not a variable.
             ";
 
@@ -415,31 +415,31 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_AssignmentExpression_Reports_CannotAssign()
         {
-            var text = @"
+            string? text = @"
                 {
                     let x = 10
                     x [=] 0
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Variable 'x' is read-only and cannot be assigned to.
             ";
 
             AssertDiagnostics(text, diagnostics);
         }
 
-         [Fact]
+        [Fact]
         public void Evaluator_CompoundDeclarationExpression_Reports_CannotAssign()
         {
-            var text = @"
+            string? text = @"
                 {
                     let x = 10
                     x [+=] 1
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Variable 'x' is read-only and cannot be assigned to.
             ";
 
@@ -449,14 +449,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_AssignmentExpression_Reports_CannotConvert()
         {
-            var text = @"
+            string? text = @"
                 {
                     var x = 10
                     x = [true]
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'bool' to 'int'.
             ";
 
@@ -466,9 +466,9 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_CallExpression_Reports_Undefined()
         {
-            var text = @"[foo](42)";
+            string? text = @"[foo](42)";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Function 'foo' doesn't exist.
             ";
 
@@ -478,14 +478,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_CallExpression_Reports_NotAFunction()
         {
-            var text = @"
+            string? text = @"
                 {
                     let foo = 42
                     [foo](42)
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 'foo' is not a function.
             ";
 
@@ -495,14 +495,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Variables_Can_Shadow_Functions()
         {
-            var text = @"
+            string? text = @"
                 {
                     let print = 42
                     [print](""test"")
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 'print' is not a function.
             ";
 
@@ -512,14 +512,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Void_Function_Should_Not_Return_Value()
         {
-            var text = @"
+            string? text = @"
                 function test()
                 {
                     return [1]
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Since the function 'test' does not return a value the 'return' keyword cannot be followed by an expression.
             ";
 
@@ -529,14 +529,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Function_With_ReturnValue_Should_Not_Return_Void()
         {
-            var text = @"
+            string? text = @"
                 function test(): int
                 {
                     [return]
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 An expression of type 'int' is expected.
             ";
 
@@ -546,7 +546,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Not_All_Code_Paths_Return_Value()
         {
-            var text = @"
+            string? text = @"
                 function [test](n: int): bool
                 {
                     if (n > 10)
@@ -554,7 +554,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Not all code paths return a value.
             ";
 
@@ -564,7 +564,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Expression_Must_Have_Value()
         {
-            var text = @"
+            string? text = @"
                 function test(n: int)
                 {
                     return
@@ -573,7 +573,7 @@ namespace Minsk.Tests.CodeAnalysis
                 let value = [test(100)]
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Expression must have a value.
             ";
 
@@ -583,7 +583,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_IfStatement_Reports_NotReachableCode_Warning()
         {
-            var text = @"
+            string? text = @"
                 function test()
                 {
                     let x = 4 * 3
@@ -598,7 +598,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unreachable code detected.
             ";
             AssertDiagnostics(text, diagnostics);
@@ -607,7 +607,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_ElseStatement_Reports_NotReachableCode_Warning()
         {
-            var text = @"
+            string? text = @"
                 function test(): int
                 {
                     if true
@@ -621,7 +621,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unreachable code detected.
             ";
 
@@ -631,7 +631,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_WhileStatement_Reports_NotReachableCode_Warning()
         {
-            var text = @"
+            string? text = @"
                 function test()
                 {
                     while false
@@ -641,7 +641,7 @@ namespace Minsk.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unreachable code detected.
             ";
 
@@ -653,7 +653,7 @@ namespace Minsk.Tests.CodeAnalysis
         [InlineData("[continue]", "continue")]
         public void Evaluator_Invalid_Break_Or_Continue(string text, string keyword)
         {
-            var diagnostics = $@"
+            string? diagnostics = $@"
                 The keyword '{keyword}' can only be used inside of loops.
             ";
 
@@ -663,7 +663,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Script_Return()
         {
-            var text = @"
+            string? text = @"
                 return
             ";
 
@@ -673,14 +673,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Parameter_Already_Declared()
         {
-            var text = @"
+            string? text = @"
                 function sum(a: int, b: int, [a: int]): int
                 {
                     return a + b + c
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 A parameter with the name 'a' already exists.
             ";
 
@@ -690,14 +690,14 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Function_Must_Have_Name()
         {
-            var text = @"
+            string? text = @"
                 function [(]a: int, b: int): int
                 {
                     return a + b
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Unexpected token <OpenParenthesisToken>, expected <IdentifierToken>.
             ";
 
@@ -707,7 +707,7 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Wrong_Argument_Type()
         {
-            var text = @"
+            string? text = @"
                 function test(n: int): bool
                 {
                     return n > 10
@@ -716,7 +716,7 @@ namespace Minsk.Tests.CodeAnalysis
                 test([testValue])
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Cannot convert type 'string' to 'int'. An explicit conversion exists (are you missing a cast?)
             ";
 
@@ -726,13 +726,13 @@ namespace Minsk.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Bad_Type()
         {
-            var text = @"
+            string? text = @"
                 function test(n: [invalidtype])
                 {
                 }
             ";
 
-            var diagnostics = @"
+            string? diagnostics = @"
                 Type 'invalidtype' doesn't exist.
             ";
 
@@ -741,10 +741,10 @@ namespace Minsk.Tests.CodeAnalysis
 
         private static void AssertValue(string text, object expectedValue)
         {
-            var syntaxTree = SyntaxTree.Parse(text);
-            var compilation = Compilation.CreateScript(null, syntaxTree);
-            var variables = new Dictionary<VariableSymbol, object>();
-            var result = compilation.Evaluate(variables);
+            SyntaxTree? syntaxTree = SyntaxTree.Parse(text);
+            Compilation? compilation = Compilation.CreateScript(null, syntaxTree);
+            Dictionary<VariableSymbol, object>? variables = new Dictionary<VariableSymbol, object>();
+            EvaluationResult? result = compilation.Evaluate(variables);
 
             Assert.False(result.Diagnostics.HasErrors());
             Assert.Equal(expectedValue, result.Value);
@@ -752,27 +752,29 @@ namespace Minsk.Tests.CodeAnalysis
 
         private static void AssertDiagnostics(string text, string diagnosticText)
         {
-            var annotatedText = AnnotatedText.Parse(text);
-            var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
-            var compilation = Compilation.CreateScript(null, syntaxTree);
-            var result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
+            AnnotatedText? annotatedText = AnnotatedText.Parse(text);
+            SyntaxTree? syntaxTree = SyntaxTree.Parse(annotatedText.Text);
+            Compilation? compilation = Compilation.CreateScript(null, syntaxTree);
+            EvaluationResult? result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
 
-            var expectedDiagnostics = AnnotatedText.UnindentLines(diagnosticText);
+            string[]? expectedDiagnostics = AnnotatedText.UnindentLines(diagnosticText);
 
             if (annotatedText.Spans.Length != expectedDiagnostics.Length)
+            {
                 throw new Exception("ERROR: Must mark as many spans as there are expected diagnostics");
+            }
 
-            var diagnostics = result.Diagnostics;
+            ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
             Assert.Equal(expectedDiagnostics.Length, diagnostics.Length);
 
-            for (var i = 0; i < expectedDiagnostics.Length; i++)
+            for (int i = 0; i < expectedDiagnostics.Length; i++)
             {
-                var expectedMessage = expectedDiagnostics[i];
-                var actualMessage = diagnostics[i].Message;
+                string? expectedMessage = expectedDiagnostics[i];
+                string? actualMessage = diagnostics[i].Message;
                 Assert.Equal(expectedMessage, actualMessage);
 
-                var expectedSpan = annotatedText.Spans[i];
-                var actualSpan = diagnostics[i].Location.Span;
+                Minsk.CodeAnalysis.Text.TextSpan expectedSpan = annotatedText.Spans[i];
+                Minsk.CodeAnalysis.Text.TextSpan actualSpan = diagnostics[i].Location.Span;
                 Assert.Equal(expectedSpan, actualSpan);
             }
         }

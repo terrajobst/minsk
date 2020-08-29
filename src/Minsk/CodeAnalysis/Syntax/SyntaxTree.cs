@@ -19,7 +19,7 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             Text = text;
 
-            handler(this, out var root, out var diagnostics);
+            handler(this, out CompilationUnitSyntax? root, out ImmutableArray<Diagnostic> diagnostics);
 
             Diagnostics = diagnostics;
             Root = root;
@@ -31,21 +31,21 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public static SyntaxTree Load(string fileName)
         {
-            var text = File.ReadAllText(fileName);
-            var sourceText = SourceText.From(text, fileName);
+            string? text = File.ReadAllText(fileName);
+            SourceText? sourceText = SourceText.From(text, fileName);
             return Parse(sourceText);
         }
 
         private static void Parse(SyntaxTree syntaxTree, out CompilationUnitSyntax root, out ImmutableArray<Diagnostic> diagnostics)
         {
-            var parser = new Parser(syntaxTree);
+            Parser? parser = new Parser(syntaxTree);
             root = parser.ParseCompilationUnit();
             diagnostics = parser.Diagnostics.ToImmutableArray();
         }
 
         public static SyntaxTree Parse(string text)
         {
-            var sourceText = SourceText.From(text);
+            SourceText? sourceText = SourceText.From(text);
             return Parse(sourceText);
         }
 
@@ -56,13 +56,13 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text, bool includeEndOfFile = false)
         {
-            var sourceText = SourceText.From(text);
+            SourceText? sourceText = SourceText.From(text);
             return ParseTokens(sourceText, includeEndOfFile);
         }
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text, out ImmutableArray<Diagnostic> diagnostics, bool includeEndOfFile = false)
         {
-            var sourceText = SourceText.From(text);
+            SourceText? sourceText = SourceText.From(text);
             return ParseTokens(sourceText, out diagnostics, includeEndOfFile);
         }
 
@@ -73,17 +73,19 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text, out ImmutableArray<Diagnostic> diagnostics, bool includeEndOfFile = false)
         {
-            var tokens = new List<SyntaxToken>();
+            List<SyntaxToken>? tokens = new List<SyntaxToken>();
 
             void ParseTokens(SyntaxTree st, out CompilationUnitSyntax root, out ImmutableArray<Diagnostic> d)
             {
-                var l = new Lexer(st);
+                Lexer? l = new Lexer(st);
                 while (true)
                 {
-                    var token = l.Lex();
+                    SyntaxToken? token = l.Lex();
 
                     if (token.Kind != SyntaxKind.EndOfFileToken || includeEndOfFile)
+                    {
                         tokens.Add(token);
+                    }
 
                     if (token.Kind == SyntaxKind.EndOfFileToken)
                     {
@@ -95,8 +97,8 @@ namespace Minsk.CodeAnalysis.Syntax
                 d = l.Diagnostics.ToImmutableArray();
             }
 
-            var syntaxTree = new SyntaxTree(text, ParseTokens);
-            diagnostics = syntaxTree.Diagnostics.ToImmutableArray();
+            SyntaxTree? syntaxTree = new SyntaxTree(text, ParseTokens);
+            diagnostics = syntaxTree.Diagnostics;
             return tokens.ToImmutableArray();
         }
 
@@ -104,7 +106,7 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             if (_parents == null)
             {
-                var parents = CreateParentsDictionary(Root);
+                Dictionary<SyntaxNode, SyntaxNode?>? parents = CreateParentsDictionary(Root);
                 Interlocked.CompareExchange(ref _parents, parents, null);
             }
 
@@ -121,7 +123,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private void CreateParentsDictionary(Dictionary<SyntaxNode, SyntaxNode?> result, SyntaxNode node)
         {
-            foreach (var child in node.GetChildren())
+            foreach (SyntaxNode? child in node.GetChildren())
             {
                 result.Add(child, node);
                 CreateParentsDictionary(result, child);

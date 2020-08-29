@@ -23,40 +23,42 @@ namespace Minsk.Generators
 #pragma warning disable IDE0063 // Use simple 'using' statement: we want to control when the 'using' varibales go out of scope
             SourceText sourceText;
 
-            var compilation = (CSharpCompilation)context.Compilation;
+            CSharpCompilation? compilation = (CSharpCompilation)context.Compilation;
 
-            var immutableArrayType = compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
-            var separatedSyntaxListType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SeparatedSyntaxList`1");
-            var syntaxNodeType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SyntaxNode");
+            INamedTypeSymbol? immutableArrayType = compilation.GetTypeByMetadataName("System.Collections.Immutable.ImmutableArray`1");
+            INamedTypeSymbol? separatedSyntaxListType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SeparatedSyntaxList`1");
+            INamedTypeSymbol? syntaxNodeType = compilation.GetTypeByMetadataName("Minsk.CodeAnalysis.Syntax.SyntaxNode");
 
             if (immutableArrayType == null || separatedSyntaxListType == null || syntaxNodeType == null)
+            {
                 return;
+            }
 
-            var types = GetAllTypes(compilation.Assembly);
-            var syntaxNodeTypes = types.Where(t => !t.IsAbstract && IsPartial(t) && IsDerivedFrom(t, syntaxNodeType));
+            IReadOnlyList<INamedTypeSymbol>? types = GetAllTypes(compilation.Assembly);
+            IEnumerable<INamedTypeSymbol>? syntaxNodeTypes = types.Where(t => !t.IsAbstract && IsPartial(t) && IsDerivedFrom(t, syntaxNodeType));
 
             string indentString = "    ";
-            using (var stringWriter = new StringWriter())
-            using (var indentedTextWriter = new IndentedTextWriter(stringWriter, indentString))
+            using (StringWriter? stringWriter = new StringWriter())
+            using (IndentedTextWriter? indentedTextWriter = new IndentedTextWriter(stringWriter, indentString))
             {
                 indentedTextWriter.WriteLine("using System;");
                 indentedTextWriter.WriteLine("using System.Collections.Generic;");
                 indentedTextWriter.WriteLine("using System.Collections.Immutable;");
                 indentedTextWriter.WriteLine();
-                using (var nameSpaceCurly = new CurlyIndenter(indentedTextWriter, "namespace Minsk.CodeAnalysis.Syntax"))
+                using (CurlyIndenter? nameSpaceCurly = new CurlyIndenter(indentedTextWriter, "namespace Minsk.CodeAnalysis.Syntax"))
                 {
-                    foreach (var type in syntaxNodeTypes)
+                    foreach (INamedTypeSymbol? type in syntaxNodeTypes)
                     {
-                        using (var classCurly = new CurlyIndenter(indentedTextWriter, $"partial class {type.Name}"))
-                        using (var getChildCurly = new CurlyIndenter(indentedTextWriter, "public override IEnumerable<SyntaxNode> GetChildren()"))
+                        using (CurlyIndenter? classCurly = new CurlyIndenter(indentedTextWriter, $"partial class {type.Name}"))
+                        using (CurlyIndenter? getChildCurly = new CurlyIndenter(indentedTextWriter, "public override IEnumerable<SyntaxNode> GetChildren()"))
                         {
-                            foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
+                            foreach (IPropertySymbol? property in type.GetMembers().OfType<IPropertySymbol>())
                             {
                                 if (property.Type is INamedTypeSymbol propertyType)
                                 {
                                     if (IsDerivedFrom(propertyType, syntaxNodeType))
                                     {
-                                        var canBeNull = property.NullableAnnotation == NullableAnnotation.Annotated;
+                                        bool canBeNull = property.NullableAnnotation == NullableAnnotation.Annotated;
                                         if (canBeNull)
                                         {
                                             indentedTextWriter.WriteLine($"if ({property.Name} != null)");
@@ -66,7 +68,9 @@ namespace Minsk.Generators
                                         indentedTextWriter.WriteLine($"yield return {property.Name};");
 
                                         if (canBeNull)
+                                        {
                                             indentedTextWriter.Indent--;
+                                        }
                                     }
                                     else if (propertyType.TypeArguments.Length == 1 &&
                                              IsDerivedFrom(propertyType.TypeArguments[0], syntaxNodeType) &&
@@ -94,7 +98,7 @@ namespace Minsk.Generators
                 sourceText = SourceText.From(stringWriter.ToString(), Encoding.UTF8);
             }
 
-            var hintName = "SyntaxNode_GetChildren.g.cs";
+            string? hintName = "SyntaxNode_GetChildren.g.cs";
             context.AddSource(hintName, sourceText);
 
             // HACK
@@ -102,27 +106,31 @@ namespace Minsk.Generators
             // Make generator work in VS Code. See src\Directory.Build.props for
             // details.
 
-            var fileName = "SyntaxNode_GetChildren.g.cs";
-            var syntaxNodeFilePath = syntaxNodeType.DeclaringSyntaxReferences.First().SyntaxTree.FilePath;
-            var syntaxDirectory = Path.GetDirectoryName(syntaxNodeFilePath);
-            var filePath = Path.Combine(syntaxDirectory, fileName);
+            string? fileName = "SyntaxNode_GetChildren.g.cs";
+            string? syntaxNodeFilePath = syntaxNodeType.DeclaringSyntaxReferences.First().SyntaxTree.FilePath;
+            string? syntaxDirectory = Path.GetDirectoryName(syntaxNodeFilePath);
+            string? filePath = Path.Combine(syntaxDirectory, fileName);
 
             if (File.Exists(filePath))
             {
-                var fileText = File.ReadAllText(filePath);
-                var sourceFileText = SourceText.From(fileText, Encoding.UTF8);
+                string? fileText = File.ReadAllText(filePath);
+                SourceText? sourceFileText = SourceText.From(fileText, Encoding.UTF8);
                 if (sourceText.ContentEquals(sourceFileText))
+                {
                     return;
+                }
             }
 
-            using (var writer = new StreamWriter(filePath))
+            using (StreamWriter? writer = new StreamWriter(filePath))
+            {
                 sourceText.Write(writer);
+            }
 #pragma warning restore IDE0063 // Use simple 'using' statement: we want to control when the variable goes out of scope
         }
 
         private IReadOnlyList<INamedTypeSymbol> GetAllTypes(IAssemblySymbol symbol)
         {
-            var result = new List<INamedTypeSymbol>();
+            List<INamedTypeSymbol>? result = new List<INamedTypeSymbol>();
             GetAllTypes(result, symbol.GlobalNamespace);
             result.Sort((x, y) => x.MetadataName.CompareTo(y.MetadataName));
             return result;
@@ -131,21 +139,29 @@ namespace Minsk.Generators
         private void GetAllTypes(List<INamedTypeSymbol> result, INamespaceOrTypeSymbol symbol)
         {
             if (symbol is INamedTypeSymbol type)
+            {
                 result.Add(type);
+            }
 
-            foreach (var child in symbol.GetMembers())
+            foreach (ISymbol? child in symbol.GetMembers())
+            {
                 if (child is INamespaceOrTypeSymbol nsChild)
+                {
                     GetAllTypes(result, nsChild);
+                }
+            }
         }
 
         private static bool IsDerivedFrom(ITypeSymbol type, INamedTypeSymbol baseType)
         {
-            var current = type;
+            ITypeSymbol? current = type;
 
             while (current != null)
             {
                 if (SymbolEqualityComparer.Default.Equals(current, baseType))
+                {
                     return true;
+                }
 
                 current = current.BaseType;
             }
@@ -155,15 +171,17 @@ namespace Minsk.Generators
 
         private static bool IsPartial(INamedTypeSymbol type)
         {
-            foreach (var declaration in type.DeclaringSyntaxReferences)
+            foreach (SyntaxReference? declaration in type.DeclaringSyntaxReferences)
             {
-                var syntax = declaration.GetSyntax();
+                SyntaxNode? syntax = declaration.GetSyntax();
                 if (syntax is TypeDeclarationSyntax typeDeclaration)
                 {
-                    foreach (var modifer in typeDeclaration.Modifiers)
+                    foreach (SyntaxToken modifer in typeDeclaration.Modifiers)
                     {
                         if (modifer.ValueText == "partial")
+                        {
                             return true;
+                        }
                     }
                 }
             }

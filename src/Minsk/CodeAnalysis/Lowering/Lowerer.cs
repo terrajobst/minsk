@@ -18,31 +18,33 @@ namespace Minsk.CodeAnalysis.Lowering
 
         private BoundLabel GenerateLabel()
         {
-            var name = $"Label{++_labelCount}";
+            string? name = $"Label{++_labelCount}";
             return new BoundLabel(name);
         }
 
         public static BoundBlockStatement Lower(FunctionSymbol function, BoundStatement statement)
         {
-            var lowerer = new Lowerer();
-            var result = lowerer.RewriteStatement(statement);
+            Lowerer? lowerer = new Lowerer();
+            BoundStatement? result = lowerer.RewriteStatement(statement);
             return RemoveDeadCode(Flatten(function, result));
         }
 
         private static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement statement)
         {
-            var builder = ImmutableArray.CreateBuilder<BoundStatement>();
-            var stack = new Stack<BoundStatement>();
+            ImmutableArray<BoundStatement>.Builder? builder = ImmutableArray.CreateBuilder<BoundStatement>();
+            Stack<BoundStatement>? stack = new Stack<BoundStatement>();
             stack.Push(statement);
 
             while (stack.Count > 0)
             {
-                var current = stack.Pop();
+                BoundStatement? current = stack.Pop();
 
                 if (current is BoundBlockStatement block)
                 {
-                    foreach (var s in block.Statements.Reverse())
+                    foreach (BoundStatement? s in block.Statements.Reverse())
+                    {
                         stack.Push(s);
+                    }
                 }
                 else
                 {
@@ -69,15 +71,17 @@ namespace Minsk.CodeAnalysis.Lowering
 
         private static BoundBlockStatement RemoveDeadCode(BoundBlockStatement node)
         {
-            var controlFlow = ControlFlowGraph.Create(node);
-            var reachableStatements = new HashSet<BoundStatement>(
+            ControlFlowGraph? controlFlow = ControlFlowGraph.Create(node);
+            HashSet<BoundStatement>? reachableStatements = new HashSet<BoundStatement>(
                 controlFlow.Blocks.SelectMany(b => b.Statements));
 
-            var builder = node.Statements.ToBuilder();
+            ImmutableArray<BoundStatement>.Builder? builder = node.Statements.ToBuilder();
             for (int i = builder.Count - 1; i >= 0; i--)
             {
                 if (!reachableStatements.Contains(builder[i]))
+                {
                     builder.RemoveAt(i);
+                }
             }
 
             return new BoundBlockStatement(node.Syntax, builder.ToImmutable());
@@ -96,8 +100,8 @@ namespace Minsk.CodeAnalysis.Lowering
                 // <then>
                 // end:
 
-                var endLabel = GenerateLabel();
-                var result = Block(
+                BoundLabel? endLabel = GenerateLabel();
+                BoundBlockStatement? result = Block(
                     node.Syntax,
                     GotoFalse(node.Syntax, endLabel, node.Condition),
                     node.ThenStatement,
@@ -122,9 +126,9 @@ namespace Minsk.CodeAnalysis.Lowering
                 // <else>
                 // end:
 
-                var elseLabel = GenerateLabel();
-                var endLabel = GenerateLabel();
-                var result = Block(
+                BoundLabel? elseLabel = GenerateLabel();
+                BoundLabel? endLabel = GenerateLabel();
+                BoundBlockStatement? result = Block(
                     node.Syntax,
                     GotoFalse(node.Syntax, elseLabel, node.Condition),
                     node.ThenStatement,
@@ -152,8 +156,8 @@ namespace Minsk.CodeAnalysis.Lowering
             // gotoTrue <condition> body
             // break:
 
-            var bodyLabel = GenerateLabel();
-            var result = Block(
+            BoundLabel? bodyLabel = GenerateLabel();
+            BoundBlockStatement? result = Block(
                 node.Syntax,
                 Goto(node.Syntax, node.ContinueLabel),
                 Label(node.Syntax, bodyLabel),
@@ -180,8 +184,8 @@ namespace Minsk.CodeAnalysis.Lowering
             // gotoTrue <condition> body
             // break:
 
-            var bodyLabel = GenerateLabel();
-            var result = Block(
+            BoundLabel? bodyLabel = GenerateLabel();
+            BoundBlockStatement? result = Block(
                 node.Syntax,
                 Label(node.Syntax, bodyLabel),
                 node.Body,
@@ -211,9 +215,9 @@ namespace Minsk.CodeAnalysis.Lowering
             //      }
             // }
 
-            var lowerBound = VariableDeclaration(node.Syntax, node.Variable, node.LowerBound);
-            var upperBound = ConstantDeclaration(node.Syntax, "upperBound", node.UpperBound);
-            var result = Block(
+            BoundVariableDeclaration? lowerBound = VariableDeclaration(node.Syntax, node.Variable, node.LowerBound);
+            BoundVariableDeclaration? upperBound = ConstantDeclaration(node.Syntax, "upperBound", node.UpperBound);
+            BoundBlockStatement? result = Block(
                 node.Syntax,
                 lowerBound,
                 upperBound,
@@ -244,12 +248,16 @@ namespace Minsk.CodeAnalysis.Lowering
         {
             if (node.Condition.ConstantValue != null)
             {
-                var condition = (bool)node.Condition.ConstantValue.Value;
+                bool condition = (bool)node.Condition.ConstantValue.Value;
                 condition = node.JumpIfTrue ? condition : !condition;
                 if (condition)
+                {
                     return RewriteStatement(Goto(node.Syntax, node.Label));
+                }
                 else
+                {
                     return RewriteStatement(Nop(node.Syntax));
+                }
             }
 
             return base.RewriteConditionalGotoStatement(node);
@@ -257,7 +265,7 @@ namespace Minsk.CodeAnalysis.Lowering
 
         protected override BoundExpression RewriteCompoundAssignmentExpression(BoundCompoundAssignmentExpression node)
         {
-            var newNode = (BoundCompoundAssignmentExpression) base.RewriteCompoundAssignmentExpression(node);
+            BoundCompoundAssignmentExpression? newNode = (BoundCompoundAssignmentExpression)base.RewriteCompoundAssignmentExpression(node);
 
             // a <op>= b
             //
@@ -265,7 +273,7 @@ namespace Minsk.CodeAnalysis.Lowering
             //
             // a = (a <op> b)
 
-            var result = Assignment(
+            BoundAssignmentExpression? result = Assignment(
                 newNode.Syntax,
                 newNode.Variable,
                 Binary(

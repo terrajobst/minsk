@@ -11,7 +11,7 @@ namespace Minsk.Tests.CodeAnalysis.Text
         [InlineData(".\r\n\r\n", 3)]
         public void SourceText_IncludesLastLine(string text, int expectedLineCount)
         {
-            var sourceText = SourceText.From(text);
+            SourceText? sourceText = SourceText.From(text);
             Assert.Equal(expectedLineCount, sourceText.Lines.Length);
         }
     }

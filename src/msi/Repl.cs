@@ -24,18 +24,20 @@ namespace Minsk
 
         private void InitializeMetaCommands()
         {
-            var methods = GetType().GetMethods(BindingFlags.Public |
+            MethodInfo[]? methods = GetType().GetMethods(BindingFlags.Public |
                                                BindingFlags.NonPublic |
                                                BindingFlags.Static |
                                                BindingFlags.Instance |
                                                BindingFlags.FlattenHierarchy);
-            foreach (var method in methods)
+            foreach (MethodInfo? method in methods)
             {
-                var attribute = method.GetCustomAttribute<MetaCommandAttribute>();
+                MetaCommandAttribute? attribute = method.GetCustomAttribute<MetaCommandAttribute>();
                 if (attribute == null)
+                {
                     continue;
+                }
 
-                var metaCommand = new MetaCommand(attribute.Name, attribute.Description, method);
+                MetaCommand? metaCommand = new MetaCommand(attribute.Name, attribute.Description, method);
                 _metaCommands.Add(metaCommand);
             }
         }
@@ -44,14 +46,20 @@ namespace Minsk
         {
             while (true)
             {
-                var text = EditSubmission();
+                string? text = EditSubmission();
                 if (string.IsNullOrEmpty(text))
+                {
                     continue;
+                }
 
                 if (!text.Contains(Environment.NewLine) && text.StartsWith("#"))
+                {
                     EvaluateMetaCommand(text);
+                }
                 else
+                {
                     EvaluateSubmission(text);
+                }
 
                 _submissionHistory.Add(text);
                 _submissionHistoryIndex = 0;
@@ -87,26 +95,32 @@ namespace Minsk
             {
                 Console.CursorVisible = false;
 
-                var lineCount = 0;
-                var state = (object?)null;
+                int lineCount = 0;
+                object? state = (object?)null;
 
-                foreach (var line in _submissionDocument)
+                foreach (string? line in _submissionDocument)
                 {
                     if (_cursorTop + lineCount >= Console.WindowHeight)
                     {
                         Console.SetCursorPosition(0, Console.WindowHeight - 1);
                         Console.WriteLine();
                         if (_cursorTop > 0)
+                        {
                             _cursorTop--;
+                        }
                     }
 
                     Console.SetCursorPosition(0, _cursorTop + lineCount);
                     Console.ForegroundColor = ConsoleColor.Green;
 
                     if (lineCount == 0)
+                    {
                         Console.Write("» ");
+                    }
                     else
+                    {
                         Console.Write("· ");
+                    }
 
                     Console.ResetColor();
                     state = _lineRenderer(_submissionDocument, lineCount, state);
@@ -114,11 +128,11 @@ namespace Minsk
                     lineCount++;
                 }
 
-                var numberOfBlankLines = _renderedLineCount - lineCount;
+                int numberOfBlankLines = _renderedLineCount - lineCount;
                 if (numberOfBlankLines > 0)
                 {
-                    var blankLine = new string(' ', Console.WindowWidth);
-                    for (var i = 0; i < numberOfBlankLines; i++)
+                    string? blankLine = new string(' ', Console.WindowWidth);
+                    for (int i = 0; i < numberOfBlankLines; i++)
                     {
                         Console.SetCursorPosition(0, _cursorTop + lineCount + i);
                         Console.WriteLine(blankLine);
@@ -170,12 +184,12 @@ namespace Minsk
         {
             _done = false;
 
-            var document = new ObservableCollection<string>() { "" };
-            var view = new SubmissionView(RenderLine, document);
+            ObservableCollection<string>? document = new ObservableCollection<string>() { "" };
+            SubmissionView? view = new SubmissionView(RenderLine, document);
 
             while (!_done)
             {
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key = Console.ReadKey(true);
                 HandleKey(key, document, view);
             }
 
@@ -244,7 +258,9 @@ namespace Minsk
             }
 
             if (key.Key != ConsoleKey.Backspace && key.KeyChar >= ' ')
+            {
                 HandleTyping(document, view, key.KeyChar.ToString());
+            }
         }
 
         private static void HandleEscape(ObservableCollection<string> document, SubmissionView view)
@@ -257,7 +273,7 @@ namespace Minsk
 
         private void HandleEnter(ObservableCollection<string> document, SubmissionView view)
         {
-            var submissionText = string.Join(Environment.NewLine, document);
+            string? submissionText = string.Join(Environment.NewLine, document);
             if (submissionText.StartsWith("#") || IsCompleteSubmission(submissionText))
             {
                 _done = true;
@@ -274,10 +290,10 @@ namespace Minsk
 
         private static void InsertLine(ObservableCollection<string> document, SubmissionView view)
         {
-            var remainder = document[view.CurrentLine].Substring(view.CurrentCharacter);
+            string? remainder = document[view.CurrentLine].Substring(view.CurrentCharacter);
             document[view.CurrentLine] = document[view.CurrentLine].Substring(0, view.CurrentCharacter);
 
-            var lineIndex = view.CurrentLine + 1;
+            int lineIndex = view.CurrentLine + 1;
             document.Insert(lineIndex, remainder);
             view.CurrentCharacter = 0;
             view.CurrentLine = lineIndex;
@@ -286,38 +302,48 @@ namespace Minsk
         private static void HandleLeftArrow(SubmissionView view)
         {
             if (view.CurrentCharacter > 0)
+            {
                 view.CurrentCharacter--;
+            }
         }
 
         private static void HandleRightArrow(ObservableCollection<string> document, SubmissionView view)
         {
-            var line = document[view.CurrentLine];
+            string? line = document[view.CurrentLine];
             if (view.CurrentCharacter <= line.Length - 1)
+            {
                 view.CurrentCharacter++;
+            }
         }
 
         private static void HandleUpArrow(SubmissionView view)
         {
             if (view.CurrentLine > 0)
+            {
                 view.CurrentLine--;
+            }
         }
 
         private static void HandleDownArrow(ObservableCollection<string> document, SubmissionView view)
         {
             if (view.CurrentLine < document.Count - 1)
+            {
                 view.CurrentLine++;
+            }
         }
 
         private static void HandleBackspace(ObservableCollection<string> document, SubmissionView view)
         {
-            var start = view.CurrentCharacter;
+            int start = view.CurrentCharacter;
             if (start == 0)
             {
                 if (view.CurrentLine == 0)
+                {
                     return;
+                }
 
-                var currentLine = document[view.CurrentLine];
-                var previousLine = document[view.CurrentLine - 1];
+                string? currentLine = document[view.CurrentLine];
+                string? previousLine = document[view.CurrentLine - 1];
                 document.RemoveAt(view.CurrentLine);
                 view.CurrentLine--;
                 document[view.CurrentLine] = previousLine + currentLine;
@@ -325,10 +351,10 @@ namespace Minsk
             }
             else
             {
-                var lineIndex = view.CurrentLine;
-                var line = document[lineIndex];
-                var before = line.Substring(0, start - 1);
-                var after = line.Substring(start);
+                int lineIndex = view.CurrentLine;
+                string? line = document[lineIndex];
+                string? before = line.Substring(0, start - 1);
+                string? after = line.Substring(start);
                 document[lineIndex] = before + after;
                 view.CurrentCharacter--;
             }
@@ -336,9 +362,9 @@ namespace Minsk
 
         private static void HandleDelete(ObservableCollection<string> document, SubmissionView view)
         {
-            var lineIndex = view.CurrentLine;
-            var line = document[lineIndex];
-            var start = view.CurrentCharacter;
+            int lineIndex = view.CurrentLine;
+            string? line = document[lineIndex];
+            int start = view.CurrentCharacter;
             if (start >= line.Length)
             {
                 if (view.CurrentLine == document.Count - 1)
@@ -346,14 +372,14 @@ namespace Minsk
                     return;
                 }
 
-                var nextLine = document[view.CurrentLine + 1];
+                string? nextLine = document[view.CurrentLine + 1];
                 document[view.CurrentLine] += nextLine;
                 document.RemoveAt(view.CurrentLine + 1);
                 return;
             }
 
-            var before = line.Substring(0, start);
-            var after = line.Substring(start + 1);
+            string? before = line.Substring(0, start);
+            string? after = line.Substring(start + 1);
             document[lineIndex] = before + after;
         }
 
@@ -370,9 +396,9 @@ namespace Minsk
         private static void HandleTab(ObservableCollection<string> document, SubmissionView view)
         {
             const int TabWidth = 4;
-            var start = view.CurrentCharacter;
-            var remainingSpaces = TabWidth - start % TabWidth;
-            var line = document[view.CurrentLine];
+            int start = view.CurrentCharacter;
+            int remainingSpaces = TabWidth - start % TabWidth;
+            string? line = document[view.CurrentLine];
             document[view.CurrentLine] = line.Insert(start, new string(' ', remainingSpaces));
             view.CurrentCharacter += remainingSpaces;
         }
@@ -381,7 +407,10 @@ namespace Minsk
         {
             _submissionHistoryIndex--;
             if (_submissionHistoryIndex < 0)
+            {
                 _submissionHistoryIndex = _submissionHistory.Count - 1;
+            }
+
             UpdateDocumentFromHistory(document, view);
         }
 
@@ -389,21 +418,28 @@ namespace Minsk
         {
             _submissionHistoryIndex++;
             if (_submissionHistoryIndex > _submissionHistory.Count - 1)
+            {
                 _submissionHistoryIndex = 0;
+            }
+
             UpdateDocumentFromHistory(document, view);
         }
 
         private void UpdateDocumentFromHistory(ObservableCollection<string> document, SubmissionView view)
         {
             if (_submissionHistory.Count == 0)
+            {
                 return;
+            }
 
             document.Clear();
 
-            var historyItem = _submissionHistory[_submissionHistoryIndex];
-            var lines = historyItem.Split(Environment.NewLine);
-            foreach (var line in lines)
+            string? historyItem = _submissionHistory[_submissionHistoryIndex];
+            string[]? lines = historyItem.Split(Environment.NewLine);
+            foreach (string? line in lines)
+            {
                 document.Add(line);
+            }
 
             view.CurrentLine = document.Count - 1;
             view.CurrentCharacter = document[view.CurrentLine].Length;
@@ -411,8 +447,8 @@ namespace Minsk
 
         private static void HandleTyping(ObservableCollection<string> document, SubmissionView view, string text)
         {
-            var lineIndex = view.CurrentLine;
-            var start = view.CurrentCharacter;
+            int lineIndex = view.CurrentLine;
+            int start = view.CurrentCharacter;
             document[lineIndex] = document[lineIndex].Insert(start, text);
             view.CurrentCharacter += text.Length;
         }
@@ -432,33 +468,41 @@ namespace Minsk
         {
             // Parse arguments
 
-            var args = new List<string>();
-            var inQuotes = false;
-            var position = 1;
-            var sb = new StringBuilder();
+            List<string>? args = new List<string>();
+            bool inQuotes = false;
+            int position = 1;
+            StringBuilder? sb = new StringBuilder();
             while (position < input.Length)
             {
-                var c = input[position];
-                var l = position + 1 >= input.Length ? '\0' : input[position + 1];
+                char c = input[position];
+                char l = position + 1 >= input.Length ? '\0' : input[position + 1];
 
                 if (char.IsWhiteSpace(c))
                 {
                     if (!inQuotes)
+                    {
                         CommitPendingArgument();
+                    }
                     else
+                    {
                         sb.Append(c);
+                    }
                 }
                 else if (c == '\"')
                 {
                     if (!inQuotes)
+                    {
                         inQuotes = true;
+                    }
                     else if (l == '\"')
                     {
                         sb.Append(c);
                         position++;
                     }
                     else
+                    {
                         inQuotes = false;
+                    }
                 }
                 else
                 {
@@ -472,17 +516,22 @@ namespace Minsk
 
             void CommitPendingArgument()
             {
-                var arg = sb.ToString();
+                string? arg = sb.ToString();
                 if (!string.IsNullOrWhiteSpace(arg))
+                {
                     args.Add(arg);
+                }
+
                 sb.Clear();
             }
 
-            var commandName = args.FirstOrDefault();
+            string? commandName = args.FirstOrDefault();
             if (args.Count > 0)
+            {
                 args.RemoveAt(0);
+            }
 
-            var command = _metaCommands.SingleOrDefault(mc => mc.Name == commandName);
+            MetaCommand? command = _metaCommands.SingleOrDefault(mc => mc.Name == commandName);
             if (command == null)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -491,11 +540,11 @@ namespace Minsk
                 return;
             }
 
-            var parameters = command.Method.GetParameters();
+            ParameterInfo[]? parameters = command.Method.GetParameters();
 
             if (args.Count != parameters.Length)
             {
-                var parameterNames = string.Join(" ", parameters.Select(p => $"<{p.Name}>"));
+                string? parameterNames = string.Join(" ", parameters.Select(p => $"<{p.Name}>"));
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"error: invalid number of arguments");
                 Console.WriteLine($"usage: #{command.Name} {parameterNames}");
@@ -503,7 +552,7 @@ namespace Minsk
                 return;
             }
 
-            var instance = command.Method.IsStatic ? null : this;
+            Repl? instance = command.Method.IsStatic ? null : this;
             command.Method.Invoke(instance, args.ToArray());
         }
 
@@ -541,14 +590,14 @@ namespace Minsk
         [MetaCommand("help", "Shows help")]
         protected void EvaluateHelp()
         {
-            var maxNameLength = _metaCommands.Max(mc => mc.Name.Length);
+            int maxNameLength = _metaCommands.Max(mc => mc.Name.Length);
 
-            foreach (var metaCommand in _metaCommands.OrderBy(mc => mc.Name))
+            foreach (MetaCommand? metaCommand in _metaCommands.OrderBy(mc => mc.Name))
             {
-                var metaParams = metaCommand.Method.GetParameters();
+                ParameterInfo[]? metaParams = metaCommand.Method.GetParameters();
                 if (metaParams.Length == 0)
                 {
-                    var paddedName = metaCommand.Name.PadRight(maxNameLength);
+                    string? paddedName = metaCommand.Name.PadRight(maxNameLength);
 
                     Console.Out.WritePunctuation("#");
                     Console.Out.WriteIdentifier(paddedName);
@@ -557,7 +606,7 @@ namespace Minsk
                 {
                     Console.Out.WritePunctuation("#");
                     Console.Out.WriteIdentifier(metaCommand.Name);
-                    foreach (var pi in metaParams)
+                    foreach (ParameterInfo? pi in metaParams)
                     {
                         Console.Out.WriteSpace();
                         Console.Out.WritePunctuation("<");
@@ -567,8 +616,9 @@ namespace Minsk
                     Console.Out.WriteLine();
                     Console.Out.WriteSpace();
                     for (int _ = 0; _ < maxNameLength; _++)
+                    {
                         Console.Out.WriteSpace();
-
+                    }
                 }
                 Console.Out.WriteSpace();
                 Console.Out.WriteSpace();

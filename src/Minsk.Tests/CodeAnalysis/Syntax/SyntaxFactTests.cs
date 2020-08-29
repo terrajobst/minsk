@@ -11,21 +11,25 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
         [MemberData(nameof(GetSyntaxKindData))]
         public void SyntaxFact_GetText_RoundTrips(SyntaxKind kind)
         {
-            var text = SyntaxFacts.GetText(kind);
+            string? text = SyntaxFacts.GetText(kind);
             if (text == null)
+            {
                 return;
+            }
 
-            var tokens = SyntaxTree.ParseTokens(text);
-            var token = Assert.Single(tokens);
+            System.Collections.Immutable.ImmutableArray<SyntaxToken> tokens = SyntaxTree.ParseTokens(text);
+            SyntaxToken? token = Assert.Single(tokens);
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
         }
 
         public static IEnumerable<object[]> GetSyntaxKindData()
         {
-            var kinds = (SyntaxKind[]) Enum.GetValues(typeof(SyntaxKind));
-            foreach (var kind in kinds)
-                yield return new object[]{ kind };
+            SyntaxKind[]? kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
+            foreach (SyntaxKind kind in kinds)
+            {
+                yield return new object[] { kind };
+            }
         }
     }
 }

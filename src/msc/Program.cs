@@ -13,13 +13,13 @@ namespace Minsk
     {
         private static int Main(string[] args)
         {
-            var outputPath = (string?) null;
-            var moduleName = (string?) null;
-            var referencePaths = new List<string>();
-            var sourcePaths = new List<string>();
-            var helpRequested = false;
+            string? outputPath = (string?)null;
+            string? moduleName = (string?)null;
+            List<string>? referencePaths = new List<string>();
+            List<string>? sourcePaths = new List<string>();
+            bool helpRequested = false;
 
-            var options = new OptionSet
+            OptionSet? options = new OptionSet
             {
                 "usage: msc <source-paths> [options]",
                 { "r=", "The {path} of an assembly to reference", v => referencePaths.Add(v) },
@@ -44,15 +44,19 @@ namespace Minsk
             }
 
             if (outputPath == null)
+            {
                 outputPath = Path.ChangeExtension(sourcePaths[0], ".exe");
+            }
 
             if (moduleName == null)
+            {
                 moduleName = Path.GetFileNameWithoutExtension(outputPath);
+            }
 
-            var syntaxTrees = new List<SyntaxTree>();
-            var hasErrors = false;
+            List<SyntaxTree>? syntaxTrees = new List<SyntaxTree>();
+            bool hasErrors = false;
 
-            foreach (var path in sourcePaths)
+            foreach (string? path in sourcePaths)
             {
                 if (!File.Exists(path))
                 {
@@ -61,11 +65,11 @@ namespace Minsk
                     continue;
                 }
 
-                var syntaxTree = SyntaxTree.Load(path);
+                SyntaxTree? syntaxTree = SyntaxTree.Load(path);
                 syntaxTrees.Add(syntaxTree);
             }
 
-            foreach (var path in referencePaths)
+            foreach (string? path in referencePaths)
             {
                 if (!File.Exists(path))
                 {
@@ -76,10 +80,12 @@ namespace Minsk
             }
 
             if (hasErrors)
+            {
                 return 1;
+            }
 
-            var compilation = Compilation.Create(syntaxTrees.ToArray());
-            var diagnostics = compilation.Emit(moduleName, referencePaths.ToArray(), outputPath);
+            Compilation? compilation = Compilation.Create(syntaxTrees.ToArray());
+            System.Collections.Immutable.ImmutableArray<Diagnostic> diagnostics = compilation.Emit(moduleName, referencePaths.ToArray(), outputPath);
 
             if (diagnostics.Any())
             {

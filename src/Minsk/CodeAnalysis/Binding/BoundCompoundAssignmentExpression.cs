@@ -16,7 +16,7 @@ namespace Minsk.CodeAnalysis.Binding
         public override BoundNodeKind Kind => BoundNodeKind.CompoundAssignmentExpression;
         public override TypeSymbol Type => Expression.Type;
         public VariableSymbol Variable { get; }
-        public BoundBinaryOperator Op {get; }
+        public BoundBinaryOperator Op { get; }
         public BoundExpression Expression { get; }
     }
 }

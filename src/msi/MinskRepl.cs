@@ -31,20 +31,20 @@ namespace Minsk
 
             if (state == null)
             {
-                var text = string.Join(Environment.NewLine, lines);
+                string? text = string.Join(Environment.NewLine, lines);
                 syntaxTree = SyntaxTree.Parse(text);
             }
             else
             {
-                syntaxTree = (SyntaxTree) state;
+                syntaxTree = (SyntaxTree)state;
             }
 
-            var lineSpan = syntaxTree.Text.Lines[lineIndex].Span;
-            var classifiedSpans = Classifier.Classify(syntaxTree, lineSpan);
+            CodeAnalysis.Text.TextSpan lineSpan = syntaxTree.Text.Lines[lineIndex].Span;
+            System.Collections.Immutable.ImmutableArray<ClassifiedSpan> classifiedSpans = Classifier.Classify(syntaxTree, lineSpan);
 
-            foreach (var classifiedSpan in classifiedSpans)
+            foreach (ClassifiedSpan? classifiedSpan in classifiedSpans)
             {
-                var classifiedText = syntaxTree.Text.ToString(classifiedSpan.Span);
+                string? classifiedText = syntaxTree.Text.ToString(classifiedSpan.Span);
 
                 switch (classifiedSpan.Classification)
                 {
@@ -123,16 +123,16 @@ namespace Minsk
                 return;
             }
 
-            var text = File.ReadAllText(path);
+            string? text = File.ReadAllText(path);
             EvaluateSubmission(text);
         }
 
         [MetaCommand("ls", "Lists all symbols")]
         private void EvaluateLs()
         {
-            var compilation = _previous ?? emptyCompilation;
-            var symbols = compilation.GetSymbols().OrderBy(s => s.Kind).ThenBy(s => s.Name);
-            foreach (var symbol in symbols)
+            Compilation? compilation = _previous ?? emptyCompilation;
+            IOrderedEnumerable<Symbol>? symbols = compilation.GetSymbols().OrderBy(s => s.Kind).ThenBy(s => s.Name);
+            foreach (Symbol? symbol in symbols)
             {
                 symbol.WriteTo(Console.Out);
                 Console.WriteLine();
@@ -142,8 +142,8 @@ namespace Minsk
         [MetaCommand("dump", "Shows bound tree of a given function")]
         private void EvaluateDump(string functionName)
         {
-            var compilation = _previous ?? emptyCompilation;
-            var symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
+            Compilation? compilation = _previous ?? emptyCompilation;
+            FunctionSymbol? symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
             if (symbol == null)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -158,38 +158,48 @@ namespace Minsk
         protected override bool IsCompleteSubmission(string text)
         {
             if (string.IsNullOrEmpty(text))
+            {
                 return true;
+            }
 
-            var lastTwoLinesAreBlank = text.Split(Environment.NewLine)
+            bool lastTwoLinesAreBlank = text.Split(Environment.NewLine)
                                            .Reverse()
                                            .TakeWhile(s => string.IsNullOrEmpty(s))
                                            .Take(2)
                                            .Count() == 2;
             if (lastTwoLinesAreBlank)
+            {
                 return true;
+            }
 
-            var syntaxTree = SyntaxTree.Parse(text);
+            SyntaxTree? syntaxTree = SyntaxTree.Parse(text);
 
             // Use Members because we need to exclude the EndOfFileToken.
-            var lastMember = syntaxTree.Root.Members.LastOrDefault();
+            MemberSyntax? lastMember = syntaxTree.Root.Members.LastOrDefault();
             if (lastMember == null || lastMember.GetLastToken().IsMissing)
+            {
                 return false;
+            }
 
             return true;
         }
 
         protected override void EvaluateSubmission(string text)
         {
-            var syntaxTree = SyntaxTree.Parse(text);
-            var compilation = Compilation.CreateScript(_previous, syntaxTree);
+            SyntaxTree? syntaxTree = SyntaxTree.Parse(text);
+            Compilation? compilation = Compilation.CreateScript(_previous, syntaxTree);
 
             if (_showTree)
+            {
                 syntaxTree.Root.WriteTo(Console.Out);
+            }
 
             if (_showProgram)
+            {
                 compilation.EmitTree(Console.Out);
+            }
 
-            var result = compilation.Evaluate(_variables);
+            EvaluationResult? result = compilation.Evaluate(_variables);
             Console.Out.WriteDiagnostics(result.Diagnostics);
 
             if (!result.Diagnostics.HasErrors())
@@ -208,20 +218,24 @@ namespace Minsk
 
         private static string GetSubmissionsDirectory()
         {
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var submissionsDirectory = Path.Combine(localAppData, "Minsk", "Submissions");
+            string? localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string? submissionsDirectory = Path.Combine(localAppData, "Minsk", "Submissions");
             return submissionsDirectory;
         }
 
         private void LoadSubmissions()
         {
-            var submissionsDirectory = GetSubmissionsDirectory();
+            string? submissionsDirectory = GetSubmissionsDirectory();
             if (!Directory.Exists(submissionsDirectory))
+            {
                 return;
+            }
 
-            var files = Directory.GetFiles(submissionsDirectory).OrderBy(f => f).ToArray();
+            string[]? files = Directory.GetFiles(submissionsDirectory).OrderBy(f => f).ToArray();
             if (files.Length == 0)
+            {
                 return;
+            }
 
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine($"Loaded {files.Length} submission(s)");
@@ -229,9 +243,9 @@ namespace Minsk
 
             _loadingSubmission = true;
 
-            foreach (var file in files)
+            foreach (string? file in files)
             {
-                var text = File.ReadAllText(file);
+                string? text = File.ReadAllText(file);
                 EvaluateSubmission(text);
             }
 
@@ -240,21 +254,25 @@ namespace Minsk
 
         private static void ClearSubmissions()
         {
-            var dir = GetSubmissionsDirectory();
+            string? dir = GetSubmissionsDirectory();
             if (Directory.Exists(dir))
+            {
                 Directory.Delete(dir, recursive: true);
+            }
         }
 
         private void SaveSubmission(string text)
         {
             if (_loadingSubmission)
+            {
                 return;
+            }
 
-            var submissionsDirectory = GetSubmissionsDirectory();
+            string? submissionsDirectory = GetSubmissionsDirectory();
             Directory.CreateDirectory(submissionsDirectory);
-            var count = Directory.GetFiles(submissionsDirectory).Length;
-            var name = $"submission{count:0000}";
-            var fileName = Path.Combine(submissionsDirectory, name);
+            int count = Directory.GetFiles(submissionsDirectory).Length;
+            string? name = $"submission{count:0000}";
+            string? fileName = Path.Combine(submissionsDirectory, name);
             File.WriteAllText(fileName, text);
         }
     }

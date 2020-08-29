@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Minsk.CodeAnalysis.Text
 {
-    public sealed class SourceText
+    public sealed class SourceText : IEquatable<SourceText>
     {
         private readonly string _text;
 
@@ -20,14 +22,14 @@ namespace Minsk.CodeAnalysis.Text
 
         private static ImmutableArray<TextLine> ParseLines(SourceText sourceText, string text)
         {
-            var result = ImmutableArray.CreateBuilder<TextLine>();
+            ImmutableArray<TextLine>.Builder? result = ImmutableArray.CreateBuilder<TextLine>();
 
-            var position = 0;
-            var lineStart = 0;
+            int position = 0;
+            int lineStart = 0;
 
             while (position < text.Length)
             {
-                var lineBreakWidth = GetLineBreakWidth(text, position);
+                int lineBreakWidth = GetLineBreakWidth(text, position);
 
                 if (lineBreakWidth == 0)
                 {
@@ -43,29 +45,35 @@ namespace Minsk.CodeAnalysis.Text
             }
 
             if (position >= lineStart)
+            {
                 AddLine(result, sourceText, position, lineStart, 0);
+            }
 
             return result.ToImmutable();
         }
 
         private static void AddLine(ImmutableArray<TextLine>.Builder result, SourceText sourceText, int position, int lineStart, int lineBreakWidth)
         {
-            var lineLength = position - lineStart;
-            var lineLengthIncludingLineBreak = lineLength + lineBreakWidth;
-            var line = new TextLine(sourceText, lineStart, lineLength, lineLengthIncludingLineBreak);
+            int lineLength = position - lineStart;
+            int lineLengthIncludingLineBreak = lineLength + lineBreakWidth;
+            TextLine? line = new TextLine(sourceText, lineStart, lineLength, lineLengthIncludingLineBreak);
             result.Add(line);
         }
 
         private static int GetLineBreakWidth(string text, int position)
         {
-            var c = text[position];
-            var l = position + 1 >= text.Length ? '\0' : text[position + 1];
+            char c = text[position];
+            char l = position + 1 >= text.Length ? '\0' : text[position + 1];
 
             if (c == '\r' && l == '\n')
+            {
                 return 2;
+            }
 
             if (c == '\r' || c == '\n')
+            {
                 return 1;
+            }
 
             return 0;
         }
@@ -80,16 +88,18 @@ namespace Minsk.CodeAnalysis.Text
 
         public int GetLineIndex(int position)
         {
-            var lower = 0;
-            var upper = Lines.Length - 1;
+            int lower = 0;
+            int upper = Lines.Length - 1;
 
             while (lower <= upper)
             {
-                var index = lower + (upper - lower) / 2;
-                var start = Lines[index].Start;
+                int index = lower + (upper - lower) / 2;
+                int start = Lines[index].Start;
 
                 if (position == start)
+                {
                     return index;
+                }
 
                 if (start > position)
                 {
@@ -109,5 +119,13 @@ namespace Minsk.CodeAnalysis.Text
         public string ToString(int start, int length) => _text.Substring(start, length);
 
         public string ToString(TextSpan span) => ToString(span.Start, span.Length);
+
+        public bool Equals([AllowNull] SourceText other) =>
+            other is SourceText && other.FileName == FileName && other._text == _text;
+
+        public override bool Equals(object? obj) =>
+            Equals(obj as SourceText);
+
+        public override int GetHashCode() => HashCode.Combine(FileName, _text);
     }
 }

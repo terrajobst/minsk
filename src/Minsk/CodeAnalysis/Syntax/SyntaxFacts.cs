@@ -99,21 +99,25 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
         {
-            var kinds = (SyntaxKind[]) Enum.GetValues(typeof(SyntaxKind));
-            foreach (var kind in kinds)
+            SyntaxKind[]? kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
+            foreach (SyntaxKind kind in kinds)
             {
                 if (GetUnaryOperatorPrecedence(kind) > 0)
+                {
                     yield return kind;
+                }
             }
         }
 
         public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds()
         {
-            var kinds = (SyntaxKind[]) Enum.GetValues(typeof(SyntaxKind));
-            foreach (var kind in kinds)
+            SyntaxKind[]? kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
+            foreach (SyntaxKind kind in kinds)
             {
                 if (GetBinaryOperatorPrecedence(kind) > 0)
+                {
                     yield return kind;
+                }
             }
         }
 
@@ -123,7 +127,7 @@ namespace Minsk.CodeAnalysis.Syntax
             {
                 case SyntaxKind.PlusToken:
                     return "+";
-                 case SyntaxKind.PlusEqualsToken:
+                case SyntaxKind.PlusEqualsToken:
                     return "+=";
                 case SyntaxKind.MinusToken:
                     return "-";
@@ -243,7 +247,7 @@ namespace Minsk.CodeAnalysis.Syntax
         }
         public static SyntaxKind GetBinaryOperatorOfAssignmentOperator(SyntaxKind kind)
         {
-            switch(kind)
+            switch (kind)
             {
                 case SyntaxKind.PlusEqualsToken:
                     return SyntaxKind.PlusToken;

@@ -26,9 +26,13 @@ namespace Minsk.CodeAnalysis.Binding
             where TSymbol : Symbol
         {
             if (_symbols == null)
+            {
                 _symbols = new Dictionary<string, Symbol>();
+            }
             else if (_symbols.ContainsKey(symbol.Name))
+            {
                 return false;
+            }
 
             _symbols.Add(symbol.Name, symbol);
             return true;
@@ -36,8 +40,10 @@ namespace Minsk.CodeAnalysis.Binding
 
         public Symbol? TryLookupSymbol(string name)
         {
-            if (_symbols != null && _symbols.TryGetValue(name, out var symbol))
+            if (_symbols != null && _symbols.TryGetValue(name, out Symbol? symbol))
+            {
                 return symbol;
+            }
 
             return Parent?.TryLookupSymbol(name);
         }
@@ -52,7 +58,9 @@ namespace Minsk.CodeAnalysis.Binding
             where TSymbol : Symbol
         {
             if (_symbols == null)
+            {
                 return ImmutableArray<TSymbol>.Empty;
+            }
 
             return _symbols.Values.OfType<TSymbol>().ToImmutableArray();
         }

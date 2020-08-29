@@ -22,13 +22,13 @@ namespace Minsk.Tests.CodeAnalysis
         {
             text = Unindent(text);
 
-            var textBuilder = new StringBuilder();
-            var spanBuilder = ImmutableArray.CreateBuilder<TextSpan>();
-            var startStack = new Stack<int>();
+            StringBuilder? textBuilder = new StringBuilder();
+            ImmutableArray<TextSpan>.Builder? spanBuilder = ImmutableArray.CreateBuilder<TextSpan>();
+            Stack<int>? startStack = new Stack<int>();
 
-            var position = 0;
+            int position = 0;
 
-            foreach (var c in text)
+            foreach (char c in text)
             {
                 if (c == '[')
                 {
@@ -37,11 +37,13 @@ namespace Minsk.Tests.CodeAnalysis
                 else if (c == ']')
                 {
                     if (startStack.Count == 0)
+                    {
                         throw new ArgumentException("Too many ']' in text", nameof(text));
+                    }
 
-                    var start = startStack.Pop();
-                    var end = position;
-                    var span = TextSpan.FromBounds(start, end);
+                    int start = startStack.Pop();
+                    int end = position;
+                    TextSpan span = TextSpan.FromBounds(start, end);
                     spanBuilder.Add(span);
                 }
                 else
@@ -52,32 +54,36 @@ namespace Minsk.Tests.CodeAnalysis
             }
 
             if (startStack.Count != 0)
+            {
                 throw new ArgumentException("Missing ']' in text", nameof(text));
+            }
 
             return new AnnotatedText(textBuilder.ToString(), spanBuilder.ToImmutable());
         }
 
         private static string Unindent(string text)
         {
-            var lines = UnindentLines(text);
+            string[]? lines = UnindentLines(text);
             return string.Join(Environment.NewLine, lines);
         }
 
         public static string[] UnindentLines(string text)
         {
-            var lines = new List<string>();
+            List<string>? lines = new List<string>();
 
-            using (var reader = new StringReader(text))
+            using (StringReader? reader = new StringReader(text))
             {
                 string? line;
                 while ((line = reader.ReadLine()) != null)
+                {
                     lines.Add(line);
+                }
             }
 
-            var minIndentation = int.MaxValue;
-            for (var i = 0; i < lines.Count; i++)
+            int minIndentation = int.MaxValue;
+            for (int i = 0; i < lines.Count; i++)
             {
-                var line = lines[i];
+                string? line = lines[i];
 
                 if (line.Trim().Length == 0)
                 {
@@ -85,23 +91,29 @@ namespace Minsk.Tests.CodeAnalysis
                     continue;
                 }
 
-                var indentation = line.Length - line.TrimStart().Length;
+                int indentation = line.Length - line.TrimStart().Length;
                 minIndentation = Math.Min(minIndentation, indentation);
             }
 
-            for (var i = 0; i < lines.Count; i++)
+            for (int i = 0; i < lines.Count; i++)
             {
                 if (lines[i].Length == 0)
+                {
                     continue;
+                }
 
                 lines[i] = lines[i].Substring(minIndentation);
             }
 
             while (lines.Count > 0 && lines[0].Length == 0)
+            {
                 lines.RemoveAt(0);
+            }
 
             while (lines.Count > 0 && lines[lines.Count - 1].Length == 0)
+            {
                 lines.RemoveAt(lines.Count - 1);
+            }
 
             return lines.ToArray();
         }

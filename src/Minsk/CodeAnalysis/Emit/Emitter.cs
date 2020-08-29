@@ -43,13 +43,13 @@ namespace Minsk.CodeAnalysis.Emit
         // TOOD: This constructor does too much. Resolution should be factored out.
         private Emitter(string moduleName, string[] references)
         {
-            var assemblies = new List<AssemblyDefinition>();
+            List<AssemblyDefinition>? assemblies = new List<AssemblyDefinition>();
 
-            foreach (var reference in references)
+            foreach (string? reference in references)
             {
                 try
                 {
-                    var assembly = AssemblyDefinition.ReadAssembly(reference);
+                    AssemblyDefinition? assembly = AssemblyDefinition.ReadAssembly(reference);
                     assemblies.Add(assembly);
                 }
                 catch (BadImageFormatException)
@@ -58,7 +58,7 @@ namespace Minsk.CodeAnalysis.Emit
                 }
             }
 
-            var builtInTypes = new List<(TypeSymbol Type, string MetadataName)>()
+            List<(TypeSymbol Type, string MetadataName)>? builtInTypes = new List<(TypeSymbol Type, string MetadataName)>()
             {
                 (TypeSymbol.Any, "System.Object"),
                 (TypeSymbol.Bool, "System.Boolean"),
@@ -67,25 +67,25 @@ namespace Minsk.CodeAnalysis.Emit
                 (TypeSymbol.Void, "System.Void"),
             };
 
-            var assemblyName = new AssemblyNameDefinition(moduleName, new Version(1, 0));
+            AssemblyNameDefinition? assemblyName = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             _assemblyDefinition = AssemblyDefinition.CreateAssembly(assemblyName, moduleName, ModuleKind.Console);
             _knownTypes = new Dictionary<TypeSymbol, TypeReference>();
 
-            foreach (var (typeSymbol, metadataName) in builtInTypes)
+            foreach ((TypeSymbol typeSymbol, string metadataName) in builtInTypes)
             {
-                var typeReference = ResolveType(typeSymbol.Name, metadataName);
+                TypeReference? typeReference = ResolveType(typeSymbol.Name, metadataName);
                 _knownTypes.Add(typeSymbol, typeReference);
             }
 
             TypeReference ResolveType(string? minskName, string metadataName)
             {
-                var foundTypes = assemblies.SelectMany(a => a.Modules)
+                TypeDefinition[]? foundTypes = assemblies.SelectMany(a => a.Modules)
                                            .SelectMany(m => m.Types)
                                            .Where(t => t.FullName == metadataName)
                                            .ToArray();
                 if (foundTypes.Length == 1)
                 {
-                    var typeReference = _assemblyDefinition.MainModule.ImportReference(foundTypes[0]);
+                    TypeReference? typeReference = _assemblyDefinition.MainModule.ImportReference(foundTypes[0]);
                     return typeReference;
                 }
                 else if (foundTypes.Length == 0)
@@ -102,23 +102,25 @@ namespace Minsk.CodeAnalysis.Emit
 
             MethodReference ResolveMethod(string typeName, string methodName, string[] parameterTypeNames)
             {
-                var foundTypes = assemblies.SelectMany(a => a.Modules)
+                TypeDefinition[]? foundTypes = assemblies.SelectMany(a => a.Modules)
                                            .SelectMany(m => m.Types)
                                            .Where(t => t.FullName == typeName)
                                            .ToArray();
                 if (foundTypes.Length == 1)
                 {
-                    var foundType = foundTypes[0];
-                    var methods = foundType.Methods.Where(m => m.Name == methodName);
+                    TypeDefinition? foundType = foundTypes[0];
+                    IEnumerable<MethodDefinition>? methods = foundType.Methods.Where(m => m.Name == methodName);
 
-                    foreach (var method in methods)
+                    foreach (MethodDefinition? method in methods)
                     {
                         if (method.Parameters.Count != parameterTypeNames.Length)
+                        {
                             continue;
+                        }
 
-                        var allParametersMatch = true;
+                        bool allParametersMatch = true;
 
-                        for (var i = 0; i < parameterTypeNames.Length; i++)
+                        for (int i = 0; i < parameterTypeNames.Length; i++)
                         {
                             if (method.Parameters[i].ParameterType.FullName != parameterTypeNames[i])
                             {
@@ -128,7 +130,9 @@ namespace Minsk.CodeAnalysis.Emit
                         }
 
                         if (!allParametersMatch)
+                        {
                             continue;
+                        }
 
                         return _assemblyDefinition.MainModule.ImportReference(method);
                     }
@@ -148,21 +152,21 @@ namespace Minsk.CodeAnalysis.Emit
                 return null!;
             }
 
-            _objectEqualsReference = ResolveMethod("System.Object", "Equals", new [] { "System.Object", "System.Object" });
+            _objectEqualsReference = ResolveMethod("System.Object", "Equals", new[] { "System.Object", "System.Object" });
             _consoleReadLineReference = ResolveMethod("System.Console", "ReadLine", Array.Empty<string>());
-            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new [] { "System.Object" });
-            _stringConcat2Reference = ResolveMethod("System.String", "Concat", new [] { "System.String", "System.String" });
-            _stringConcat3Reference = ResolveMethod("System.String", "Concat", new [] { "System.String", "System.String", "System.String" });
-            _stringConcat4Reference = ResolveMethod("System.String", "Concat", new [] { "System.String", "System.String", "System.String", "System.String" });
-            _stringConcatArrayReference = ResolveMethod("System.String", "Concat", new [] { "System.String[]" });
-            _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", new [] { "System.Object" });
-            _convertToInt32Reference = ResolveMethod("System.Convert", "ToInt32", new [] { "System.Object" });
-            _convertToStringReference = ResolveMethod("System.Convert", "ToString", new [] { "System.Object" });
+            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new[] { "System.Object" });
+            _stringConcat2Reference = ResolveMethod("System.String", "Concat", new[] { "System.String", "System.String" });
+            _stringConcat3Reference = ResolveMethod("System.String", "Concat", new[] { "System.String", "System.String", "System.String" });
+            _stringConcat4Reference = ResolveMethod("System.String", "Concat", new[] { "System.String", "System.String", "System.String", "System.String" });
+            _stringConcatArrayReference = ResolveMethod("System.String", "Concat", new[] { "System.String[]" });
+            _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", new[] { "System.Object" });
+            _convertToInt32Reference = ResolveMethod("System.Convert", "ToInt32", new[] { "System.Object" });
+            _convertToStringReference = ResolveMethod("System.Convert", "ToString", new[] { "System.Object" });
             _randomReference = ResolveType(null, "System.Random");
             _randomCtorReference = ResolveMethod("System.Random", ".ctor", Array.Empty<string>());
-            _randomNextReference = ResolveMethod("System.Random", "Next", new [] { "System.Int32" });
+            _randomNextReference = ResolveMethod("System.Random", "Next", new[] { "System.Int32" });
 
-            var objectType = _knownTypes[TypeSymbol.Any];
+            TypeReference? objectType = _knownTypes[TypeSymbol.Any];
             if (objectType != null)
             {
                 _typeDefinition = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed, objectType);
@@ -177,25 +181,35 @@ namespace Minsk.CodeAnalysis.Emit
         public static ImmutableArray<Diagnostic> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
         {
             if (program.Diagnostics.HasErrors())
+            {
                 return program.Diagnostics;
+            }
 
-            var emitter = new Emitter(moduleName, references);
+            Emitter? emitter = new Emitter(moduleName, references);
             return emitter.Emit(program, outputPath);
         }
 
         public ImmutableArray<Diagnostic> Emit(BoundProgram program, string outputPath)
         {
             if (_diagnostics.Any())
+            {
                 return _diagnostics.ToImmutableArray();
+            }
 
-            foreach (var functionWithBody in program.Functions)
+            foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionWithBody in program.Functions)
+            {
                 EmitFunctionDeclaration(functionWithBody.Key);
+            }
 
-            foreach (var functionWithBody in program.Functions)
+            foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionWithBody in program.Functions)
+            {
                 EmitFunctionBody(functionWithBody.Key, functionWithBody.Value);
+            }
 
             if (program.MainFunction != null)
+            {
                 _assemblyDefinition.EntryPoint = _methods[program.MainFunction];
+            }
 
             _assemblyDefinition.Write(outputPath);
 
@@ -204,14 +218,14 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitFunctionDeclaration(FunctionSymbol function)
         {
-            var functionType = _knownTypes[function.Type];
-            var method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, functionType);
+            TypeReference? functionType = _knownTypes[function.Type];
+            MethodDefinition? method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, functionType);
 
-            foreach (var parameter in function.Parameters)
+            foreach (ParameterSymbol? parameter in function.Parameters)
             {
-                var parameterType = _knownTypes[parameter.Type];
-                var parameterAttributes = ParameterAttributes.None;
-                var parameterDefinition = new ParameterDefinition(parameter.Name, parameterAttributes, parameterType);
+                TypeReference? parameterType = _knownTypes[parameter.Type];
+                ParameterAttributes parameterAttributes = ParameterAttributes.None;
+                ParameterDefinition? parameterDefinition = new ParameterDefinition(parameter.Name, parameterAttributes, parameterType);
                 method.Parameters.Add(parameterDefinition);
             }
 
@@ -221,22 +235,24 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitFunctionBody(FunctionSymbol function, BoundBlockStatement body)
         {
-            var method = _methods[function];
+            MethodDefinition? method = _methods[function];
             _locals.Clear();
             _labels.Clear();
             _fixups.Clear();
 
-            var ilProcessor = method.Body.GetILProcessor();
+            ILProcessor? ilProcessor = method.Body.GetILProcessor();
 
-            foreach (var statement in body.Statements)
-                EmitStatement(ilProcessor, statement);
-
-            foreach (var fixup in _fixups)
+            foreach (BoundStatement? statement in body.Statements)
             {
-                var targetLabel = fixup.Target;
-                var targetInstructionIndex = _labels[targetLabel];
-                var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
-                var instructionToFixup = ilProcessor.Body.Instructions[fixup.InstructionIndex];
+                EmitStatement(ilProcessor, statement);
+            }
+
+            foreach ((int InstructionIndex, BoundLabel Target) fixup in _fixups)
+            {
+                BoundLabel? targetLabel = fixup.Target;
+                int targetInstructionIndex = _labels[targetLabel];
+                Instruction? targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
+                Instruction? instructionToFixup = ilProcessor.Body.Instructions[fixup.InstructionIndex];
                 instructionToFixup.Operand = targetInstruction;
             }
 
@@ -280,8 +296,8 @@ namespace Minsk.CodeAnalysis.Emit
 
         private void EmitVariableDeclaration(ILProcessor ilProcessor, BoundVariableDeclaration node)
         {
-            var typeReference = _knownTypes[node.Variable.Type];
-            var variableDefinition = new VariableDefinition(typeReference);
+            TypeReference? typeReference = _knownTypes[node.Variable.Type];
+            VariableDefinition? variableDefinition = new VariableDefinition(typeReference);
             _locals.Add(node.Variable, variableDefinition);
             ilProcessor.Body.Variables.Add(variableDefinition);
 
@@ -304,7 +320,7 @@ namespace Minsk.CodeAnalysis.Emit
         {
             EmitExpression(ilProcessor, node.Condition);
 
-            var opCode = node.JumpIfTrue ? OpCodes.Brtrue : OpCodes.Brfalse;
+            OpCode opCode = node.JumpIfTrue ? OpCodes.Brtrue : OpCodes.Brfalse;
             _fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
             ilProcessor.Emit(opCode, Instruction.Create(OpCodes.Nop));
         }
@@ -312,7 +328,9 @@ namespace Minsk.CodeAnalysis.Emit
         private void EmitReturnStatement(ILProcessor ilProcessor, BoundReturnStatement node)
         {
             if (node.Expression != null)
+            {
                 EmitExpression(ilProcessor, node.Expression);
+            }
 
             ilProcessor.Emit(OpCodes.Ret);
         }
@@ -322,7 +340,9 @@ namespace Minsk.CodeAnalysis.Emit
             EmitExpression(ilProcessor, node.Expression);
 
             if (node.Expression.Type != TypeSymbol.Void)
+            {
                 ilProcessor.Emit(OpCodes.Pop);
+            }
         }
 
         private void EmitExpression(ILProcessor ilProcessor, BoundExpression node)
@@ -364,18 +384,18 @@ namespace Minsk.CodeAnalysis.Emit
 
             if (node.Type == TypeSymbol.Bool)
             {
-                var value = (bool)node.ConstantValue.Value;
-                var instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
+                bool value = (bool)node.ConstantValue.Value;
+                OpCode instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
                 ilProcessor.Emit(instruction);
             }
             else if (node.Type == TypeSymbol.Int)
             {
-                var value = (int)node.ConstantValue.Value;
+                int value = (int)node.ConstantValue.Value;
                 ilProcessor.Emit(OpCodes.Ldc_I4, value);
             }
             else if (node.Type == TypeSymbol.String)
             {
-                var value = (string)node.ConstantValue.Value;
+                string? value = (string)node.ConstantValue.Value;
                 ilProcessor.Emit(OpCodes.Ldstr, value);
             }
             else
@@ -392,14 +412,14 @@ namespace Minsk.CodeAnalysis.Emit
             }
             else
             {
-                var variableDefinition = _locals[node.Variable];
+                VariableDefinition? variableDefinition = _locals[node.Variable];
                 ilProcessor.Emit(OpCodes.Ldloc, variableDefinition);
             }
         }
 
         private void EmitAssignmentExpression(ILProcessor ilProcessor, BoundAssignmentExpression node)
         {
-            var variableDefinition = _locals[node.Variable];
+            VariableDefinition? variableDefinition = _locals[node.Variable];
             EmitExpression(ilProcessor, node.Expression);
             ilProcessor.Emit(OpCodes.Dup);
             ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
@@ -538,7 +558,7 @@ namespace Minsk.CodeAnalysis.Emit
             // This approach enables constant folding of non-sibling nodes, which cannot be done in the ConstantFolding class as it would require changing the tree.
             // Example: folding b and c in ((a + b) + c) if they are constant.
 
-            var nodes = FoldConstants(node.Syntax, Flatten(node)).ToList();
+            List<BoundExpression>? nodes = FoldConstants(node.Syntax, Flatten(node)).ToList();
 
             switch (nodes.Count)
             {
@@ -575,7 +595,7 @@ namespace Minsk.CodeAnalysis.Emit
                     ilProcessor.Emit(OpCodes.Ldc_I4, nodes.Count);
                     ilProcessor.Emit(OpCodes.Newarr, _knownTypes[TypeSymbol.String]);
 
-                    for (var i = 0; i < nodes.Count; i++)
+                    for (int i = 0; i < nodes.Count; i++)
                     {
                         ilProcessor.Emit(OpCodes.Dup);
                         ilProcessor.Emit(OpCodes.Ldc_I4, i);
@@ -595,16 +615,22 @@ namespace Minsk.CodeAnalysis.Emit
                     binaryExpression.Left.Type == TypeSymbol.String &&
                     binaryExpression.Right.Type == TypeSymbol.String)
                 {
-                    foreach (var result in Flatten(binaryExpression.Left))
+                    foreach (BoundExpression? result in Flatten(binaryExpression.Left))
+                    {
                         yield return result;
+                    }
 
-                    foreach (var result in Flatten(binaryExpression.Right))
+                    foreach (BoundExpression? result in Flatten(binaryExpression.Right))
+                    {
                         yield return result;
+                    }
                 }
                 else
                 {
                     if (node.Type != TypeSymbol.String)
+                    {
                         throw new Exception($"Unexpected node type in string concatenation: {node.Type}");
+                    }
 
                     yield return node;
                 }
@@ -615,14 +641,16 @@ namespace Minsk.CodeAnalysis.Emit
             {
                 StringBuilder? sb = null;
 
-                foreach (var node in nodes)
+                foreach (BoundExpression? node in nodes)
                 {
                     if (node.ConstantValue != null)
                     {
-                        var stringValue = (string)node.ConstantValue.Value;
+                        string? stringValue = (string)node.ConstantValue.Value;
 
                         if (string.IsNullOrEmpty(stringValue))
+                        {
                             continue;
+                        }
 
                         sb ??= new StringBuilder();
                         sb.Append(stringValue);
@@ -640,7 +668,9 @@ namespace Minsk.CodeAnalysis.Emit
                 }
 
                 if (sb?.Length > 0)
+                {
                     yield return new BoundLiteralExpression(syntax, sb.ToString());
+                }
             }
         }
 
@@ -649,19 +679,25 @@ namespace Minsk.CodeAnalysis.Emit
             if (node.Function == BuiltinFunctions.Rnd)
             {
                 if (_randomFieldDefinition == null)
+                {
                     EmitRandomField();
+                }
 
                 ilProcessor.Emit(OpCodes.Ldsfld, _randomFieldDefinition);
 
-                foreach (var argument in node.Arguments)
+                foreach (BoundExpression? argument in node.Arguments)
+                {
                     EmitExpression(ilProcessor, argument);
+                }
 
                 ilProcessor.Emit(OpCodes.Callvirt, _randomNextReference);
                 return;
             }
 
-            foreach (var argument in node.Arguments)
+            foreach (BoundExpression? argument in node.Arguments)
+            {
                 EmitExpression(ilProcessor, argument);
+            }
 
             if (node.Function == BuiltinFunctions.Input)
             {
@@ -673,7 +709,7 @@ namespace Minsk.CodeAnalysis.Emit
             }
             else
             {
-                var methodDefinition = _methods[node.Function];
+                MethodDefinition? methodDefinition = _methods[node.Function];
                 ilProcessor.Emit(OpCodes.Call, methodDefinition);
             }
         }
@@ -687,7 +723,7 @@ namespace Minsk.CodeAnalysis.Emit
             );
             _typeDefinition.Fields.Add(_randomFieldDefinition);
 
-            var staticConstructor = new MethodDefinition(
+            MethodDefinition? staticConstructor = new MethodDefinition(
                 ".cctor",
                 MethodAttributes.Static |
                 MethodAttributes.Private |
@@ -697,7 +733,7 @@ namespace Minsk.CodeAnalysis.Emit
             );
             _typeDefinition.Methods.Insert(0, staticConstructor);
 
-            var ilProcessor = staticConstructor.Body.GetILProcessor();
+            ILProcessor? ilProcessor = staticConstructor.Body.GetILProcessor();
             ilProcessor.Emit(OpCodes.Newobj, _randomCtorReference);
             ilProcessor.Emit(OpCodes.Stsfld, _randomFieldDefinition);
             ilProcessor.Emit(OpCodes.Ret);
@@ -706,10 +742,12 @@ namespace Minsk.CodeAnalysis.Emit
         private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
         {
             EmitExpression(ilProcessor, node.Expression);
-            var needsBoxing = node.Expression.Type == TypeSymbol.Bool ||
+            bool needsBoxing = node.Expression.Type == TypeSymbol.Bool ||
                               node.Expression.Type == TypeSymbol.Int;
             if (needsBoxing)
+            {
                 ilProcessor.Emit(OpCodes.Box, _knownTypes[node.Expression.Type]);
+            }
 
             if (node.Type == TypeSymbol.Any)
             {

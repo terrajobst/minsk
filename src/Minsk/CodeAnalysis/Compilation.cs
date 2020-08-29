@@ -45,7 +45,7 @@ namespace Minsk.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(IsScript, Previous?.GlobalScope, SyntaxTrees);
+                    BoundGlobalScope? globalScope = Binder.BindGlobalScope(IsScript, Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
@@ -55,24 +55,36 @@ namespace Minsk.CodeAnalysis
 
         public IEnumerable<Symbol> GetSymbols()
         {
-            var submission = this;
-            var seenSymbolNames = new HashSet<string>();
+            Compilation? submission = this;
+            HashSet<string>? seenSymbolNames = new HashSet<string>();
 
-            var builtinFunctions = BuiltinFunctions.GetAll().ToList();
+            List<FunctionSymbol>? builtinFunctions = BuiltinFunctions.GetAll().ToList();
 
             while (submission != null)
             {
-                foreach (var function in submission.Functions)
+                foreach (FunctionSymbol? function in submission.Functions)
+                {
                     if (seenSymbolNames.Add(function.Name))
+                    {
                         yield return function;
+                    }
+                }
 
-                foreach (var variable in submission.Variables)
+                foreach (VariableSymbol? variable in submission.Variables)
+                {
                     if (seenSymbolNames.Add(variable.Name))
+                    {
                         yield return variable;
+                    }
+                }
 
-                foreach (var builtin in builtinFunctions)
+                foreach (FunctionSymbol? builtin in builtinFunctions)
+                {
                     if (seenSymbolNames.Add(builtin.Name))
+                    {
                         yield return builtin;
+                    }
+                }
 
                 submission = submission.Previous;
             }
@@ -80,16 +92,18 @@ namespace Minsk.CodeAnalysis
 
         private BoundProgram GetProgram()
         {
-            var previous = Previous == null ? null : Previous.GetProgram();
+            BoundProgram? previous = Previous?.GetProgram();
             return Binder.BindProgram(IsScript, previous, GlobalScope);
         }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
             if (GlobalScope.Diagnostics.Any())
+            {
                 return new EvaluationResult(GlobalScope.Diagnostics, null);
+            }
 
-            var program = GetProgram();
+            BoundProgram? program = GetProgram();
 
             // var appPath = Environment.GetCommandLineArgs()[0];
             // var appDirectory = Path.GetDirectoryName(appPath);
@@ -102,10 +116,12 @@ namespace Minsk.CodeAnalysis
             //     cfg.WriteTo(streamWriter);
 
             if (program.Diagnostics.HasErrors())
+            {
                 return new EvaluationResult(program.Diagnostics, null);
+            }
 
-            var evaluator = new Evaluator(program, variables);
-            var value = evaluator.Evaluate();
+            Evaluator? evaluator = new Evaluator(program, variables);
+            object? value = evaluator.Evaluate();
 
             return new EvaluationResult(program.Diagnostics, value);
         }
@@ -113,9 +129,13 @@ namespace Minsk.CodeAnalysis
         public void EmitTree(TextWriter writer)
         {
             if (GlobalScope.MainFunction != null)
+            {
                 EmitTree(GlobalScope.MainFunction, writer);
+            }
             else if (GlobalScope.ScriptFunction != null)
+            {
                 EmitTree(GlobalScope.ScriptFunction, writer);
+            }
         }
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
@@ -123,24 +143,29 @@ namespace Minsk.CodeAnalysis
             _ = symbol ?? throw new ArgumentNullException(nameof(symbol));
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
 
-            var program = GetProgram();
+            BoundProgram? program = GetProgram();
             symbol.WriteTo(writer);
             writer.WriteLine();
-            if (!program.Functions.TryGetValue(symbol, out var body))
+            if (!program.Functions.TryGetValue(symbol, out BoundBlockStatement? body))
+            {
                 return;
+            }
+
             body.WriteTo(writer);
         }
 
         // TODO: References should be part of the compilation, not arguments for Emit
         public ImmutableArray<Diagnostic> Emit(string moduleName, string[] references, string outputPath)
         {
-            var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
+            IEnumerable<Diagnostic>? parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
 
-            var diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
+            ImmutableArray<Diagnostic> diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
             if (diagnostics.HasErrors())
+            {
                 return diagnostics;
+            }
 
-            var program = GetProgram();
+            BoundProgram? program = GetProgram();
             return Emitter.Emit(program, moduleName, references, outputPath);
         }
     }

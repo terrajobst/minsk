@@ -9,3 +9,20 @@ dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 
 dotnet_naming_style.starts_with_underscore.capitalization = camel_case
 dotnet_naming_style.starts_with_underscore.required_prefix = _
+
+# CA1307: Specify StringComparison
+dotnet_diagnostic.CA1307.severity = suggestion
+
+[*.cs]
+csharp_style_var_for_built_in_types = false
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = false
+
+# IDE0022: Use block body for methods
+csharp_style_expression_bodied_methods = true:none
+
+# Default severity for analyzer diagnostics with category 'Globalization'
+dotnet_analyzer_diagnostic.category-Globalization.severity = suggestion
+
+# CA1707: Identifiers should not contain underscores -- TODO: Disable this rule ONLY for tests.
+dotnet_diagnostic.CA1707.severity = none

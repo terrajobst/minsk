@@ -23,13 +23,13 @@ namespace Minsk.CodeAnalysis
             _globals = variables;
             _locals.Push(new Dictionary<VariableSymbol, object>());
 
-            var current = program;
+            BoundProgram? current = program;
             while (current != null)
             {
-                foreach (var kv in current.Functions)
+                foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> kv in current.Functions)
                 {
-                    var function = kv.Key;
-                    var body = kv.Value;
+                    FunctionSymbol? function = kv.Key;
+                    BoundBlockStatement? body = kv.Value;
                     _functions.Add(function, body);
                 }
 
@@ -39,29 +39,33 @@ namespace Minsk.CodeAnalysis
 
         public object? Evaluate()
         {
-            var function = _program.MainFunction ?? _program.ScriptFunction;
+            FunctionSymbol? function = _program.MainFunction ?? _program.ScriptFunction;
             if (function == null)
+            {
                 return null;
+            }
 
-            var body = _functions[function];
+            BoundBlockStatement? body = _functions[function];
             return EvaluateStatement(body);
         }
 
         private object? EvaluateStatement(BoundBlockStatement body)
         {
-            var labelToIndex = new Dictionary<BoundLabel, int>();
+            Dictionary<BoundLabel, int>? labelToIndex = new Dictionary<BoundLabel, int>();
 
-            for (var i = 0; i < body.Statements.Length; i++)
+            for (int i = 0; i < body.Statements.Length; i++)
             {
                 if (body.Statements[i] is BoundLabelStatement l)
+                {
                     labelToIndex.Add(l.Label, i + 1);
+                }
             }
 
-            var index = 0;
+            int index = 0;
 
             while (index < body.Statements.Length)
             {
-                var s = body.Statements[index];
+                BoundStatement? s = body.Statements[index];
 
                 switch (s.Kind)
                 {
@@ -77,22 +81,27 @@ namespace Minsk.CodeAnalysis
                         index++;
                         break;
                     case BoundNodeKind.GotoStatement:
-                        var gs = (BoundGotoStatement)s;
+                        BoundGotoStatement? gs = (BoundGotoStatement)s;
                         index = labelToIndex[gs.Label];
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
-                        var cgs = (BoundConditionalGotoStatement)s;
-                        var condition = (bool)EvaluateExpression(cgs.Condition)!;
+                        BoundConditionalGotoStatement? cgs = (BoundConditionalGotoStatement)s;
+                        bool condition = (bool)EvaluateExpression(cgs.Condition)!;
                         if (condition == cgs.JumpIfTrue)
+                        {
                             index = labelToIndex[cgs.Label];
+                        }
                         else
+                        {
                             index++;
+                        }
+
                         break;
                     case BoundNodeKind.LabelStatement:
                         index++;
                         break;
                     case BoundNodeKind.ReturnStatement:
-                        var rs = (BoundReturnStatement)s;
+                        BoundReturnStatement? rs = (BoundReturnStatement)s;
                         _lastValue = rs.Expression == null ? null : EvaluateExpression(rs.Expression);
                         return _lastValue;
                     default:
@@ -105,7 +114,7 @@ namespace Minsk.CodeAnalysis
 
         private void EvaluateVariableDeclaration(BoundVariableDeclaration node)
         {
-            var value = EvaluateExpression(node.Initializer);
+            object? value = EvaluateExpression(node.Initializer);
             Debug.Assert(value != null);
 
             _lastValue = value;
@@ -120,25 +129,20 @@ namespace Minsk.CodeAnalysis
         private object? EvaluateExpression(BoundExpression node)
         {
             if (node.ConstantValue != null)
-                return EvaluateConstantExpression(node);
-
-            switch (node.Kind)
             {
-                case BoundNodeKind.VariableExpression:
-                    return EvaluateVariableExpression((BoundVariableExpression)node);
-                case BoundNodeKind.AssignmentExpression:
-                    return EvaluateAssignmentExpression((BoundAssignmentExpression)node);
-                case BoundNodeKind.UnaryExpression:
-                    return EvaluateUnaryExpression((BoundUnaryExpression)node);
-                case BoundNodeKind.BinaryExpression:
-                    return EvaluateBinaryExpression((BoundBinaryExpression)node);
-                case BoundNodeKind.CallExpression:
-                    return EvaluateCallExpression((BoundCallExpression)node);
-                case BoundNodeKind.ConversionExpression:
-                    return EvaluateConversionExpression((BoundConversionExpression)node);
-                default:
-                    throw new Exception($"Unexpected node {node.Kind}");
+                return EvaluateConstantExpression(node);
             }
+
+            return node.Kind switch
+            {
+                BoundNodeKind.VariableExpression => EvaluateVariableExpression((BoundVariableExpression)node),
+                BoundNodeKind.AssignmentExpression => EvaluateAssignmentExpression((BoundAssignmentExpression)node),
+                BoundNodeKind.UnaryExpression => EvaluateUnaryExpression((BoundUnaryExpression)node),
+                BoundNodeKind.BinaryExpression => EvaluateBinaryExpression((BoundBinaryExpression)node),
+                BoundNodeKind.CallExpression => EvaluateCallExpression((BoundCallExpression)node),
+                BoundNodeKind.ConversionExpression => EvaluateConversionExpression((BoundConversionExpression)node),
+                _ => throw new Exception($"Unexpected node {node.Kind}"),
+            };
         }
 
         private static object EvaluateConstantExpression(BoundExpression n)
@@ -156,14 +160,14 @@ namespace Minsk.CodeAnalysis
             }
             else
             {
-                var locals = _locals.Peek();
+                Dictionary<VariableSymbol, object>? locals = _locals.Peek();
                 return locals[v.Variable];
             }
         }
 
         private object EvaluateAssignmentExpression(BoundAssignmentExpression a)
         {
-            var value = EvaluateExpression(a.Expression);
+            object? value = EvaluateExpression(a.Expression);
             Debug.Assert(value != null);
 
             Assign(a.Variable, value);
@@ -172,29 +176,24 @@ namespace Minsk.CodeAnalysis
 
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
         {
-            var operand = EvaluateExpression(u.Operand);
+            object? operand = EvaluateExpression(u.Operand);
 
             Debug.Assert(operand != null);
 
-            switch (u.Op.Kind)
+            return u.Op.Kind switch
             {
-                case BoundUnaryOperatorKind.Identity:
-                    return (int)operand;
-                case BoundUnaryOperatorKind.Negation:
-                    return -(int)operand;
-                case BoundUnaryOperatorKind.LogicalNegation:
-                    return !(bool)operand;
-                case BoundUnaryOperatorKind.OnesComplement:
-                    return ~(int)operand;
-                default:
-                    throw new Exception($"Unexpected unary operator {u.Op}");
-            }
+                BoundUnaryOperatorKind.Identity => (int)operand,
+                BoundUnaryOperatorKind.Negation => -(int)operand,
+                BoundUnaryOperatorKind.LogicalNegation => !(bool)operand,
+                BoundUnaryOperatorKind.OnesComplement => ~(int)operand,
+                _ => throw new Exception($"Unexpected unary operator {u.Op}"),
+            };
         }
 
         private object EvaluateBinaryExpression(BoundBinaryExpression b)
         {
-            var left = EvaluateExpression(b.Left);
-            var right = EvaluateExpression(b.Right);
+            object? left = EvaluateExpression(b.Left);
+            object? right = EvaluateExpression(b.Right);
 
             Debug.Assert(left != null && right != null);
 
@@ -202,9 +201,14 @@ namespace Minsk.CodeAnalysis
             {
                 case BoundBinaryOperatorKind.Addition:
                     if (b.Type == TypeSymbol.Int)
+                    {
                         return (int)left + (int)right;
+                    }
                     else
+                    {
                         return (string)left + (string)right;
+                    }
+
                 case BoundBinaryOperatorKind.Subtraction:
                     return (int)left - (int)right;
                 case BoundBinaryOperatorKind.Multiplication:
@@ -213,19 +217,34 @@ namespace Minsk.CodeAnalysis
                     return (int)left / (int)right;
                 case BoundBinaryOperatorKind.BitwiseAnd:
                     if (b.Type == TypeSymbol.Int)
+                    {
                         return (int)left & (int)right;
+                    }
                     else
+                    {
                         return (bool)left & (bool)right;
+                    }
+
                 case BoundBinaryOperatorKind.BitwiseOr:
                     if (b.Type == TypeSymbol.Int)
+                    {
                         return (int)left | (int)right;
+                    }
                     else
+                    {
                         return (bool)left | (bool)right;
+                    }
+
                 case BoundBinaryOperatorKind.BitwiseXor:
                     if (b.Type == TypeSymbol.Int)
+                    {
                         return (int)left ^ (int)right;
+                    }
                     else
+                    {
                         return (bool)left ^ (bool)right;
+                    }
+
                 case BoundBinaryOperatorKind.LogicalAnd:
                     return (bool)left && (bool)right;
                 case BoundBinaryOperatorKind.LogicalOr:
@@ -255,33 +274,35 @@ namespace Minsk.CodeAnalysis
             }
             else if (node.Function == BuiltinFunctions.Print)
             {
-                var value = EvaluateExpression(node.Arguments[0]);
+                object? value = EvaluateExpression(node.Arguments[0]);
                 Console.WriteLine(value);
                 return null;
             }
             else if (node.Function == BuiltinFunctions.Rnd)
             {
-                var max = (int)EvaluateExpression(node.Arguments[0])!;
+                int max = (int)EvaluateExpression(node.Arguments[0])!;
                 if (_random == null)
+                {
                     _random = new Random();
+                }
 
                 return _random.Next(max);
             }
             else
             {
-                var locals = new Dictionary<VariableSymbol, object>();
+                Dictionary<VariableSymbol, object>? locals = new Dictionary<VariableSymbol, object>();
                 for (int i = 0; i < node.Arguments.Length; i++)
                 {
-                    var parameter = node.Function.Parameters[i];
-                    var value = EvaluateExpression(node.Arguments[i]);
+                    ParameterSymbol? parameter = node.Function.Parameters[i];
+                    object? value = EvaluateExpression(node.Arguments[i]);
                     Debug.Assert(value != null);
                     locals.Add(parameter, value);
                 }
 
                 _locals.Push(locals);
 
-                var statement = _functions[node.Function];
-                var result = EvaluateStatement(statement);
+                BoundBlockStatement? statement = _functions[node.Function];
+                object? result = EvaluateStatement(statement);
 
                 _locals.Pop();
 
@@ -291,17 +312,27 @@ namespace Minsk.CodeAnalysis
 
         private object? EvaluateConversionExpression(BoundConversionExpression node)
         {
-            var value = EvaluateExpression(node.Expression);
+            object? value = EvaluateExpression(node.Expression);
             if (node.Type == TypeSymbol.Any)
+            {
                 return value;
+            }
             else if (node.Type == TypeSymbol.Bool)
+            {
                 return Convert.ToBoolean(value);
+            }
             else if (node.Type == TypeSymbol.Int)
+            {
                 return Convert.ToInt32(value);
+            }
             else if (node.Type == TypeSymbol.String)
+            {
                 return Convert.ToString(value);
+            }
             else
+            {
                 throw new Exception($"Unexpected type {node.Type}");
+            }
         }
 
         private void Assign(VariableSymbol variable, object value)
@@ -312,7 +343,7 @@ namespace Minsk.CodeAnalysis
             }
             else
             {
-                var locals = _locals.Peek();
+                Dictionary<VariableSymbol, object>? locals = _locals.Peek();
                 locals[variable] = value;
             }
         }

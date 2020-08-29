@@ -29,17 +29,17 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             get
             {
-                var start = LeadingTrivia.Length == 0
+                int start = LeadingTrivia.Length == 0
                                 ? Span.Start
                                 : LeadingTrivia.First().Span.Start;
-                var end = TrailingTrivia.Length == 0
+                int end = TrailingTrivia.Length == 0
                                 ? Span.End
                                 : TrailingTrivia.Last().Span.End;
                 return TextSpan.FromBounds(start, end);
             }
         }
 
-        public ImmutableArray<SyntaxTrivia> LeadingTrivia { get;}
+        public ImmutableArray<SyntaxTrivia> LeadingTrivia { get; }
         public ImmutableArray<SyntaxTrivia> TrailingTrivia { get; }
 
         public override IEnumerable<SyntaxNode> GetChildren()

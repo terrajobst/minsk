@@ -15,7 +15,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         public override string ToString()
         {
-            using (var writer = new StringWriter())
+            using (StringWriter? writer = new StringWriter())
             {
                 this.WriteTo(writer);
                 return writer.ToString();

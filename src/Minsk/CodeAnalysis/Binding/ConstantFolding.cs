@@ -29,8 +29,8 @@ namespace Minsk.CodeAnalysis.Binding
 
         public static BoundConstant? Fold(BoundExpression left, BoundBinaryOperator op, BoundExpression right)
         {
-            var leftConstant = left.ConstantValue;
-            var rightConstant = right.ConstantValue;
+            BoundConstant? leftConstant = left.ConstantValue;
+            BoundConstant? rightConstant = right.ConstantValue;
 
             // Special case && and || because there are cases where only one
             // side needs to be known.
@@ -54,18 +54,25 @@ namespace Minsk.CodeAnalysis.Binding
             }
 
             if (leftConstant == null || rightConstant == null)
+            {
                 return null;
+            }
 
-            var l = leftConstant.Value;
-            var r = rightConstant.Value;
+            object? l = leftConstant.Value;
+            object? r = rightConstant.Value;
 
             switch (op.Kind)
             {
                 case BoundBinaryOperatorKind.Addition:
                     if (left.Type == TypeSymbol.Int)
+                    {
                         return new BoundConstant((int)l + (int)r);
+                    }
                     else
+                    {
                         return new BoundConstant((string)l + (string)r);
+                    }
+
                 case BoundBinaryOperatorKind.Subtraction:
                     return new BoundConstant((int)l - (int)r);
                 case BoundBinaryOperatorKind.Multiplication:
@@ -74,19 +81,34 @@ namespace Minsk.CodeAnalysis.Binding
                     return new BoundConstant((int)l / (int)r);
                 case BoundBinaryOperatorKind.BitwiseAnd:
                     if (left.Type == TypeSymbol.Int)
+                    {
                         return new BoundConstant((int)l & (int)r);
+                    }
                     else
+                    {
                         return new BoundConstant((bool)l & (bool)r);
+                    }
+
                 case BoundBinaryOperatorKind.BitwiseOr:
                     if (left.Type == TypeSymbol.Int)
+                    {
                         return new BoundConstant((int)l | (int)r);
+                    }
                     else
+                    {
                         return new BoundConstant((bool)l | (bool)r);
+                    }
+
                 case BoundBinaryOperatorKind.BitwiseXor:
                     if (left.Type == TypeSymbol.Int)
+                    {
                         return new BoundConstant((int)l ^ (int)r);
+                    }
                     else
+                    {
                         return new BoundConstant((bool)l ^ (bool)r);
+                    }
+
                 case BoundBinaryOperatorKind.LogicalAnd:
                     return new BoundConstant((bool)l && (bool)r);
                 case BoundBinaryOperatorKind.LogicalOr:

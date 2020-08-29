@@ -32,10 +32,12 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private char Peek(int offset)
         {
-            var index = _position + offset;
+            int index = _position + offset;
 
             if (index >= _text.Length)
+            {
                 return '\0';
+            }
 
             return _text[index];
         }
@@ -44,22 +46,24 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             ReadTrivia(leading: true);
 
-            var leadingTrivia = _triviaBuilder.ToImmutable();
-            var tokenStart = _position;
+            ImmutableArray<SyntaxTrivia> leadingTrivia = _triviaBuilder.ToImmutable();
+            int tokenStart = _position;
 
             ReadToken();
 
-            var tokenKind = _kind;
-            var tokenValue = _value;
-            var tokenLength = _position - _start;
+            SyntaxKind tokenKind = _kind;
+            object? tokenValue = _value;
+            int tokenLength = _position - _start;
 
             ReadTrivia(leading: false);
 
-            var trailingTrivia = _triviaBuilder.ToImmutable();
+            ImmutableArray<SyntaxTrivia> trailingTrivia = _triviaBuilder.ToImmutable();
 
-            var tokenText = SyntaxFacts.GetText(tokenKind);
+            string? tokenText = SyntaxFacts.GetText(tokenKind);
             if (tokenText == null)
+            {
                 tokenText = _text.ToString(tokenStart, tokenLength);
+            }
 
             return new SyntaxToken(_syntaxTree, tokenKind, tokenStart, tokenText, tokenValue, leadingTrivia, trailingTrivia);
         }
@@ -68,7 +72,7 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             _triviaBuilder.Clear();
 
-            var done = false;
+            bool done = false;
 
             while (!done)
             {
@@ -98,7 +102,10 @@ namespace Minsk.CodeAnalysis.Syntax
                     case '\n':
                     case '\r':
                         if (!leading)
+                        {
                             done = true;
+                        }
+
                         ReadLineBreak();
                         break;
                     case ' ':
@@ -107,17 +114,22 @@ namespace Minsk.CodeAnalysis.Syntax
                         break;
                     default:
                         if (char.IsWhiteSpace(Current))
+                        {
                             ReadWhiteSpace();
+                        }
                         else
+                        {
                             done = true;
+                        }
+
                         break;
                 }
 
-                var length = _position - _start;
+                int length = _position - _start;
                 if (length > 0)
                 {
-                    var text = _text.ToString(_start, length);
-                    var trivia = new SyntaxTrivia(_syntaxTree, _kind, _start, text);
+                    string? text = _text.ToString(_start, length);
+                    SyntaxTrivia? trivia = new SyntaxTrivia(_syntaxTree, _kind, _start, text);
                     _triviaBuilder.Add(trivia);
                 }
             }
@@ -139,7 +151,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private void ReadWhiteSpace()
         {
-            var done = false;
+            bool done = false;
 
             while (!done)
             {
@@ -152,9 +164,14 @@ namespace Minsk.CodeAnalysis.Syntax
                         break;
                     default:
                         if (!char.IsWhiteSpace(Current))
+                        {
                             done = true;
+                        }
                         else
+                        {
                             _position++;
+                        }
+
                         break;
                 }
             }
@@ -166,7 +183,7 @@ namespace Minsk.CodeAnalysis.Syntax
         private void ReadSingleLineComment()
         {
             _position += 2;
-            var done = false;
+            bool done = false;
 
             while (!done)
             {
@@ -189,15 +206,15 @@ namespace Minsk.CodeAnalysis.Syntax
         private void ReadMultiLineComment()
         {
             _position += 2;
-            var done = false;
+            bool done = false;
 
             while (!done)
             {
                 switch (Current)
                 {
                     case '\0':
-                        var span = new TextSpan(_start, 2);
-                        var location = new TextLocation(_text, span);
+                        TextSpan span = new TextSpan(_start, 2);
+                        TextLocation location = new TextLocation(_text, span);
                         _diagnostics.ReportUnterminatedMultiLineComment(location);
                         done = true;
                         break;
@@ -402,8 +419,16 @@ namespace Minsk.CodeAnalysis.Syntax
                 case '"':
                     ReadString();
                     break;
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
                     ReadNumber();
                     break;
                 case '_':
@@ -416,8 +441,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     }
                     else
                     {
-                        var span = new TextSpan(_position, 1);
-                        var location = new TextLocation(_text, span);
+                        TextSpan span = new TextSpan(_position, 1);
+                        TextLocation location = new TextLocation(_text, span);
                         _diagnostics.ReportBadCharacter(location, Current);
                         _position++;
                     }
@@ -430,8 +455,8 @@ namespace Minsk.CodeAnalysis.Syntax
             // Skip the current quote
             _position++;
 
-            var sb = new StringBuilder();
-            var done = false;
+            StringBuilder? sb = new StringBuilder();
+            bool done = false;
 
             while (!done)
             {
@@ -440,8 +465,8 @@ namespace Minsk.CodeAnalysis.Syntax
                     case '\0':
                     case '\r':
                     case '\n':
-                        var span = new TextSpan(_start, 1);
-                        var location = new TextLocation(_text, span);
+                        TextSpan span = new TextSpan(_start, 1);
+                        TextLocation location = new TextLocation(_text, span);
                         _diagnostics.ReportUnterminatedString(location);
                         done = true;
                         break;
@@ -471,14 +496,16 @@ namespace Minsk.CodeAnalysis.Syntax
         private void ReadNumber()
         {
             while (char.IsDigit(Current))
-                _position++;
-
-            var length = _position - _start;
-            var text = _text.ToString(_start, length);
-            if (!int.TryParse(text, out var value))
             {
-                var span = new TextSpan(_start, length);
-                var location = new TextLocation(_text, span);
+                _position++;
+            }
+
+            int length = _position - _start;
+            string? text = _text.ToString(_start, length);
+            if (!int.TryParse(text, out int value))
+            {
+                TextSpan span = new TextSpan(_start, length);
+                TextLocation location = new TextLocation(_text, span);
                 _diagnostics.ReportInvalidNumber(location, text, TypeSymbol.Int);
             }
 
@@ -489,10 +516,12 @@ namespace Minsk.CodeAnalysis.Syntax
         private void ReadIdentifierOrKeyword()
         {
             while (char.IsLetterOrDigit(Current) || Current == '_')
+            {
                 _position++;
+            }
 
-            var length = _position - _start;
-            var text = _text.ToString(_start, length);
+            int length = _position - _start;
+            string? text = _text.ToString(_start, length);
             _kind = SyntaxFacts.GetKeywordKind(text);
         }
     }

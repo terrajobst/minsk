@@ -26,7 +26,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         private static BoundVariableDeclaration VariableDeclarationInternal(SyntaxNode syntax, string name, BoundExpression initializer, bool isReadOnly)
         {
-            var local = new LocalVariableSymbol(name, isReadOnly, initializer.Type, initializer.ConstantValue);
+            LocalVariableSymbol? local = new LocalVariableSymbol(name, isReadOnly, initializer.Type, initializer.ConstantValue);
             return new BoundVariableDeclaration(syntax, local, initializer);
         }
 
@@ -63,7 +63,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         public static BoundBinaryExpression Binary(SyntaxNode syntax, BoundExpression left, SyntaxKind kind, BoundExpression right)
         {
-            var op = BoundBinaryOperator.Bind(kind, left.Type, right.Type)!;
+            BoundBinaryOperator? op = BoundBinaryOperator.Bind(kind, left.Type, right.Type)!;
             return Binary(syntax, left, op, right);
         }
 
@@ -80,8 +80,8 @@ namespace Minsk.CodeAnalysis.Binding
 
         public static BoundExpressionStatement Increment(SyntaxNode syntax, BoundVariableExpression variable)
         {
-            var increment = Add(syntax, variable, Literal(syntax, 1));
-            var incrementAssign = new BoundAssignmentExpression(syntax, variable.Variable, increment);
+            BoundBinaryExpression? increment = Add(syntax, variable, Literal(syntax, 1));
+            BoundAssignmentExpression? incrementAssign = new BoundAssignmentExpression(syntax, variable.Variable, increment);
             return new BoundExpressionStatement(syntax, incrementAssign);
         }
 
@@ -89,7 +89,7 @@ namespace Minsk.CodeAnalysis.Binding
         {
             Debug.Assert(condition.Type == TypeSymbol.Bool);
 
-            var op = BoundUnaryOperator.Bind(SyntaxKind.BangToken, TypeSymbol.Bool);
+            BoundUnaryOperator? op = BoundUnaryOperator.Bind(SyntaxKind.BangToken, TypeSymbol.Bool);
             Debug.Assert(op != null);
             return new BoundUnaryExpression(syntax, op, condition);
         }

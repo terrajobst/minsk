@@ -15,10 +15,10 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public Parser(SyntaxTree syntaxTree)
         {
-            var tokens = new List<SyntaxToken>();
-            var badTokens = new List<SyntaxToken>();
+            List<SyntaxToken>? tokens = new List<SyntaxToken>();
+            List<SyntaxToken>? badTokens = new List<SyntaxToken>();
 
-            var lexer = new Lexer(syntaxTree);
+            Lexer? lexer = new Lexer(syntaxTree);
             SyntaxToken token;
             do
             {
@@ -32,23 +32,27 @@ namespace Minsk.CodeAnalysis.Syntax
                 {
                     if (badTokens.Count > 0)
                     {
-                        var leadingTrivia = token.LeadingTrivia.ToBuilder();
-                        var index = 0;
+                        ImmutableArray<SyntaxTrivia>.Builder? leadingTrivia = token.LeadingTrivia.ToBuilder();
+                        int index = 0;
 
-                        foreach (var badToken in badTokens)
+                        foreach (SyntaxToken? badToken in badTokens)
                         {
-                            foreach (var lt in badToken.LeadingTrivia)
+                            foreach (SyntaxTrivia? lt in badToken.LeadingTrivia)
+                            {
                                 leadingTrivia.Insert(index++, lt);
+                            }
 
-                            var trivia = new SyntaxTrivia(syntaxTree, SyntaxKind.SkippedTextTrivia, badToken.Position, badToken.Text);
+                            SyntaxTrivia? trivia = new SyntaxTrivia(syntaxTree, SyntaxKind.SkippedTextTrivia, badToken.Position, badToken.Text);
                             leadingTrivia.Insert(index++, trivia);
 
-                            foreach (var tt in badToken.TrailingTrivia)
+                            foreach (SyntaxTrivia? tt in badToken.TrailingTrivia)
+                            {
                                 leadingTrivia.Insert(index++, tt);
+                            }
                         }
 
                         badTokens.Clear();
-                        token =  new SyntaxToken(token.SyntaxTree, token.Kind, token.Position, token.Text, token.Value, leadingTrivia.ToImmutable(), token.TrailingTrivia);
+                        token = new SyntaxToken(token.SyntaxTree, token.Kind, token.Position, token.Text, token.Value, leadingTrivia.ToImmutable(), token.TrailingTrivia);
                     }
 
                     tokens.Add(token);
@@ -65,9 +69,11 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private SyntaxToken Peek(int offset)
         {
-            var index = _position + offset;
+            int index = _position + offset;
             if (index >= _tokens.Length)
+            {
                 return _tokens[_tokens.Length - 1];
+            }
 
             return _tokens[index];
         }
@@ -76,7 +82,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private SyntaxToken NextToken()
         {
-            var current = Current;
+            SyntaxToken? current = Current;
             _position++;
             return current;
         }
@@ -84,7 +90,9 @@ namespace Minsk.CodeAnalysis.Syntax
         private SyntaxToken MatchToken(SyntaxKind kind)
         {
             if (Current.Kind == kind)
+            {
                 return NextToken();
+            }
 
             _diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
             return new SyntaxToken(_syntaxTree, kind, Current.Position, null, null, ImmutableArray<SyntaxTrivia>.Empty, ImmutableArray<SyntaxTrivia>.Empty);
@@ -92,20 +100,20 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public CompilationUnitSyntax ParseCompilationUnit()
         {
-            var members = ParseMembers();
-            var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
+            ImmutableArray<MemberSyntax> members = ParseMembers();
+            SyntaxToken? endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
             return new CompilationUnitSyntax(_syntaxTree, members, endOfFileToken);
         }
 
         private ImmutableArray<MemberSyntax> ParseMembers()
         {
-            var members = ImmutableArray.CreateBuilder<MemberSyntax>();
+            ImmutableArray<MemberSyntax>.Builder? members = ImmutableArray.CreateBuilder<MemberSyntax>();
 
             while (Current.Kind != SyntaxKind.EndOfFileToken)
             {
-                var startToken = Current;
+                SyntaxToken? startToken = Current;
 
-                var member = ParseMember();
+                MemberSyntax? member = ParseMember();
                 members.Add(member);
 
                 // If ParseMember() did not consume any tokens,
@@ -116,7 +124,9 @@ namespace Minsk.CodeAnalysis.Syntax
                 // already tried to parse an expression statement
                 // and reported one.
                 if (Current == startToken)
+                {
                     NextToken();
+                }
             }
 
             return members.ToImmutable();
@@ -125,38 +135,40 @@ namespace Minsk.CodeAnalysis.Syntax
         private MemberSyntax ParseMember()
         {
             if (Current.Kind == SyntaxKind.FunctionKeyword)
+            {
                 return ParseFunctionDeclaration();
+            }
 
             return ParseGlobalStatement();
         }
 
         private MemberSyntax ParseFunctionDeclaration()
         {
-            var functionKeyword = MatchToken(SyntaxKind.FunctionKeyword);
-            var identifier = MatchToken(SyntaxKind.IdentifierToken);
-            var openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var parameters = ParseParameterList();
-            var closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-            var type = ParseOptionalTypeClause();
-            var body = ParseBlockStatement();
+            SyntaxToken? functionKeyword = MatchToken(SyntaxKind.FunctionKeyword);
+            SyntaxToken? identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken? openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            SeparatedSyntaxList<ParameterSyntax>? parameters = ParseParameterList();
+            SyntaxToken? closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            TypeClauseSyntax? type = ParseOptionalTypeClause();
+            BlockStatementSyntax? body = ParseBlockStatement();
             return new FunctionDeclarationSyntax(_syntaxTree, functionKeyword, identifier, openParenthesisToken, parameters, closeParenthesisToken, type, body);
         }
 
         private SeparatedSyntaxList<ParameterSyntax> ParseParameterList()
         {
-            var nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
+            ImmutableArray<SyntaxNode>.Builder? nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
 
-            var parseNextParameter = true;
+            bool parseNextParameter = true;
             while (parseNextParameter &&
                    Current.Kind != SyntaxKind.CloseParenthesisToken &&
                    Current.Kind != SyntaxKind.EndOfFileToken)
             {
-                var parameter = ParseParameter();
+                ParameterSyntax? parameter = ParseParameter();
                 nodesAndSeparators.Add(parameter);
 
                 if (Current.Kind == SyntaxKind.CommaToken)
                 {
-                    var comma = MatchToken(SyntaxKind.CommaToken);
+                    SyntaxToken? comma = MatchToken(SyntaxKind.CommaToken);
                     nodesAndSeparators.Add(comma);
                 }
                 else
@@ -170,14 +182,14 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private ParameterSyntax ParseParameter()
         {
-            var identifier = MatchToken(SyntaxKind.IdentifierToken);
-            var type = ParseTypeClause();
+            SyntaxToken? identifier = MatchToken(SyntaxKind.IdentifierToken);
+            TypeClauseSyntax? type = ParseTypeClause();
             return new ParameterSyntax(_syntaxTree, identifier, type);
         }
 
         private MemberSyntax ParseGlobalStatement()
         {
-            var statement = ParseStatement();
+            StatementSyntax? statement = ParseStatement();
             return new GlobalStatementSyntax(_syntaxTree, statement);
         }
 
@@ -211,16 +223,16 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private BlockStatementSyntax ParseBlockStatement()
         {
-            var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+            ImmutableArray<StatementSyntax>.Builder? statements = ImmutableArray.CreateBuilder<StatementSyntax>();
 
-            var openBraceToken = MatchToken(SyntaxKind.OpenBraceToken);
+            SyntaxToken? openBraceToken = MatchToken(SyntaxKind.OpenBraceToken);
 
             while (Current.Kind != SyntaxKind.EndOfFileToken &&
                    Current.Kind != SyntaxKind.CloseBraceToken)
             {
-                var startToken = Current;
+                SyntaxToken? startToken = Current;
 
-                var statement = ParseStatement();
+                StatementSyntax? statement = ParseStatement();
                 statements.Add(statement);
 
                 // If ParseStatement() did not consume any tokens,
@@ -231,114 +243,120 @@ namespace Minsk.CodeAnalysis.Syntax
                 // already tried to parse an expression statement
                 // and reported one.
                 if (Current == startToken)
+                {
                     NextToken();
+                }
             }
 
-            var closeBraceToken = MatchToken(SyntaxKind.CloseBraceToken);
+            SyntaxToken? closeBraceToken = MatchToken(SyntaxKind.CloseBraceToken);
 
             return new BlockStatementSyntax(_syntaxTree, openBraceToken, statements.ToImmutable(), closeBraceToken);
         }
 
         private StatementSyntax ParseVariableDeclaration()
         {
-            var expected = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
-            var keyword = MatchToken(expected);
-            var identifier = MatchToken(SyntaxKind.IdentifierToken);
-            var typeClause = ParseOptionalTypeClause();
-            var equals = MatchToken(SyntaxKind.EqualsToken);
-            var initializer = ParseExpression();
+            SyntaxKind expected = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
+            SyntaxToken? keyword = MatchToken(expected);
+            SyntaxToken? identifier = MatchToken(SyntaxKind.IdentifierToken);
+            TypeClauseSyntax? typeClause = ParseOptionalTypeClause();
+            SyntaxToken? equals = MatchToken(SyntaxKind.EqualsToken);
+            ExpressionSyntax? initializer = ParseExpression();
             return new VariableDeclarationSyntax(_syntaxTree, keyword, identifier, typeClause, equals, initializer);
         }
 
         private TypeClauseSyntax? ParseOptionalTypeClause()
         {
             if (Current.Kind != SyntaxKind.ColonToken)
+            {
                 return null;
+            }
 
             return ParseTypeClause();
         }
 
         private TypeClauseSyntax ParseTypeClause()
         {
-            var colonToken = MatchToken(SyntaxKind.ColonToken);
-            var identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken? colonToken = MatchToken(SyntaxKind.ColonToken);
+            SyntaxToken? identifier = MatchToken(SyntaxKind.IdentifierToken);
             return new TypeClauseSyntax(_syntaxTree, colonToken, identifier);
         }
 
         private StatementSyntax ParseIfStatement()
         {
-            var keyword = MatchToken(SyntaxKind.IfKeyword);
-            var condition = ParseExpression();
-            var statement = ParseStatement();
-            var elseClause = ParseOptionalElseClause();
+            SyntaxToken? keyword = MatchToken(SyntaxKind.IfKeyword);
+            ExpressionSyntax? condition = ParseExpression();
+            StatementSyntax? statement = ParseStatement();
+            ElseClauseSyntax? elseClause = ParseOptionalElseClause();
             return new IfStatementSyntax(_syntaxTree, keyword, condition, statement, elseClause);
         }
 
         private ElseClauseSyntax? ParseOptionalElseClause()
         {
             if (Current.Kind != SyntaxKind.ElseKeyword)
+            {
                 return null;
+            }
 
-            var keyword = NextToken();
-            var statement = ParseStatement();
+            SyntaxToken? keyword = NextToken();
+            StatementSyntax? statement = ParseStatement();
             return new ElseClauseSyntax(_syntaxTree, keyword, statement);
         }
 
         private StatementSyntax ParseWhileStatement()
         {
-            var keyword = MatchToken(SyntaxKind.WhileKeyword);
-            var condition = ParseExpression();
-            var body = ParseStatement();
+            SyntaxToken? keyword = MatchToken(SyntaxKind.WhileKeyword);
+            ExpressionSyntax? condition = ParseExpression();
+            StatementSyntax? body = ParseStatement();
             return new WhileStatementSyntax(_syntaxTree, keyword, condition, body);
         }
 
         private StatementSyntax ParseDoWhileStatement()
         {
-            var doKeyword = MatchToken(SyntaxKind.DoKeyword);
-            var body = ParseStatement();
-            var whileKeyword = MatchToken(SyntaxKind.WhileKeyword);
-            var condition = ParseExpression();
+            SyntaxToken? doKeyword = MatchToken(SyntaxKind.DoKeyword);
+            StatementSyntax? body = ParseStatement();
+            SyntaxToken? whileKeyword = MatchToken(SyntaxKind.WhileKeyword);
+            ExpressionSyntax? condition = ParseExpression();
             return new DoWhileStatementSyntax(_syntaxTree, doKeyword, body, whileKeyword, condition);
         }
 
         private StatementSyntax ParseForStatement()
         {
-            var keyword = MatchToken(SyntaxKind.ForKeyword);
-            var identifier = MatchToken(SyntaxKind.IdentifierToken);
-            var equalsToken = MatchToken(SyntaxKind.EqualsToken);
-            var lowerBound = ParseExpression();
-            var toKeyword = MatchToken(SyntaxKind.ToKeyword);
-            var upperBound = ParseExpression();
-            var body = ParseStatement();
+            SyntaxToken? keyword = MatchToken(SyntaxKind.ForKeyword);
+            SyntaxToken? identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken? equalsToken = MatchToken(SyntaxKind.EqualsToken);
+            ExpressionSyntax? lowerBound = ParseExpression();
+            SyntaxToken? toKeyword = MatchToken(SyntaxKind.ToKeyword);
+            ExpressionSyntax? upperBound = ParseExpression();
+            StatementSyntax? body = ParseStatement();
             return new ForStatementSyntax(_syntaxTree, keyword, identifier, equalsToken, lowerBound, toKeyword, upperBound, body);
         }
 
         private StatementSyntax ParseBreakStatement()
         {
-            var keyword = MatchToken(SyntaxKind.BreakKeyword);
+            SyntaxToken? keyword = MatchToken(SyntaxKind.BreakKeyword);
             return new BreakStatementSyntax(_syntaxTree, keyword);
         }
 
         private StatementSyntax ParseContinueStatement()
         {
-            var keyword = MatchToken(SyntaxKind.ContinueKeyword);
+            SyntaxToken? keyword = MatchToken(SyntaxKind.ContinueKeyword);
             return new ContinueStatementSyntax(_syntaxTree, keyword);
         }
 
         private StatementSyntax ParseReturnStatement()
         {
-            var keyword = MatchToken(SyntaxKind.ReturnKeyword);
-            var keywordLine = _text.GetLineIndex(keyword.Span.Start);
-            var currentLine = _text.GetLineIndex(Current.Span.Start);
-            var isEof = Current.Kind == SyntaxKind.EndOfFileToken;
-            var sameLine = !isEof && keywordLine == currentLine;
-            var expression = sameLine ? ParseExpression() : null;
+            SyntaxToken? keyword = MatchToken(SyntaxKind.ReturnKeyword);
+            int keywordLine = _text.GetLineIndex(keyword.Span.Start);
+            int currentLine = _text.GetLineIndex(Current.Span.Start);
+            bool isEof = Current.Kind == SyntaxKind.EndOfFileToken;
+            bool sameLine = !isEof && keywordLine == currentLine;
+            ExpressionSyntax? expression = sameLine ? ParseExpression() : null;
             return new ReturnStatementSyntax(_syntaxTree, keyword, expression);
         }
 
         private ExpressionStatementSyntax ParseExpressionStatement()
         {
-            var expression = ParseExpression();
+            ExpressionSyntax? expression = ParseExpression();
             return new ExpressionStatementSyntax(_syntaxTree, expression);
         }
 
@@ -361,9 +379,9 @@ namespace Minsk.CodeAnalysis.Syntax
                     case SyntaxKind.PipeEqualsToken:
                     case SyntaxKind.HatEqualsToken:
                     case SyntaxKind.EqualsToken:
-                        var identifierToken = NextToken();
-                        var operatorToken = NextToken();
-                        var right = ParseAssignmentExpression();
+                        SyntaxToken? identifierToken = NextToken();
+                        SyntaxToken? operatorToken = NextToken();
+                        ExpressionSyntax? right = ParseAssignmentExpression();
                         return new AssignmentExpressionSyntax(_syntaxTree, identifierToken, operatorToken, right);
                 }
 
@@ -374,11 +392,11 @@ namespace Minsk.CodeAnalysis.Syntax
         private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
         {
             ExpressionSyntax left;
-            var unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
+            int unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
             if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
             {
-                var operatorToken = NextToken();
-                var operand = ParseBinaryExpression(unaryOperatorPrecedence);
+                SyntaxToken? operatorToken = NextToken();
+                ExpressionSyntax? operand = ParseBinaryExpression(unaryOperatorPrecedence);
                 left = new UnaryExpressionSyntax(_syntaxTree, operatorToken, operand);
             }
             else
@@ -388,12 +406,14 @@ namespace Minsk.CodeAnalysis.Syntax
 
             while (true)
             {
-                var precedence = Current.Kind.GetBinaryOperatorPrecedence();
+                int precedence = Current.Kind.GetBinaryOperatorPrecedence();
                 if (precedence == 0 || precedence <= parentPrecedence)
+                {
                     break;
+                }
 
-                var operatorToken = NextToken();
-                var right = ParseBinaryExpression(precedence);
+                SyntaxToken? operatorToken = NextToken();
+                ExpressionSyntax? right = ParseBinaryExpression(precedence);
                 left = new BinaryExpressionSyntax(_syntaxTree, left, operatorToken, right);
             }
 
@@ -425,63 +445,65 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private ExpressionSyntax ParseParenthesizedExpression()
         {
-            var left = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var expression = ParseExpression();
-            var right = MatchToken(SyntaxKind.CloseParenthesisToken);
+            SyntaxToken? left = MatchToken(SyntaxKind.OpenParenthesisToken);
+            ExpressionSyntax? expression = ParseExpression();
+            SyntaxToken? right = MatchToken(SyntaxKind.CloseParenthesisToken);
             return new ParenthesizedExpressionSyntax(_syntaxTree, left, expression, right);
         }
 
         private ExpressionSyntax ParseBooleanLiteral()
         {
-            var isTrue = Current.Kind == SyntaxKind.TrueKeyword;
-            var keywordToken = isTrue ? MatchToken(SyntaxKind.TrueKeyword) : MatchToken(SyntaxKind.FalseKeyword);
+            bool isTrue = Current.Kind == SyntaxKind.TrueKeyword;
+            SyntaxToken? keywordToken = isTrue ? MatchToken(SyntaxKind.TrueKeyword) : MatchToken(SyntaxKind.FalseKeyword);
             return new LiteralExpressionSyntax(_syntaxTree, keywordToken, isTrue);
         }
 
         private ExpressionSyntax ParseNumberLiteral()
         {
-            var numberToken = MatchToken(SyntaxKind.NumberToken);
+            SyntaxToken? numberToken = MatchToken(SyntaxKind.NumberToken);
             return new LiteralExpressionSyntax(_syntaxTree, numberToken);
         }
 
         private ExpressionSyntax ParseStringLiteral()
         {
-            var stringToken = MatchToken(SyntaxKind.StringToken);
+            SyntaxToken? stringToken = MatchToken(SyntaxKind.StringToken);
             return new LiteralExpressionSyntax(_syntaxTree, stringToken);
         }
 
         private ExpressionSyntax ParseNameOrCallExpression()
         {
             if (Peek(0).Kind == SyntaxKind.IdentifierToken && Peek(1).Kind == SyntaxKind.OpenParenthesisToken)
+            {
                 return ParseCallExpression();
+            }
 
             return ParseNameExpression();
         }
 
         private ExpressionSyntax ParseCallExpression()
         {
-            var identifier = MatchToken(SyntaxKind.IdentifierToken);
-            var openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
-            var arguments = ParseArguments();
-            var closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
+            SyntaxToken? identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken? openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            SeparatedSyntaxList<ExpressionSyntax>? arguments = ParseArguments();
+            SyntaxToken? closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
             return new CallExpressionSyntax(_syntaxTree, identifier, openParenthesisToken, arguments, closeParenthesisToken);
         }
 
         private SeparatedSyntaxList<ExpressionSyntax> ParseArguments()
         {
-            var nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
+            ImmutableArray<SyntaxNode>.Builder? nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
 
-            var parseNextArgument = true;
+            bool parseNextArgument = true;
             while (parseNextArgument &&
                    Current.Kind != SyntaxKind.CloseParenthesisToken &&
                    Current.Kind != SyntaxKind.EndOfFileToken)
             {
-                var expression = ParseExpression();
+                ExpressionSyntax? expression = ParseExpression();
                 nodesAndSeparators.Add(expression);
 
                 if (Current.Kind == SyntaxKind.CommaToken)
                 {
-                    var comma = MatchToken(SyntaxKind.CommaToken);
+                    SyntaxToken? comma = MatchToken(SyntaxKind.CommaToken);
                     nodesAndSeparators.Add(comma);
                 }
                 else
@@ -495,7 +517,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         private ExpressionSyntax ParseNameExpression()
         {
-            var identifierToken = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken? identifierToken = MatchToken(SyntaxKind.IdentifierToken);
             return new NameExpressionSyntax(_syntaxTree, identifierToken);
         }
     }

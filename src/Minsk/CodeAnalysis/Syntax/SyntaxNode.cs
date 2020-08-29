@@ -23,8 +23,8 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             get
             {
-                var first = GetChildren().First().Span;
-                var last = GetChildren().Last().Span;
+                TextSpan first = GetChildren().First().Span;
+                TextSpan last = GetChildren().Last().Span;
                 return TextSpan.FromBounds(first.Start, last.End);
             }
         }
@@ -33,8 +33,8 @@ namespace Minsk.CodeAnalysis.Syntax
         {
             get
             {
-                var first = GetChildren().First().FullSpan;
-                var last = GetChildren().Last().FullSpan;
+                TextSpan first = GetChildren().First().FullSpan;
+                TextSpan last = GetChildren().Last().FullSpan;
                 return TextSpan.FromBounds(first.Start, last.End);
             }
         }
@@ -43,7 +43,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public IEnumerable<SyntaxNode> AncestorsAndSelf()
         {
-            var node = this;
+            SyntaxNode? node = this;
             while (node != null)
             {
                 yield return node;
@@ -61,7 +61,9 @@ namespace Minsk.CodeAnalysis.Syntax
         public SyntaxToken GetLastToken()
         {
             if (this is SyntaxToken token)
+            {
                 return token;
+            }
 
             // A syntax node should always contain at least 1 token.
             return GetChildren().Last().GetLastToken();
@@ -69,42 +71,51 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public void WriteTo(TextWriter writer)
         {
+            _ = writer ?? throw new ArgumentNullException(nameof(writer));
             PrettyPrint(writer, this);
         }
 
         private static void PrettyPrint(TextWriter writer, SyntaxNode node, string indent = "", bool isLast = true)
         {
-            var isToConsole = writer == Console.Out;
-            var token = node as SyntaxToken;
+            bool isToConsole = writer == Console.Out;
+            SyntaxToken? token = node as SyntaxToken;
 
             if (token != null)
             {
-                foreach (var trivia in token.LeadingTrivia)
+                foreach (SyntaxTrivia? trivia in token.LeadingTrivia)
                 {
                     if (isToConsole)
+                    {
                         Console.ForegroundColor = ConsoleColor.DarkGray;
+                    }
 
                     writer.Write(indent);
                     writer.Write("├──");
 
                     if (isToConsole)
+                    {
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    }
 
                     writer.WriteLine($"L: {trivia.Kind}");
                 }
             }
 
-            var hasTrailingTrivia = token != null && token.TrailingTrivia.Any();
-            var tokenMarker = !hasTrailingTrivia && isLast ? "└──" : "├──";
+            bool hasTrailingTrivia = token != null && token.TrailingTrivia.Any();
+            string? tokenMarker = !hasTrailingTrivia && isLast ? "└──" : "├──";
 
             if (isToConsole)
+            {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
+            }
 
             writer.Write(indent);
             writer.Write(tokenMarker);
 
             if (isToConsole)
+            {
                 Console.ForegroundColor = node is SyntaxToken ? ConsoleColor.Blue : ConsoleColor.Cyan;
+            }
 
             writer.Write(node.Kind);
 
@@ -115,25 +126,31 @@ namespace Minsk.CodeAnalysis.Syntax
             }
 
             if (isToConsole)
+            {
                 Console.ResetColor();
+            }
 
             writer.WriteLine();
 
             if (token != null)
             {
-                foreach (var trivia in token.TrailingTrivia)
+                foreach (SyntaxTrivia? trivia in token.TrailingTrivia)
                 {
-                    var isLastTrailingTrivia = trivia == token.TrailingTrivia.Last();
-                    var triviaMarker = isLast && isLastTrailingTrivia ? "└──" : "├──";
+                    bool isLastTrailingTrivia = trivia == token.TrailingTrivia.Last();
+                    string? triviaMarker = isLast && isLastTrailingTrivia ? "└──" : "├──";
 
                     if (isToConsole)
+                    {
                         Console.ForegroundColor = ConsoleColor.DarkGray;
+                    }
 
                     writer.Write(indent);
                     writer.Write(triviaMarker);
 
                     if (isToConsole)
+                    {
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    }
 
                     writer.WriteLine($"T: {trivia.Kind}");
                 }
@@ -141,15 +158,17 @@ namespace Minsk.CodeAnalysis.Syntax
 
             indent += isLast ? "   " : "│  ";
 
-            var lastChild = node.GetChildren().LastOrDefault();
+            SyntaxNode? lastChild = node.GetChildren().LastOrDefault();
 
-            foreach (var child in node.GetChildren())
+            foreach (SyntaxNode? child in node.GetChildren())
+            {
                 PrettyPrint(writer, child, indent, child == lastChild);
+            }
         }
 
         public override string ToString()
         {
-            using (var writer = new StringWriter())
+            using (StringWriter? writer = new StringWriter())
             {
                 WriteTo(writer);
                 return writer.ToString();

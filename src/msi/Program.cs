@@ -4,7 +4,7 @@ namespace Minsk
     {
         private static void Main()
         {
-            var repl = new MinskRepl();
+            MinskRepl? repl = new MinskRepl();
             repl.Run();
         }
     }

@@ -168,11 +168,9 @@ namespace Minsk.CodeAnalysis.Syntax
 
         public override string ToString()
         {
-            using (StringWriter? writer = new StringWriter())
-            {
-                WriteTo(writer);
-                return writer.ToString();
-            }
+            using var writer = new StringWriter();
+            WriteTo(writer);
+            return writer.ToString();
         }
     }
 }

@@ -102,8 +102,12 @@ namespace Minsk.CodeAnalysis.Syntax
                         ReadLineBreak();
                         break;
                     case ' ':
-                    case '\t':
                         ReadWhiteSpace();
+                        break;
+                    case '\t':
+                        var span = new TextSpan(_position, 1);
+                        var location = new TextLocation(_text, span);
+                        _diagnostics.ReportBadCharacter(location, Current);
                         break;
                     default:
                         if (char.IsWhiteSpace(Current))

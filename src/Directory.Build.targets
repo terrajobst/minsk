@@ -8,7 +8,7 @@
       We work this around by specifically depending on a later version of the compiler.
   -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Compilers.ToolSet" Version="3.6.0-4.final" />
+    <PackageReference Include="Microsoft.NET.Compilers.ToolSet" Version="3.7.0" />
   </ItemGroup>
 
 </Project>

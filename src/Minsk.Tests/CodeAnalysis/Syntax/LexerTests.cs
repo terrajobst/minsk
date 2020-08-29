@@ -25,6 +25,36 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
         }
 
         [Fact]
+        public void Lexer_Lexes_Spaces()
+        {
+            var text = @"
+function main()
+{
+    print("What's your name?")
+    let name = input()
+    print("Hello " + name + "!")
+}
+"
+            var tree = SyntaxTree.Parse(text);
+            Assert.Empty(tree.Diagnostics);
+        }
+
+        [Fact]
+        public void Lexer_Refuses_Tabs()
+        {
+            var text = @"
+function main()
+{
+\tprint("What's your name?")
+\tlet name = input()
+\tprint("Hello " + name + "!")
+}
+"
+            var tree = SyntaxTree.Parse(text);
+            Assert.Equal(tree.Diagnostics.Length, 3);
+        }
+
+        [Fact]
         public void Lexer_Covers_AllTokens()
         {
             var tokenKinds = Enum.GetValues(typeof(SyntaxKind))

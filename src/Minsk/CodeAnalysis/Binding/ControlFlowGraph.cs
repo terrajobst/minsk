@@ -252,7 +252,7 @@ namespace Minsk.CodeAnalysis.Binding
                 blocks.Remove(block);
             }
 
-            private BoundExpression Negate(BoundExpression condition)
+            private static BoundExpression Negate(BoundExpression condition)
             {
                 var negated = BoundNodeFactory.Not(condition.Syntax, condition);
                 if (negated.ConstantValue != null)

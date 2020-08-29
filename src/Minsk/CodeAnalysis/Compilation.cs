@@ -120,6 +120,9 @@ namespace Minsk.CodeAnalysis
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
         {
+            _ = symbol ?? throw new ArgumentNullException(nameof(symbol));
+            _ = writer ?? throw new ArgumentNullException(nameof(writer));
+
             var program = GetProgram();
             symbol.WriteTo(writer);
             writer.WriteLine();

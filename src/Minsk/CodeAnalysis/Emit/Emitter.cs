@@ -248,7 +248,7 @@ namespace Minsk.CodeAnalysis.Emit
             switch (node.Kind)
             {
                 case BoundNodeKind.NopStatement:
-                    EmitNopStatement(ilProcessor, (BoundNopStatement)node);
+                    EmitNopStatement(ilProcessor);
                     break;
                 case BoundNodeKind.VariableDeclaration:
                     EmitVariableDeclaration(ilProcessor, (BoundVariableDeclaration)node);
@@ -273,7 +273,7 @@ namespace Minsk.CodeAnalysis.Emit
             }
         }
 
-        private void EmitNopStatement(ILProcessor ilProcessor, BoundNopStatement node)
+        private static void EmitNopStatement(ILProcessor ilProcessor)
         {
             ilProcessor.Emit(OpCodes.Nop);
         }
@@ -358,7 +358,7 @@ namespace Minsk.CodeAnalysis.Emit
             }
         }
 
-        private void EmitConstantExpression(ILProcessor ilProcessor, BoundExpression node)
+        private static void EmitConstantExpression(ILProcessor ilProcessor, BoundExpression node)
         {
             Debug.Assert(node.ConstantValue != null);
 

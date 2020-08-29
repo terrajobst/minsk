@@ -199,13 +199,13 @@ namespace Minsk
                         HandleEnter(document, view);
                         break;
                     case ConsoleKey.LeftArrow:
-                        HandleLeftArrow(document, view);
+                        HandleLeftArrow(view);
                         break;
                     case ConsoleKey.RightArrow:
                         HandleRightArrow(document, view);
                         break;
                     case ConsoleKey.UpArrow:
-                        HandleUpArrow(document, view);
+                        HandleUpArrow(view);
                         break;
                     case ConsoleKey.DownArrow:
                         HandleDownArrow(document, view);
@@ -217,7 +217,7 @@ namespace Minsk
                         HandleDelete(document, view);
                         break;
                     case ConsoleKey.Home:
-                        HandleHome(document, view);
+                        HandleHome(view);
                         break;
                     case ConsoleKey.End:
                         HandleEnd(document, view);
@@ -247,7 +247,7 @@ namespace Minsk
                 HandleTyping(document, view, key.KeyChar.ToString());
         }
 
-        private void HandleEscape(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleEscape(ObservableCollection<string> document, SubmissionView view)
         {
             document.Clear();
             document.Add(string.Empty);
@@ -267,7 +267,7 @@ namespace Minsk
             InsertLine(document, view);
         }
 
-        private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleControlEnter(ObservableCollection<string> document, SubmissionView view)
         {
             InsertLine(document, view);
         }
@@ -283,32 +283,32 @@ namespace Minsk
             view.CurrentLine = lineIndex;
         }
 
-        private void HandleLeftArrow(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleLeftArrow(SubmissionView view)
         {
             if (view.CurrentCharacter > 0)
                 view.CurrentCharacter--;
         }
 
-        private void HandleRightArrow(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleRightArrow(ObservableCollection<string> document, SubmissionView view)
         {
             var line = document[view.CurrentLine];
             if (view.CurrentCharacter <= line.Length - 1)
                 view.CurrentCharacter++;
         }
 
-        private void HandleUpArrow(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleUpArrow(SubmissionView view)
         {
             if (view.CurrentLine > 0)
                 view.CurrentLine--;
         }
 
-        private void HandleDownArrow(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleDownArrow(ObservableCollection<string> document, SubmissionView view)
         {
             if (view.CurrentLine < document.Count - 1)
                 view.CurrentLine++;
         }
 
-        private void HandleBackspace(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleBackspace(ObservableCollection<string> document, SubmissionView view)
         {
             var start = view.CurrentCharacter;
             if (start == 0)
@@ -334,7 +334,7 @@ namespace Minsk
             }
         }
 
-        private void HandleDelete(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleDelete(ObservableCollection<string> document, SubmissionView view)
         {
             var lineIndex = view.CurrentLine;
             var line = document[lineIndex];
@@ -357,17 +357,17 @@ namespace Minsk
             document[lineIndex] = before + after;
         }
 
-        private void HandleHome(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleHome(SubmissionView view)
         {
             view.CurrentCharacter = 0;
         }
 
-        private void HandleEnd(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleEnd(ObservableCollection<string> document, SubmissionView view)
         {
             view.CurrentCharacter = document[view.CurrentLine].Length;
         }
 
-        private void HandleTab(ObservableCollection<string> document, SubmissionView view)
+        private static void HandleTab(ObservableCollection<string> document, SubmissionView view)
         {
             const int TabWidth = 4;
             var start = view.CurrentCharacter;
@@ -409,7 +409,7 @@ namespace Minsk
             view.CurrentCharacter = document[view.CurrentLine].Length;
         }
 
-        private void HandleTyping(ObservableCollection<string> document, SubmissionView view, string text)
+        private static void HandleTyping(ObservableCollection<string> document, SubmissionView view, string text)
         {
             var lineIndex = view.CurrentLine;
             var start = view.CurrentCharacter;

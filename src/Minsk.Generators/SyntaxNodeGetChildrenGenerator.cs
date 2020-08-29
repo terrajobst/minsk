@@ -138,7 +138,7 @@ namespace Minsk.Generators
                     GetAllTypes(result, nsChild);
         }
 
-        private bool IsDerivedFrom(ITypeSymbol type, INamedTypeSymbol baseType)
+        private static bool IsDerivedFrom(ITypeSymbol type, INamedTypeSymbol baseType)
         {
             var current = type;
 
@@ -153,7 +153,7 @@ namespace Minsk.Generators
             return false;
         }
 
-        private bool IsPartial(INamedTypeSymbol type)
+        private static bool IsPartial(INamedTypeSymbol type)
         {
             foreach (var declaration in type.DeclaringSyntaxReferences)
             {

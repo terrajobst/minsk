@@ -256,7 +256,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         public DiagnosticBag Diagnostics => _diagnostics;
 
-        private BoundStatement BindErrorStatement(SyntaxNode syntax)
+        private static BoundStatement BindErrorStatement(SyntaxNode syntax)
         {
             return new BoundExpressionStatement(syntax, new BoundErrorExpression(syntax));
         }
@@ -536,7 +536,7 @@ namespace Minsk.CodeAnalysis.Binding
             return BindExpression(syntax.Expression);
         }
 
-        private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
+        private static BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
         {
             var value = syntax.Value ?? 0;
             return new BoundLiteralExpression(syntax, value);
@@ -750,7 +750,7 @@ namespace Minsk.CodeAnalysis.Binding
             }
         }
 
-        private TypeSymbol? LookupType(string name)
+        private static TypeSymbol? LookupType(string name)
         {
             switch (name)
             {

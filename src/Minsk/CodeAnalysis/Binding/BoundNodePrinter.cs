@@ -14,7 +14,10 @@ namespace Minsk.CodeAnalysis.Binding
             if (writer is IndentedTextWriter iw)
                 WriteTo(node, iw);
             else
-                WriteTo(node, new IndentedTextWriter(writer));
+            {
+                using var indentedWriter = new IndentedTextWriter(writer);
+                WriteTo(node, indentedWriter);
+            }
         }
 
         public static void WriteTo(this BoundNode node, IndentedTextWriter writer)
@@ -25,7 +28,7 @@ namespace Minsk.CodeAnalysis.Binding
                     WriteBlockStatement((BoundBlockStatement)node, writer);
                     break;
                 case BoundNodeKind.NopStatement:
-                    WriteNopStatement((BoundNopStatement)node, writer);
+                    WriteNopStatement(writer);
                     break;
                 case BoundNodeKind.VariableDeclaration:
                     WriteVariableDeclaration((BoundVariableDeclaration)node, writer);
@@ -58,7 +61,7 @@ namespace Minsk.CodeAnalysis.Binding
                     WriteExpressionStatement((BoundExpressionStatement)node, writer);
                     break;
                 case BoundNodeKind.ErrorExpression:
-                    WriteErrorExpression((BoundErrorExpression)node, writer);
+                    WriteErrorExpression(writer);
                     break;
                 case BoundNodeKind.LiteralExpression:
                     WriteLiteralExpression((BoundLiteralExpression)node, writer);
@@ -139,7 +142,7 @@ namespace Minsk.CodeAnalysis.Binding
             writer.WriteLine();
         }
 
-        private static void WriteNopStatement(BoundNopStatement node, IndentedTextWriter writer)
+        private static void WriteNopStatement(IndentedTextWriter writer)
         {
             writer.WriteKeyword("nop");
             writer.WriteLine();
@@ -261,7 +264,7 @@ namespace Minsk.CodeAnalysis.Binding
             writer.WriteLine();
         }
 
-        private static void WriteErrorExpression(BoundErrorExpression node, IndentedTextWriter writer)
+        private static void WriteErrorExpression(IndentedTextWriter writer)
         {
             writer.WriteKeyword("?");
         }

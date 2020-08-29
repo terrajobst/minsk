@@ -30,11 +30,11 @@ namespace Minsk.Tests.CodeAnalysis.Syntax
             var text = @"
 function main()
 {
-    print("What's your name?")
+    print(""What's your name?"")
     let name = input()
-    print("Hello " + name + "!")
+    print(""Hello "" + name + ""!"")
 }
-"
+";
             var tree = SyntaxTree.Parse(text);
             Assert.Empty(tree.Diagnostics);
         }
@@ -45,11 +45,11 @@ function main()
             var text = @"
 function main()
 {
-\tprint("What's your name?")
+\tprint(""What's your name?"")
 \tlet name = input()
-\tprint("Hello " + name + "!")
+\tprint(""Hello "" + name + ""!"")
 }
-"
+";
             var tree = SyntaxTree.Parse(text);
             Assert.Equal(tree.Diagnostics.Length, 3);
         }

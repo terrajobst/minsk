@@ -166,39 +166,35 @@ namespace Minsk.CodeAnalysis.Binding
                     var current = blocks[i];
                     var next = i == blocks.Count - 1 ? _end : blocks[i + 1];
 
-                    foreach (var statement in current.Statements)
+                    var lastStatement = current.Statements.Last();
+                    switch (lastStatement.Kind)
                     {
-                        var isLastStatementInBlock = statement == current.Statements.Last();
-                        switch (statement.Kind)
-                        {
-                            case BoundNodeKind.GotoStatement:
-                                var gs = (BoundGotoStatement)statement;
-                                var toBlock = _blockFromLabel[gs.Label];
-                                Connect(current, toBlock);
-                                break;
-                            case BoundNodeKind.ConditionalGotoStatement:
-                                var cgs = (BoundConditionalGotoStatement)statement;
-                                var thenBlock = _blockFromLabel[cgs.Label];
-                                var elseBlock = next;
-                                var negatedCondition = Negate(cgs.Condition);
-                                var thenCondition = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
-                                var elseCondition = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
-                                Connect(current, thenBlock, thenCondition);
-                                Connect(current, elseBlock, elseCondition);
-                                break;
-                            case BoundNodeKind.ReturnStatement:
-                                Connect(current, _end);
-                                break;
-                            case BoundNodeKind.NopStatement:
-                            case BoundNodeKind.VariableDeclaration:
-                            case BoundNodeKind.LabelStatement:
-                            case BoundNodeKind.ExpressionStatement:
-                                if (isLastStatementInBlock)
-                                    Connect(current, next);
-                                break;
-                            default:
-                                throw new Exception($"Unexpected statement: {statement.Kind}");
-                        }
+                        case BoundNodeKind.GotoStatement:
+                            var gs = (BoundGotoStatement)lastStatement;
+                            var toBlock = _blockFromLabel[gs.Label];
+                            Connect(current, toBlock);
+                            break;
+                        case BoundNodeKind.ConditionalGotoStatement:
+                            var cgs = (BoundConditionalGotoStatement)lastStatement;
+                            var thenBlock = _blockFromLabel[cgs.Label];
+                            var elseBlock = next;
+                            var negatedCondition = Negate(cgs.Condition);
+                            var thenCondition = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
+                            var elseCondition = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
+                            Connect(current, thenBlock, thenCondition);
+                            Connect(current, elseBlock, elseCondition);
+                            break;
+                        case BoundNodeKind.ReturnStatement:
+                            Connect(current, _end);
+                            break;
+                        case BoundNodeKind.NopStatement:
+                        case BoundNodeKind.VariableDeclaration:
+                        case BoundNodeKind.LabelStatement:
+                        case BoundNodeKind.ExpressionStatement:
+                            Connect(current, next);
+                            break;
+                        default:
+                            throw new Exception($"Unexpected statement: {lastStatement.Kind}");
                     }
                 }
 

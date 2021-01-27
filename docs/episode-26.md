@@ -2,7 +2,7 @@
 
 [Video](https://www.youtube.com/watch?v=Y2Gn6qr_twA&list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y&index=26) |
 [Pull Request](https://github.com/terrajobst/minsk/pull/148) |
-[Previous](episode-26.md) |
+[Previous](episode-25.md) |
 [Next](episode-27.md)
 
 ## Completed items

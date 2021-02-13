@@ -138,7 +138,6 @@ namespace Minsk.CodeAnalysis.Binding
 
         public sealed class GraphBuilder
         {
-            private Dictionary<BoundStatement, BasicBlock> _blockFromStatement = new Dictionary<BoundStatement, BasicBlock>();
             private Dictionary<BoundLabel, BasicBlock> _blockFromLabel = new Dictionary<BoundLabel, BasicBlock>();
             private List<BasicBlockBranch> _branches = new List<BasicBlockBranch>();
             private BasicBlock _start = new BasicBlock(isStart: true);
@@ -153,12 +152,11 @@ namespace Minsk.CodeAnalysis.Binding
 
                 foreach (var block in blocks)
                 {
-                    foreach (var statement in block.Statements)
-                    {
-                        _blockFromStatement.Add(statement, block);
-                        if (statement is BoundLabelStatement labelStatement)
-                            _blockFromLabel.Add(labelStatement.Label, block);
-                    }
+                    var firstStatement = block.Statements.FirstOrDefault();
+                    // By definition, only the first statement of a basic block
+                    // can be of the type BoundLabelStatement.
+                    if (firstStatement is BoundLabelStatement labelStatement)
+                        _blockFromLabel.Add(labelStatement.Label, block);
                 }
 
                 for (int i = 0; i < blocks.Count; i++)
@@ -166,39 +164,38 @@ namespace Minsk.CodeAnalysis.Binding
                     var current = blocks[i];
                     var next = i == blocks.Count - 1 ? _end : blocks[i + 1];
 
-                    foreach (var statement in current.Statements)
+                    var lastStatement = current.Statements.Last();
+                    // By definition, only the last statement of a basic block
+                    // can be a branching/return statement.
+                    // In other words, only a basic block's last statement can be outgoing.
+                    switch (lastStatement.Kind)
                     {
-                        var isLastStatementInBlock = statement == current.Statements.Last();
-                        switch (statement.Kind)
-                        {
-                            case BoundNodeKind.GotoStatement:
-                                var gs = (BoundGotoStatement)statement;
-                                var toBlock = _blockFromLabel[gs.Label];
-                                Connect(current, toBlock);
-                                break;
-                            case BoundNodeKind.ConditionalGotoStatement:
-                                var cgs = (BoundConditionalGotoStatement)statement;
-                                var thenBlock = _blockFromLabel[cgs.Label];
-                                var elseBlock = next;
-                                var negatedCondition = Negate(cgs.Condition);
-                                var thenCondition = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
-                                var elseCondition = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
-                                Connect(current, thenBlock, thenCondition);
-                                Connect(current, elseBlock, elseCondition);
-                                break;
-                            case BoundNodeKind.ReturnStatement:
-                                Connect(current, _end);
-                                break;
-                            case BoundNodeKind.NopStatement:
-                            case BoundNodeKind.VariableDeclaration:
-                            case BoundNodeKind.LabelStatement:
-                            case BoundNodeKind.ExpressionStatement:
-                                if (isLastStatementInBlock)
-                                    Connect(current, next);
-                                break;
-                            default:
-                                throw new Exception($"Unexpected statement: {statement.Kind}");
-                        }
+                        case BoundNodeKind.GotoStatement:
+                            var gs = (BoundGotoStatement)lastStatement;
+                            var toBlock = _blockFromLabel[gs.Label];
+                            Connect(current, toBlock);
+                            break;
+                        case BoundNodeKind.ConditionalGotoStatement:
+                            var cgs = (BoundConditionalGotoStatement)lastStatement;
+                            var thenBlock = _blockFromLabel[cgs.Label];
+                            var elseBlock = next;
+                            var negatedCondition = Negate(cgs.Condition);
+                            var thenCondition = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
+                            var elseCondition = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
+                            Connect(current, thenBlock, thenCondition);
+                            Connect(current, elseBlock, elseCondition);
+                            break;
+                        case BoundNodeKind.ReturnStatement:
+                            Connect(current, _end);
+                            break;
+                        case BoundNodeKind.NopStatement:
+                        case BoundNodeKind.VariableDeclaration:
+                        case BoundNodeKind.LabelStatement:
+                        case BoundNodeKind.ExpressionStatement:
+                            Connect(current, next);
+                            break;
+                        default:
+                            throw new Exception($"Unexpected statement: {lastStatement.Kind}");
                     }
                 }
 

@@ -138,7 +138,6 @@ namespace Minsk.CodeAnalysis.Binding
 
         public sealed class GraphBuilder
         {
-            private Dictionary<BoundStatement, BasicBlock> _blockFromStatement = new Dictionary<BoundStatement, BasicBlock>();
             private Dictionary<BoundLabel, BasicBlock> _blockFromLabel = new Dictionary<BoundLabel, BasicBlock>();
             private List<BasicBlockBranch> _branches = new List<BasicBlockBranch>();
             private BasicBlock _start = new BasicBlock(isStart: true);
@@ -153,12 +152,11 @@ namespace Minsk.CodeAnalysis.Binding
 
                 foreach (var block in blocks)
                 {
-                    foreach (var statement in block.Statements)
-                    {
-                        _blockFromStatement.Add(statement, block);
-                        if (statement is BoundLabelStatement labelStatement)
-                            _blockFromLabel.Add(labelStatement.Label, block);
-                    }
+                    var firstStatement = block.Statements.FirstOrDefault();
+                    // By definition, only the first statement of a basic block
+                    // can be of the type BoundLabelStatement.
+                    if (firstStatement is BoundLabelStatement labelStatement)
+                        _blockFromLabel.Add(labelStatement.Label, block);
                 }
 
                 for (int i = 0; i < blocks.Count; i++)
@@ -167,6 +165,9 @@ namespace Minsk.CodeAnalysis.Binding
                     var next = i == blocks.Count - 1 ? _end : blocks[i + 1];
 
                     var lastStatement = current.Statements.Last();
+                    // By definition, only the last statement of a basic block
+                    // can be a branching/return statement.
+                    // In other words, only a basic block's last statement can be outgoing.
                     switch (lastStatement.Kind)
                     {
                         case BoundNodeKind.GotoStatement:

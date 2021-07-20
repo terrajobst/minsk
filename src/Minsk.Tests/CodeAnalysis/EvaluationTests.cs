@@ -175,12 +175,11 @@ namespace Minsk.Tests.CodeAnalysis
         public void Evaluator_InvokeFunctionArguments_NoInfiniteLoop()
         {
             var text = @"
-                print(""Hi""[[=]][)]
+                print(""Hi""[=][)]
             ";
 
             var diagnostics = @"
                 Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
-                Unexpected token <EqualsToken>, expected <IdentifierToken>.
                 Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
             ";
 
@@ -191,7 +190,7 @@ namespace Minsk.Tests.CodeAnalysis
         public void Evaluator_FunctionParameters_NoInfiniteLoop()
         {
             var text = @"
-                function hi(name: string[[[=]]][)]
+                function hi(name: string[=][)]
                 {
                     print(""Hi "" + name + ""!"" )
                 }[]
@@ -199,9 +198,7 @@ namespace Minsk.Tests.CodeAnalysis
 
             var diagnostics = @"
                 Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
-                Unexpected token <EqualsToken>, expected <OpenBraceToken>.
-                Unexpected token <EqualsToken>, expected <IdentifierToken>.
-                Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <CloseParenthesisToken>, expected <OpenBraceToken>.
                 Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
             ";
 
@@ -691,14 +688,22 @@ namespace Minsk.Tests.CodeAnalysis
         public void Evaluator_Function_Must_Have_Name()
         {
             var text = @"
-                function [(]a: int, b: int): int
+                function [(][a][:] [int][,] [b]: int[)][:] int
                 {
                     return a + b
-                }
+                }[]
             ";
 
             var diagnostics = @"
                 Unexpected token <OpenParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <IdentifierToken>, expected <OpenParenthesisToken>.
+                Unexpected token <ColonToken>, expected <IdentifierToken>.
+                Unexpected token <IdentifierToken>, expected <ColonToken>.
+                Unexpected token <CommaToken>, expected <IdentifierToken>.
+                Unexpected token <IdentifierToken>, expected <CloseParenthesisToken>.
+                Unexpected token <CloseParenthesisToken>, expected <OpenBraceToken>.
+                Unexpected token <ColonToken>, expected <IdentifierToken>.
+                Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
             ";
 
             AssertDiagnostics(text, diagnostics);

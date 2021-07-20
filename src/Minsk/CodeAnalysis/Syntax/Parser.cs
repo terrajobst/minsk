@@ -87,7 +87,33 @@ namespace Minsk.CodeAnalysis.Syntax
                 return NextToken();
 
             _diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
-            return new SyntaxToken(_syntaxTree, kind, Current.Position, null, null, ImmutableArray<SyntaxTrivia>.Empty, ImmutableArray<SyntaxTrivia>.Empty);
+            return FabricateToken(kind);
+        }
+
+        private SyntaxToken FabricateToken(SyntaxKind expectedKind, bool eatCurrent = true)
+        {
+            var leadingTrivia = ImmutableArray<SyntaxTrivia>.Empty;
+
+            if (eatCurrent)
+            {
+                var badToken = NextToken();
+
+                var triviaBuilder = leadingTrivia.ToBuilder();
+                var index = 0;
+
+                foreach (var lt in badToken.LeadingTrivia)
+                    triviaBuilder.Insert(index++, lt);
+
+                var trivia = new SyntaxTrivia(badToken.SyntaxTree, SyntaxKind.SkippedTextTrivia, badToken.Position, badToken.Text);
+                triviaBuilder.Insert(index++, trivia);
+
+                foreach (var tt in badToken.TrailingTrivia)
+                    triviaBuilder.Insert(index++, tt);
+
+                leadingTrivia = triviaBuilder.ToImmutableArray();
+            }
+
+            return new SyntaxToken(_syntaxTree, expectedKind, Current.Position, null, null, leadingTrivia, ImmutableArray<SyntaxTrivia>.Empty);
         }
 
         public CompilationUnitSyntax ParseCompilationUnit()
@@ -103,20 +129,8 @@ namespace Minsk.CodeAnalysis.Syntax
 
             while (Current.Kind != SyntaxKind.EndOfFileToken)
             {
-                var startToken = Current;
-
                 var member = ParseMember();
                 members.Add(member);
-
-                // If ParseMember() did not consume any tokens,
-                // we need to skip the current token and continue
-                // in order to avoid an infinite loop.
-                //
-                // We don't need to report an error, because we'll
-                // already tried to parse an expression statement
-                // and reported one.
-                if (Current == startToken)
-                    NextToken();
             }
 
             return members.ToImmutable();
